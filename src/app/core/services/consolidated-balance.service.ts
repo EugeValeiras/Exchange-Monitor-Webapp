@@ -69,6 +69,50 @@ export class ConsolidatedBalanceService implements OnDestroy {
   readonly assetCount = computed(() => this.balance()?.byAsset?.length ?? 0);
   readonly hasExchanges = computed(() => this.exchangeCount() > 0);
 
+  // Portfolio 24h change (weighted average based on asset values)
+  readonly change24h = computed(() => {
+    const balance = this.balance();
+    if (!balance || balance.byAsset.length === 0) return null;
+
+    let totalCurrentValue = 0;
+    let totalPreviousValue = 0;
+
+    for (const asset of balance.byAsset) {
+      const currentValue = asset.valueUsd || 0;
+      const change = asset.change24h;
+
+      if (currentValue > 0 && change !== undefined && change !== null) {
+        // Calculate what the value was 24h ago
+        // currentValue = previousValue * (1 + change/100)
+        // previousValue = currentValue / (1 + change/100)
+        const previousValue = currentValue / (1 + change / 100);
+        totalCurrentValue += currentValue;
+        totalPreviousValue += previousValue;
+      } else if (currentValue > 0) {
+        // No change data, assume 0% change
+        totalCurrentValue += currentValue;
+        totalPreviousValue += currentValue;
+      }
+    }
+
+    if (totalPreviousValue === 0) return null;
+
+    // Calculate overall percentage change
+    const overallChange = ((totalCurrentValue - totalPreviousValue) / totalPreviousValue) * 100;
+    return overallChange;
+  });
+
+  // Change in USD value (not percentage)
+  readonly changeUsd24h = computed(() => {
+    const balance = this.balance();
+    const changePercent = this.change24h();
+    if (!balance || changePercent === null) return null;
+
+    const currentValue = balance.totalValueUsd;
+    const previousValue = currentValue / (1 + changePercent / 100);
+    return currentValue - previousValue;
+  });
+
   constructor(
     private api: ApiService,
     private authService: AuthService,

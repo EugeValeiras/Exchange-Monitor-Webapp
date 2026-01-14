@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule, CurrencyPipe } from '@angular/common';
+import { CommonModule, CurrencyPipe, DecimalPipe } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -43,7 +43,7 @@ import { PnlSummaryComponent } from './components/pnl-summary.component';
         <!-- Quick Stats Row -->
         <div class="quick-stats">
           <div class="quick-stat-card primary">
-            <a class="stat-content" routerLink="/balances">
+            <div class="stat-content">
               <div class="stat-header">
                 @if (balanceService.loading()) {
                   <span class="skeleton-text skeleton-pulse" style="width: 100px; height: 14px;"></span>
@@ -57,12 +57,27 @@ import { PnlSummaryComponent } from './components/pnl-summary.component';
                 <span class="skeleton-text skeleton-pulse" style="width: 140px; height: 13px;"></span>
               } @else {
                 <span class="stat-value">{{ balanceService.totalValueUsd() | currency:'USD':'symbol':'1.2-2' }}</span>
+                @if (balanceService.change24h() !== null) {
+                  <div class="stat-change" [class.positive]="balanceService.change24h()! >= 0" [class.negative]="balanceService.change24h()! < 0">
+                    <span class="change-value">
+                      {{ balanceService.changeUsd24h()! >= 0 ? '+' : '' }}{{ balanceService.changeUsd24h() | currency:'USD':'symbol':'1.2-2' }}
+                    </span>
+                    <span class="change-percent">
+                      ({{ balanceService.change24h()! >= 0 ? '+' : '' }}{{ balanceService.change24h() | number:'1.2-2' }}%)
+                    </span>
+                    <span class="change-label">24h</span>
+                    <mat-icon
+                      class="info-icon"
+                      matTooltip="Variación calculada usando el cambio 24h de cada activo ponderado por su valor en el portfolio"
+                      matTooltipPosition="above">info_outline</mat-icon>
+                  </div>
+                }
                 <span class="stat-hint">
                   {{ balanceService.exchangeCount() }} exchange{{ balanceService.exchangeCount() !== 1 ? 's' : '' }} ·
                   {{ balanceService.assetCount() }} activo{{ balanceService.assetCount() !== 1 ? 's' : '' }}
                 </span>
               }
-            </a>
+            </div>
             <div class="quick-actions">
               @if (balanceService.loading()) {
                 @for (i of [1, 2, 3, 4, 5]; track i) {
@@ -192,6 +207,66 @@ import { PnlSummaryComponent } from './components/pnl-summary.component';
       font-weight: 700;
       color: white;
       margin-bottom: 4px;
+    }
+
+    .stat-change {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      width: fit-content;
+    }
+
+    .stat-change.positive {
+      background: rgba(14, 203, 129, 0.2);
+    }
+
+    .stat-change.negative {
+      background: rgba(246, 70, 93, 0.2);
+    }
+
+    .stat-change .change-value {
+      font-size: 16px;
+      font-weight: 600;
+      color: white;
+      font-family: 'SF Mono', monospace;
+    }
+
+    .stat-change.positive .change-value,
+    .stat-change.positive .change-percent {
+      color: #0ecb81;
+    }
+
+    .stat-change.negative .change-value,
+    .stat-change.negative .change-percent {
+      color: #f6465d;
+    }
+
+    .stat-change .change-percent {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .stat-change .change-label {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.6);
+      margin-left: 4px;
+    }
+
+    .stat-change .info-icon {
+      font-size: 14px;
+      width: 14px;
+      height: 14px;
+      color: rgba(255, 255, 255, 0.5);
+      cursor: help;
+      margin-left: 2px;
+    }
+
+    .stat-change .info-icon:hover {
+      color: rgba(255, 255, 255, 0.8);
     }
 
     .quick-stat-card .stat-hint {

@@ -123,6 +123,21 @@ type AssetBalance = EnrichedAssetBalance;
                 <span class="skeleton-text skeleton-pulse" style="width: 140px; height: 13px;"></span>
               } @else {
                 <span class="stat-value">{{ getTotalValueUsd() | currency:'USD':'symbol':'1.2-2' }}</span>
+                @if (balanceService.change24h() !== null) {
+                  <div class="stat-change" [class.positive]="balanceService.change24h()! >= 0" [class.negative]="balanceService.change24h()! < 0">
+                    <span class="change-value">
+                      {{ balanceService.changeUsd24h()! >= 0 ? '+' : '' }}{{ balanceService.changeUsd24h() | currency:'USD':'symbol':'1.2-2' }}
+                    </span>
+                    <span class="change-percent">
+                      ({{ balanceService.change24h()! >= 0 ? '+' : '' }}{{ balanceService.change24h() | number:'1.2-2' }}%)
+                    </span>
+                    <span class="change-label">24h</span>
+                    <mat-icon
+                      class="info-icon"
+                      matTooltip="Variación calculada usando el cambio 24h de cada activo ponderado por su valor en el portfolio"
+                      matTooltipPosition="above">info_outline</mat-icon>
+                  </div>
+                }
                 <span class="stat-hint">
                   {{ balanceService.exchangeCount() }} exchange{{ balanceService.exchangeCount() !== 1 ? 's' : '' }} ·
                   {{ dataSource.data.length }} activo{{ dataSource.data.length !== 1 ? 's' : '' }}
@@ -570,6 +585,66 @@ type AssetBalance = EnrichedAssetBalance;
 
     .stat-card.primary .stat-hint {
       color: rgba(255, 255, 255, 0.6);
+    }
+
+    .stat-change {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      width: fit-content;
+    }
+
+    .stat-change.positive {
+      background: rgba(14, 203, 129, 0.2);
+    }
+
+    .stat-change.negative {
+      background: rgba(246, 70, 93, 0.2);
+    }
+
+    .stat-change .change-value {
+      font-size: 16px;
+      font-weight: 600;
+      color: white;
+      font-family: 'SF Mono', monospace;
+    }
+
+    .stat-change.positive .change-value,
+    .stat-change.positive .change-percent {
+      color: #0ecb81;
+    }
+
+    .stat-change.negative .change-value,
+    .stat-change.negative .change-percent {
+      color: #f6465d;
+    }
+
+    .stat-change .change-percent {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .stat-change .change-label {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.6);
+      margin-left: 4px;
+    }
+
+    .stat-change .info-icon {
+      font-size: 14px;
+      width: 14px;
+      height: 14px;
+      color: rgba(255, 255, 255, 0.5);
+      cursor: help;
+      margin-left: 2px;
+    }
+
+    .stat-change .info-icon:hover {
+      color: rgba(255, 255, 255, 0.8);
     }
 
     .section {
