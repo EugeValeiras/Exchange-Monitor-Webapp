@@ -127,14 +127,40 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
     }
 
     .timeframe-toggle {
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      border: none;
+      padding: 4px;
+
+      ::ng-deep .mat-button-toggle-group {
+        border: none;
+      }
+
       ::ng-deep .mat-button-toggle {
         font-size: 12px;
         font-weight: 500;
+        border: none !important;
+        background: transparent;
+        border-radius: 6px;
+      }
+
+      ::ng-deep .mat-button-toggle-appearance-standard {
+        background: transparent;
+      }
+
+      ::ng-deep .mat-button-toggle + .mat-button-toggle {
+        border-left: none !important;
       }
 
       ::ng-deep .mat-button-toggle-checked {
-        background: var(--brand-primary);
+        background: var(--brand-primary) !important;
         color: white;
+        border-radius: 6px;
+      }
+
+      ::ng-deep .mat-button-toggle-button {
+        padding: 0 12px;
+        height: 28px;
       }
     }
 

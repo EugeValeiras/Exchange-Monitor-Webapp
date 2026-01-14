@@ -53,9 +53,8 @@ export class BalanceSocketService implements OnDestroy {
     }
 
     const token = this.authService.getToken();
-    const wsUrl = environment.apiUrl.replace('http', 'ws').replace('/api', '');
 
-    this.socket = io(`${wsUrl}/balances`, {
+    this.socket = io(`${environment.wsUrl}/balances`, {
       auth: { token },
       transports: ['websocket', 'polling'],
       reconnection: true,

@@ -79,7 +79,7 @@ interface ConsolidatedBalance {
     <div class="balances-content">
       @if (loading()) {
         <div class="loading-container">
-          <app-logo-loader [size]="80" text="Cargando balances..."></app-logo-loader>
+          <app-logo-loader [size]="140" text="Cargando balances..."></app-logo-loader>
         </div>
       } @else if (error()) {
         <div class="error-container">
@@ -142,29 +142,10 @@ interface ConsolidatedBalance {
                 <mat-icon>trending_up</mat-icon>
               </div>
               <span class="stat-value">{{ balances()?.totalValueUsd | currency:'USD':'symbol':'1.2-2' }}</span>
-              <span class="stat-hint">Valor consolidado en USDT</span>
-            </div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-content">
-              <div class="stat-header">
-                <span class="stat-label">Exchanges</span>
-                <mat-icon class="icon-orange">business</mat-icon>
-              </div>
-              <span class="stat-value">{{ balances()?.byExchange?.length || 0 }}</span>
-              <span class="stat-hint">Conectados</span>
-            </div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-content">
-              <div class="stat-header">
-                <span class="stat-label">Activos</span>
-                <mat-icon class="icon-green">toll</mat-icon>
-              </div>
-              <span class="stat-value">{{ dataSource.data.length }}</span>
-              <span class="stat-hint">Criptomonedas</span>
+              <span class="stat-hint">
+                {{ balances()?.byExchange?.length || 0 }} exchange{{ (balances()?.byExchange?.length || 0) !== 1 ? 's' : '' }} ·
+                {{ dataSource.data.length }} activo{{ dataSource.data.length !== 1 ? 's' : '' }}
+              </span>
             </div>
           </div>
         </div>
@@ -240,10 +221,6 @@ interface ConsolidatedBalance {
                   class="show-all-toggle">
                   Mostrar todos
                 </mat-slide-toggle>
-                <mat-form-field appearance="outline" class="filter-field">
-                  <mat-icon matPrefix>search</mat-icon>
-                  <input matInput (keyup)="applyFilter($event)" placeholder="Buscar activo...">
-                </mat-form-field>
                 <button mat-icon-button (click)="loadBalances()">
                   <mat-icon>refresh</mat-icon>
                 </button>
@@ -413,7 +390,7 @@ interface ConsolidatedBalance {
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 80px;
+      min-height: calc(100vh - 200px);
     }
 
     .error-container {

@@ -70,7 +70,7 @@ import { CommonModule } from '@angular/common';
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 16px;
+      gap: calc(var(--size) * 0.15);
     }
 
     .animated-logo {
@@ -143,7 +143,7 @@ import { CommonModule } from '@angular/common';
     .loader-text {
       margin: 0;
       color: var(--text-secondary);
-      font-size: 14px;
+      font-size: calc(var(--size) * 0.12);
       animation: textFade 2s ease-in-out infinite;
     }
 

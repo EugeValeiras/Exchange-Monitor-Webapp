@@ -109,6 +109,8 @@ interface QuoteStat {
             </mat-chip-listbox>
           </div>
 
+          <div class="filter-divider"></div>
+
           <!-- Asset Filter -->
           <div class="filter-section">
             <span class="filter-label">Activos</span>
@@ -123,6 +125,8 @@ interface QuoteStat {
               </mat-chip-listbox>
             </div>
           </div>
+
+          <div class="filter-divider"></div>
 
           <!-- Quote Currency Filter -->
           <div class="filter-section">
@@ -347,6 +351,13 @@ interface QuoteStat {
       display: flex;
       flex-direction: column;
       gap: 8px;
+    }
+
+    .filter-divider {
+      width: 1px;
+      align-self: stretch;
+      background: var(--border-color);
+      margin: 0 8px;
     }
 
     .filter-label {

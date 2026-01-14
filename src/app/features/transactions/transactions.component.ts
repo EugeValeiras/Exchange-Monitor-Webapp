@@ -220,7 +220,7 @@ interface ExchangeStat {
       <!-- Table -->
       @if (loading) {
         <div class="loading-container">
-          <app-logo-loader [size]="80" text="Cargando transacciones..."></app-logo-loader>
+          <app-logo-loader [size]="140" text="Cargando transacciones..."></app-logo-loader>
         </div>
       } @else if (transactions.length === 0) {
         <div class="empty-container">
@@ -834,8 +834,10 @@ interface ExchangeStat {
     /* Loading & Empty */
     .loading-container {
       display: flex;
+      flex-direction: column;
+      align-items: center;
       justify-content: center;
-      padding: 80px;
+      min-height: calc(100vh - 200px);
     }
 
     .empty-container {

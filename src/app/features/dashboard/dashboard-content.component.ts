@@ -40,7 +40,7 @@ interface ConsolidatedBalance {
     <div class="dashboard-content">
       @if (loading()) {
         <div class="loading-container">
-          <app-logo-loader [size]="80" text="Cargando dashboard..."></app-logo-loader>
+          <app-logo-loader [size]="140" text="Cargando dashboard..."></app-logo-loader>
         </div>
       } @else if (!hasExchanges()) {
         <div class="empty-container">
@@ -107,7 +107,7 @@ interface ConsolidatedBalance {
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 80px;
+      min-height: calc(100vh - 200px);
     }
 
     .empty-container {

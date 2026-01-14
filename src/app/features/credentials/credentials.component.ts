@@ -44,7 +44,7 @@ import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-lo
 
       @if (loading) {
         <div class="loading-container">
-          <app-logo-loader [size]="80" text="Cargando exchanges..."></app-logo-loader>
+          <app-logo-loader [size]="140" text="Cargando exchanges..."></app-logo-loader>
         </div>
       } @else if (credentials.length === 0) {
         <div class="empty-container">
@@ -93,9 +93,12 @@ import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-lo
                 }
 
                 @if (credential.lastError) {
-                  <div class="info-row error">
-                    <mat-icon>warning</mat-icon>
-                    <span class="info-value">{{ credential.lastError }}</span>
+                  <div class="error-container">
+                    <div class="error-header">
+                      <mat-icon>warning</mat-icon>
+                      <span>Error</span>
+                    </div>
+                    <div class="error-message">{{ credential.lastError }}</div>
                   </div>
                 }
 
@@ -200,8 +203,10 @@ import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-lo
 
     .loading-container {
       display: flex;
+      flex-direction: column;
+      align-items: center;
       justify-content: center;
-      padding: 80px;
+      min-height: calc(100vh - 200px);
     }
 
     .empty-container {
@@ -252,6 +257,9 @@ import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-lo
       border: 1px solid var(--border-color);
       border-radius: 12px;
       overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 280px;
     }
 
     .card-header {
@@ -350,6 +358,7 @@ import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-lo
 
     .card-content {
       padding: 16px 20px;
+      flex: 1;
     }
 
     .info-row {
@@ -367,10 +376,6 @@ import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-lo
       color: var(--text-tertiary);
     }
 
-    .info-row.error mat-icon {
-      color: var(--color-error);
-    }
-
     .info-label {
       color: var(--text-secondary);
     }
@@ -380,9 +385,43 @@ import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-lo
       color: var(--text-primary);
     }
 
-    .info-row.error .info-value {
+    .error-container {
+      background: rgba(246, 70, 93, 0.08);
+      border: 1px solid rgba(246, 70, 93, 0.2);
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 8px;
+    }
+
+    .error-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
       color: var(--color-error);
-      margin-left: 0;
+      font-weight: 600;
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+
+    .error-header mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+
+    .error-message {
+      font-size: 11px;
+      font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+      color: var(--text-secondary);
+      background: rgba(0, 0, 0, 0.25);
+      border-radius: 6px;
+      padding: 8px 10px;
+      word-break: break-word;
+      white-space: pre-wrap;
+      max-height: 80px;
+      overflow-y: auto;
+      user-select: text;
+      line-height: 1.4;
     }
 
     .card-actions {
@@ -392,6 +431,7 @@ import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-lo
       padding: 8px 12px;
       border-top: 1px solid var(--border-color);
       background: var(--bg-elevated);
+      margin-top: auto;
     }
 
     .actions-left, .actions-right {
@@ -620,6 +660,12 @@ export class CredentialsComponent implements OnInit {
         input.value = '';
         this.showError(err.error?.message || 'Error al importar CSV');
       }
+    });
+  }
+
+  copyError(error: string): void {
+    navigator.clipboard.writeText(error).then(() => {
+      this.showSuccess('Error copiado al portapapeles');
     });
   }
 

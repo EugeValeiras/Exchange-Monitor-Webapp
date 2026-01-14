@@ -123,10 +123,8 @@ export class PriceSocketService implements OnDestroy {
     }
 
     const token = this.authService.getToken();
-    // WebSocket URL is the base URL without /api
-    const wsUrl = environment.apiUrl.replace('http', 'ws').replace('/api', '');
 
-    this.socket = io(`${wsUrl}/prices`, {
+    this.socket = io(`${environment.wsUrl}/prices`, {
       auth: { token },
       transports: ['websocket', 'polling'],
       reconnection: true,
