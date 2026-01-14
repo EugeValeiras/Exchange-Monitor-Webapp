@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal, DestroyRef, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -6,18 +6,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ApiService } from '../../core/services/api.service';
-import { AuthService } from '../../core/services/auth.service';
-import { BalanceSocketService } from '../../core/services/balance-socket.service';
+import { ConsolidatedBalanceService } from '../../core/services/consolidated-balance.service';
 import { BalanceChartComponent } from './components/balance-chart.component';
 import { PnlSummaryComponent } from './components/pnl-summary.component';
-
-interface ConsolidatedBalance {
-  totalValueUsd: number;
-  byExchange: { exchange: string; totalValueUsd: number }[];
-  byAsset: { asset: string }[];
-}
 
 @Component({
   selector: 'app-dashboard-content',
@@ -36,7 +27,7 @@ interface ConsolidatedBalance {
   ],
   template: `
     <div class="dashboard-content">
-      @if (!loading() && !hasExchanges()) {
+      @if (!balanceService.loading() && !balanceService.hasExchanges()) {
         <div class="empty-container">
           <div class="empty-icon">
             <mat-icon>dashboard</mat-icon>
@@ -54,26 +45,26 @@ interface ConsolidatedBalance {
           <div class="quick-stat-card primary">
             <a class="stat-content" routerLink="/balances">
               <div class="stat-header">
-                @if (loading()) {
+                @if (balanceService.loading()) {
                   <span class="skeleton-text skeleton-pulse" style="width: 100px; height: 14px;"></span>
                 } @else {
                   <span class="stat-label">Balance Total</span>
                 }
                 <mat-icon>account_balance_wallet</mat-icon>
               </div>
-              @if (loading()) {
+              @if (balanceService.loading()) {
                 <span class="skeleton-text skeleton-pulse stat-value-skeleton"></span>
                 <span class="skeleton-text skeleton-pulse" style="width: 140px; height: 13px;"></span>
               } @else {
-                <span class="stat-value">{{ totalValue() | currency:'USD':'symbol':'1.2-2' }}</span>
+                <span class="stat-value">{{ balanceService.totalValueUsd() | currency:'USD':'symbol':'1.2-2' }}</span>
                 <span class="stat-hint">
-                  {{ exchangeCount() }} exchange{{ exchangeCount() !== 1 ? 's' : '' }} ·
-                  {{ assetCount() }} activo{{ assetCount() !== 1 ? 's' : '' }}
+                  {{ balanceService.exchangeCount() }} exchange{{ balanceService.exchangeCount() !== 1 ? 's' : '' }} ·
+                  {{ balanceService.assetCount() }} activo{{ balanceService.assetCount() !== 1 ? 's' : '' }}
                 </span>
               }
             </a>
             <div class="quick-actions">
-              @if (loading()) {
+              @if (balanceService.loading()) {
                 @for (i of [1, 2, 3, 4, 5]; track i) {
                   <div class="quick-action skeleton">
                     <div class="skeleton-icon skeleton-pulse"></div>
@@ -283,60 +274,13 @@ interface ConsolidatedBalance {
   `]
 })
 export class DashboardContentComponent implements OnInit, OnDestroy {
-  private destroyRef = inject(DestroyRef);
-
-  loading = signal(true);
-  totalValue = signal(0);
-  exchangeCount = signal(0);
-  assetCount = signal(0);
-  private balanceData = signal<ConsolidatedBalance | null>(null);
-
-  constructor(
-    private api: ApiService,
-    private authService: AuthService,
-    private balanceSocket: BalanceSocketService
-  ) {
-    this.balanceSocket.balanceUpdated$
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((updatedBalance) => {
-        this.updateStats(updatedBalance);
-      });
-  }
+  constructor(public balanceService: ConsolidatedBalanceService) {}
 
   ngOnInit() {
-    const userId = this.authService.user()?.id;
-    if (userId) {
-      this.balanceSocket.connect(userId);
-    }
-    this.loadQuickStats();
+    this.balanceService.initialize();
   }
 
   ngOnDestroy() {
-    this.balanceSocket.disconnect();
-  }
-
-  hasExchanges(): boolean {
-    return this.exchangeCount() > 0;
-  }
-
-  private loadQuickStats(): void {
-    this.loading.set(true);
-
-    this.api.get<ConsolidatedBalance>('/balances').subscribe({
-      next: (data) => {
-        this.updateStats(data);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.loading.set(false);
-      }
-    });
-  }
-
-  private updateStats(data: ConsolidatedBalance): void {
-    this.balanceData.set(data);
-    this.totalValue.set(data.totalValueUsd || 0);
-    this.exchangeCount.set(data.byExchange?.length || 0);
-    this.assetCount.set(data.byAsset?.length || 0);
+    // Don't disconnect - service is shared across components
   }
 }

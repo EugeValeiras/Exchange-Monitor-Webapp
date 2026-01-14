@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal, ViewChild, AfterViewInit, effect, DestroyRef, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, ViewChild, AfterViewInit, effect, DestroyRef, inject, computed } from '@angular/core';
 import { CommonModule, CurrencyPipe, DecimalPipe } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -12,46 +12,15 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ApiService } from '../../core/services/api.service';
-import { AuthService } from '../../core/services/auth.service';
+import { ConsolidatedBalanceService, EnrichedAssetBalance } from '../../core/services/consolidated-balance.service';
 import { PriceSocketService } from '../../core/services/price-socket.service';
-import { BalanceSocketService } from '../../core/services/balance-socket.service';
 import { SettingsService } from '../../core/services/settings.service';
+import { ExchangeBalance } from '../../core/services/balance-socket.service';
 import { ExchangeLogoComponent } from '../../shared/components/exchange-logo/exchange-logo.component';
 import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-loader.component';
 
-interface AssetBalance {
-  asset: string;
-  free: number;
-  locked: number;
-  total: number;
-  priceUsd?: number;
-  valueUsd?: number;
-  exchanges?: string[];
-  exchangeBreakdown?: { exchange: string; total: number }[];
-  pricePair?: string; // e.g., "BTC/USDT" or "BTC/USD"
-  pricesByExchange?: { exchange: string; price: number; pair: string; change24h?: number }[];
-  isAveragePrice?: boolean;
-  change24h?: number;
-}
-
-interface ExchangeBalance {
-  exchange: string;
-  label: string;
-  credentialId: string;
-  balances: AssetBalance[];
-  totalValueUsd: number;
-}
-
-interface ConsolidatedBalance {
-  byAsset: AssetBalance[];
-  byExchange: ExchangeBalance[];
-  totalValueUsd: number;
-  lastUpdated: Date;
-  isCached?: boolean;
-  isSyncing?: boolean;
-}
+// Type alias for template compatibility
+type AssetBalance = EnrichedAssetBalance;
 
 @Component({
   selector: 'app-balances',
@@ -128,7 +97,7 @@ interface ConsolidatedBalance {
                 <mat-spinner diameter="14"></mat-spinner>
                 <span>Sincronizando balances...</span>
               </div>
-            } @else if (balances()?.isCached) {
+            } @else if (balanceService.balance()?.isCached) {
               <div class="sync-indicator cached">
                 <mat-icon>schedule</mat-icon>
                 <span>Datos en cache</span>
@@ -153,9 +122,9 @@ interface ConsolidatedBalance {
                 <span class="skeleton-text skeleton-pulse stat-value-skeleton"></span>
                 <span class="skeleton-text skeleton-pulse" style="width: 140px; height: 13px;"></span>
               } @else {
-                <span class="stat-value">{{ balances()?.totalValueUsd | currency:'USD':'symbol':'1.2-2' }}</span>
+                <span class="stat-value">{{ getTotalValueUsd() | currency:'USD':'symbol':'1.2-2' }}</span>
                 <span class="stat-hint">
-                  {{ balances()?.byExchange?.length || 0 }} exchange{{ (balances()?.byExchange?.length || 0) !== 1 ? 's' : '' }} ·
+                  {{ balanceService.exchangeCount() }} exchange{{ balanceService.exchangeCount() !== 1 ? 's' : '' }} ·
                   {{ dataSource.data.length }} activo{{ dataSource.data.length !== 1 ? 's' : '' }}
                 </span>
               }
@@ -1029,67 +998,51 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild(MatSort) sort!: MatSort;
   private destroyRef = inject(DestroyRef);
 
-  balances = signal<ConsolidatedBalance | null>(null);
-  loading = signal(true);
-  error = signal('');
-  isSyncing = signal(false);
-
+  // Local state for filtering
   displayedColumns = ['asset', 'exchanges', 'price', 'change24h', 'total', 'value'];
-  dataSource = new MatTableDataSource<AssetBalance>([]);
-  originalAssets: AssetBalance[] = [];
-  allAssets: AssetBalance[] = [];
-  originalTotalValueUsd = 0;
+  dataSource = new MatTableDataSource<EnrichedAssetBalance>([]);
   selectedExchanges = new Set<string>();
   showAllAssets = false;
   configuredAssets = new Set<string>();
 
+  // Computed filtered data
+  private _filteredTotalValueUsd = signal(0);
+  readonly filteredTotalValueUsd = this._filteredTotalValueUsd.asReadonly();
+
   constructor(
-    private api: ApiService,
-    private authService: AuthService,
+    public balanceService: ConsolidatedBalanceService,
     public priceSocket: PriceSocketService,
-    private balanceSocket: BalanceSocketService,
     private settingsService: SettingsService
   ) {
-    this.dataSource.filterPredicate = (data: AssetBalance, filter: string) => {
+    this.dataSource.filterPredicate = (data: EnrichedAssetBalance, filter: string) => {
       return data.asset.toLowerCase().includes(filter);
     };
 
+    // React to balance changes from centralized service
     effect(() => {
-      const socketPrices = this.priceSocket.prices();
-      this.updateTablePrices(socketPrices);
+      const balance = this.balanceService.balance();
+      if (balance) {
+        this.applyFilters();
+      }
     });
-
-    this.balanceSocket.balanceUpdated$
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((updatedBalance) => {
-        this.updateBalanceData(updatedBalance);
-        this.isSyncing.set(false);
-      });
   }
 
   ngOnInit() {
-    const userId = this.authService.user()?.id;
-    if (userId) {
-      this.balanceSocket.connect(userId);
-    }
-
+    this.balanceService.initialize();
     this.loadConfiguredAssets();
-    this.loadBalances();
-    this.priceSocket.connect();
   }
 
   private loadConfiguredAssets(): void {
     this.settingsService.loadAllSymbols().subscribe({
       next: (response: { symbolsByExchange: Record<string, string[]> }) => {
         this.configuredAssets.clear();
-        // Collect assets from all exchanges
         for (const symbols of Object.values(response.symbolsByExchange || {})) {
           for (const symbol of symbols) {
             const base = symbol.split('/')[0];
             this.configuredAssets.add(base);
           }
         }
-        this.applyExchangeFilter();
+        this.applyFilters();
       },
       error: (err: Error) => {
         console.error('Error loading configured assets:', err);
@@ -1098,148 +1051,39 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onShowAllToggle(): void {
-    this.applyExchangeFilter();
+    this.applyFilters();
   }
 
   ngAfterViewInit() {
     this.dataSource.sort = this.sort;
+    // Initial sort
+    setTimeout(() => {
+      if (this.sort) {
+        this.sort.sort({ id: 'value', start: 'desc', disableClear: false });
+      }
+    });
   }
 
   ngOnDestroy() {
-    this.priceSocket.disconnect();
-    this.balanceSocket.disconnect();
+    // Don't disconnect - service is shared
   }
 
-  private updateTablePrices(socketPrices: Map<string, { symbol: string; price: number }>): void {
-    if (!this.originalAssets.length || socketPrices.size === 0) return;
-
-    let hasUpdates = false;
-
-    this.originalAssets = this.originalAssets.map(asset => {
-      const priceResult = this.calculateAssetPrice(asset);
-      if (priceResult && (priceResult.price !== asset.priceUsd || priceResult.change24h !== asset.change24h)) {
-        hasUpdates = true;
-        return {
-          ...asset,
-          priceUsd: priceResult.price,
-          valueUsd: asset.total * priceResult.price,
-          pricePair: priceResult.pair,
-          pricesByExchange: priceResult.pricesByExchange,
-          isAveragePrice: priceResult.isAverage,
-          change24h: priceResult.change24h,
-        };
-      }
-      return asset;
-    });
-
-    this.allAssets = this.allAssets.map(asset => {
-      const priceResult = this.calculateAssetPrice(asset);
-      if (priceResult && (priceResult.price !== asset.priceUsd || priceResult.change24h !== asset.change24h)) {
-        return {
-          ...asset,
-          priceUsd: priceResult.price,
-          valueUsd: asset.total * priceResult.price,
-          pricePair: priceResult.pair,
-          pricesByExchange: priceResult.pricesByExchange,
-          isAveragePrice: priceResult.isAverage,
-          change24h: priceResult.change24h,
-        };
-      }
-      return asset;
-    });
-
-    if (hasUpdates) {
-      this.originalTotalValueUsd = this.originalAssets.reduce(
-        (sum, asset) => sum + (asset.valueUsd || 0), 0
-      );
-      this.applyExchangeFilter();
-    }
-  }
-
-  /**
-   * Calculate the price for an asset based on:
-   * 1. If 1 exchange is selected in filter and we have price from it → use it
-   * 2. If asset is in 1 exchange and we have that exchange's price → use it
-   * 3. If asset is in multiple exchanges → average
-   * 4. If asset is in 1 exchange but no price from that exchange → average of available
-   */
-  private calculateAssetPrice(asset: AssetBalance): { price: number; pair: string; pricesByExchange: { exchange: string; price: number; pair: string; change24h?: number }[]; isAverage: boolean; change24h?: number } | undefined {
-    const multiPrice = this.priceSocket.getMultiExchangePrice(asset.asset);
-    if (!multiPrice || multiPrice.prices.length === 0) {
-      // Fallback: try simple price lookup
-      const simplePrice = this.priceSocket.getPriceByAssetWithPair(asset.asset);
-      if (simplePrice) {
-        return {
-          price: simplePrice.price,
-          pair: simplePrice.pair,
-          pricesByExchange: [], // No exchange info available
-          isAverage: false,
-          change24h: undefined,
-        };
-      }
-      return undefined;
-    }
-
-    // Case: 1 exchange selected in filter and we have price from it
-    if (this.selectedExchanges.size === 1) {
-      const selectedExchange = Array.from(this.selectedExchanges)[0];
-      const matchingPrice = multiPrice.prices.find(p => p.exchange === selectedExchange);
-
-      if (matchingPrice) {
-        return {
-          price: matchingPrice.price,
-          pair: matchingPrice.pair,
-          pricesByExchange: [matchingPrice],
-          isAverage: false,
-          change24h: matchingPrice.change24h,
-        };
-      }
-      // No price from selected exchange, fall through to other logic
-    }
-
-    const assetExchanges = asset.exchanges || [];
-
-    // Case: Asset in only one exchange
-    if (assetExchanges.length === 1) {
-      const assetExchange = assetExchanges[0];
-      // Check if we have price from that specific exchange
-      const matchingPrice = multiPrice.prices.find(p => p.exchange === assetExchange);
-
-      if (matchingPrice) {
-        // Use the price from the exchange where the asset is held
-        return {
-          price: matchingPrice.price,
-          pair: matchingPrice.pair,
-          pricesByExchange: [matchingPrice],
-          isAverage: false,
-          change24h: matchingPrice.change24h,
-        };
-      }
-      // No price from that exchange, use average of available
-    }
-
-    // Case: Asset in multiple exchanges OR no price from specific exchange
-    // Use average of all available prices
-    return {
-      price: multiPrice.averagePrice,
-      pair: multiPrice.pair,
-      pricesByExchange: multiPrice.prices,
-      isAverage: multiPrice.prices.length > 1,
-      change24h: multiPrice.change24h,
-    };
-  }
+  loading = computed(() => this.balanceService.loading());
+  error = computed(() => this.balanceService.error());
+  isSyncing = computed(() => this.balanceService.isSyncing());
 
   hasExchanges(): boolean {
-    return (this.balances()?.byExchange?.length || 0) > 0;
+    return this.balanceService.hasExchanges();
   }
 
   getSortedExchanges(): ExchangeBalance[] {
-    const exchanges = this.balances()?.byExchange || [];
-    return [...exchanges].sort((a, b) => b.totalValueUsd - a.totalValueUsd);
+    const balance = this.balanceService.balance();
+    if (!balance) return [];
+    return [...balance.byExchange].sort((a, b) => b.totalValueUsd - a.totalValueUsd);
   }
 
-  getTopAssets(): AssetBalance[] {
-    return this.allAssets
+  getTopAssets(): EnrichedAssetBalance[] {
+    return this.dataSource.data
       .filter(a => (a.valueUsd || 0) > 0)
       .slice(0, 4);
   }
@@ -1250,46 +1094,7 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   loadBalances() {
-    this.loading.set(true);
-    this.error.set('');
-
-    this.api.get<ConsolidatedBalance>('/balances').subscribe({
-      next: (data) => {
-        this.updateBalanceData(data);
-        this.loading.set(false);
-
-        if (data.isCached) {
-          this.isSyncing.set(true);
-        }
-
-        const symbols = (data.byAsset || [])
-          .map(a => `${a.asset}/USDT`)
-          .filter(s => !s.startsWith('USDT/') && !s.startsWith('USD/'));
-        this.priceSocket.subscribe(symbols);
-
-        setTimeout(() => {
-          if (this.sort) {
-            this.sort.sort({ id: 'value', start: 'desc', disableClear: false });
-          }
-        });
-      },
-      error: (err) => {
-        this.error.set(err.error?.message || 'Error al cargar balances');
-        this.loading.set(false);
-      }
-    });
-  }
-
-  private updateBalanceData(data: ConsolidatedBalance): void {
-    this.balances.set(data);
-    const sortedAssets = [...(data.byAsset || [])].sort((a, b) =>
-      (b.valueUsd || 0) - (a.valueUsd || 0)
-    );
-    this.originalAssets = JSON.parse(JSON.stringify(sortedAssets));
-    this.allAssets = sortedAssets;
-    this.originalTotalValueUsd = data.totalValueUsd;
-    this.selectedExchanges.clear();
-    this.applyExchangeFilter();
+    this.balanceService.loadBalance();
   }
 
   toggleExchangeFilter(exchange: string): void {
@@ -1298,7 +1103,7 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
     } else {
       this.selectedExchanges.add(exchange);
     }
-    this.applyExchangeFilter();
+    this.applyFilters();
   }
 
   isExchangeSelected(exchange: string): boolean {
@@ -1309,52 +1114,34 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.selectedExchanges.size > 0;
   }
 
-  applyExchangeFilter(): void {
-    let assetsToProcess = [...this.originalAssets];
+  /**
+   * Apply local filters (exchange, configured assets) on top of centralized balance data
+   */
+  private applyFilters(): void {
+    const balance = this.balanceService.balance();
+    if (!balance) return;
 
+    let assetsToProcess = [...balance.byAsset];
+
+    // Filter by configured assets
     if (!this.showAllAssets && this.configuredAssets.size > 0) {
       assetsToProcess = assetsToProcess.filter(asset =>
         this.configuredAssets.has(asset.asset)
       );
     }
 
-    // Recalculate prices based on current filter
-    assetsToProcess = assetsToProcess.map(asset => {
-      const priceResult = this.calculateAssetPrice(asset);
-      if (priceResult) {
-        return {
-          ...asset,
-          priceUsd: priceResult.price,
-          valueUsd: asset.total * priceResult.price,
-          pricePair: priceResult.pair,
-          pricesByExchange: priceResult.pricesByExchange,
-          isAveragePrice: priceResult.isAverage,
-          change24h: priceResult.change24h,
-        };
-      }
-      return asset;
-    });
-
     // If no exchanges selected, show all
     if (this.selectedExchanges.size === 0) {
-      this.allAssets = assetsToProcess.sort((a, b) =>
+      const sortedAssets = assetsToProcess.sort((a, b) =>
         (b.valueUsd || 0) - (a.valueUsd || 0)
       );
-      this.dataSource.data = this.allAssets;
-
-      const currentTotal = this.allAssets.reduce(
-        (sum, asset) => sum + (asset.valueUsd || 0), 0
+      this.dataSource.data = sortedAssets;
+      this._filteredTotalValueUsd.set(
+        sortedAssets.reduce((sum, asset) => sum + (asset.valueUsd || 0), 0)
       );
-      const balanceData = this.balances();
-      if (balanceData) {
-        this.balances.set({
-          ...balanceData,
-          totalValueUsd: currentTotal,
-        });
-      }
     } else {
       // Filter to INCLUDE only selected exchanges
-      const filteredAssets: AssetBalance[] = [];
+      const filteredAssets: EnrichedAssetBalance[] = [];
 
       for (const asset of assetsToProcess) {
         const filteredBreakdown = asset.exchangeBreakdown?.filter(
@@ -1366,40 +1153,32 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
         }
 
         const filteredTotal = filteredBreakdown.reduce((sum, b) => sum + b.total, 0);
-        // Recalculate price for filtered asset
-        const priceResult = this.calculateAssetPrice({ ...asset, exchanges: filteredBreakdown.map(b => b.exchange) });
-        const priceUsd = priceResult?.price || asset.priceUsd || 0;
+        const priceUsd = asset.priceUsd || 0;
         const filteredValueUsd = filteredTotal * priceUsd;
 
         filteredAssets.push({
           ...asset,
           total: filteredTotal,
-          priceUsd: priceUsd,
           valueUsd: filteredValueUsd,
           exchanges: filteredBreakdown.map(b => b.exchange),
           exchangeBreakdown: filteredBreakdown,
-          pricesByExchange: priceResult?.pricesByExchange || asset.pricesByExchange,
-          isAveragePrice: priceResult?.isAverage,
-          change24h: priceResult?.change24h,
         });
       }
 
       filteredAssets.sort((a, b) => (b.valueUsd || 0) - (a.valueUsd || 0));
-
-      this.allAssets = filteredAssets;
       this.dataSource.data = filteredAssets;
-
-      const filteredTotal = filteredAssets.reduce(
-        (sum, asset) => sum + (asset.valueUsd || 0), 0
+      this._filteredTotalValueUsd.set(
+        filteredAssets.reduce((sum, asset) => sum + (asset.valueUsd || 0), 0)
       );
-      const balanceData = this.balances();
-      if (balanceData) {
-        this.balances.set({
-          ...balanceData,
-          totalValueUsd: filteredTotal,
-        });
-      }
     }
+  }
+
+  // Computed total value (filtered or unfiltered)
+  getTotalValueUsd(): number {
+    if (this.hasExchangeFilter() || (!this.showAllAssets && this.configuredAssets.size > 0)) {
+      return this.filteredTotalValueUsd();
+    }
+    return this.balanceService.totalValueUsd();
   }
 
   getExchangeTooltip(row: AssetBalance, exchange: string): string {
