@@ -156,11 +156,12 @@ body {
 
 // Buttons
 .mat-mdc-raised-button.mat-primary {
-  background-color: var(--brand-primary) !important;
-  color: white !important;
+  background-color: var(--brand-accent) !important;
+  color: var(--bg-primary) !important;
+  font-weight: 500 !important;
 
   &:hover:not([disabled]) {
-    background-color: var(--brand-primary-light) !important;
+    background-color: var(--brand-accent-light) !important;
   }
 }
 
@@ -179,10 +180,16 @@ body {
     --mdc-outlined-text-field-outline-color: var(--border-color);
     --mdc-outlined-text-field-hover-outline-color: var(--border-light);
     --mdc-outlined-text-field-focus-outline-color: var(--brand-accent);
+    --mdc-outlined-text-field-focus-label-text-color: var(--brand-accent);
     --mdc-outlined-text-field-label-text-color: var(--text-secondary);
     --mdc-outlined-text-field-input-text-color: var(--text-primary);
     --mdc-outlined-text-field-caret-color: var(--brand-accent);
   }
+}
+
+// Fix floating label color when focused
+.mat-mdc-form-field.mat-focused .mdc-floating-label {
+  color: var(--brand-accent) !important;
 }
 
 // Override browser autofill styles
@@ -238,7 +245,7 @@ select:-webkit-autofill:active {
   }
 
   &.active {
-    background-color: rgba(18, 37, 98, 0.3) !important;
+    background-color: rgba(0, 188, 212, 0.12) !important;
     color: var(--text-primary) !important;
 
     .mat-icon {
@@ -332,6 +339,14 @@ select:-webkit-autofill:active {
 // Select
 .mat-mdc-select {
   color: var(--text-primary);
+
+  .mat-mdc-select-arrow {
+    color: var(--text-secondary) !important;
+  }
+}
+
+.mat-mdc-form-field.mat-focused .mat-mdc-select-arrow {
+  color: var(--brand-accent) !important;
 }
 
 .mat-mdc-select-panel {
@@ -347,7 +362,29 @@ select:-webkit-autofill:active {
   }
 
   &.mdc-list-item--selected {
-    background-color: rgba(18, 37, 98, 0.3) !important;
+    background-color: rgba(0, 188, 212, 0.15) !important;
+
+    .mdc-list-item__primary-text {
+      color: var(--brand-accent) !important;
+    }
+
+    .mat-pseudo-checkbox-checked {
+      background-color: transparent !important;
+      color: white !important;
+
+      &::after {
+        border-color: white !important;
+      }
+    }
+
+    mat-icon {
+      color: var(--brand-accent) !important;
+    }
+  }
+
+  // Checkmark icon for single select
+  .mat-mdc-option-pseudo-checkbox {
+    display: none !important;
   }
 }
 

@@ -18,6 +18,7 @@ import { SettingsService } from '../../core/services/settings.service';
 import { ExchangeBalance } from '../../core/services/balance-socket.service';
 import { ExchangeLogoComponent } from '../../shared/components/exchange-logo/exchange-logo.component';
 import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-loader.component';
+import { FlipNumberComponent } from '../../shared/components/flip-number/flip-number.component';
 
 // Type alias for template compatibility
 type AssetBalance = EnrichedAssetBalance;
@@ -42,7 +43,8 @@ type AssetBalance = EnrichedAssetBalance;
     MatTooltipModule,
     MatSlideToggleModule,
     ExchangeLogoComponent,
-    LogoLoaderComponent
+    LogoLoaderComponent,
+    FlipNumberComponent
   ],
   template: `
     <div class="balances-content">
@@ -122,7 +124,9 @@ type AssetBalance = EnrichedAssetBalance;
                 <span class="skeleton-text skeleton-pulse stat-value-skeleton"></span>
                 <span class="skeleton-text skeleton-pulse" style="width: 140px; height: 13px;"></span>
               } @else {
-                <span class="stat-value">{{ getTotalValueUsd() | currency:'USD':'symbol':'1.2-2' }}</span>
+                <span class="stat-value">
+                  <app-flip-number [value]="getTotalValueUsd()" format="currency" [decimals]="2" size="large"></app-flip-number>
+                </span>
                 @if (balanceService.change24h() !== null) {
                   <div class="stat-change" [class.positive]="balanceService.change24h()! >= 0" [class.negative]="balanceService.change24h()! < 0">
                     <span class="change-value">

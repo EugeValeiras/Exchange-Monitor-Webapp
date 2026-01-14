@@ -10,6 +10,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { CredentialsService, ExchangeCredential, ExchangeType } from '../../core/services/credentials.service';
 import { CredentialDialogComponent } from './credential-dialog.component';
+import { ImportDialogComponent } from './import-dialog.component';
 import { ExchangeLogoComponent } from '../../shared/components/exchange-logo/exchange-logo.component';
 import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-loader.component';
 
@@ -149,6 +150,15 @@ import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-lo
                         <mat-icon>wifi_tethering</mat-icon>
                       }
                     </button>
+                    @if (credential.exchange === 'binance') {
+                      <button
+                        mat-icon-button
+                        class="action-btn import"
+                        (click)="openImportDialog(credential)"
+                        matTooltip="Importar Excel">
+                        <mat-icon>upload_file</mat-icon>
+                      </button>
+                    }
                   }
                 </div>
                 <div class="actions-right">
@@ -616,6 +626,22 @@ export class CredentialsComponent implements OnInit {
       error: (err) => {
         this.syncingId = null;
         this.showError(err.error?.message || 'Error al sincronizar');
+      }
+    });
+  }
+
+  openImportDialog(credential: ExchangeCredential): void {
+    const dialogRef = this.dialog.open(ImportDialogComponent, {
+      width: '520px',
+      data: {
+        credentialId: credential.id,
+        exchange: credential.exchange
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && result.imported > 0) {
+        this.showSuccess(`Importación completada: ${result.imported} transacciones`);
       }
     });
   }

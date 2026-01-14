@@ -44,10 +44,11 @@ export class ConsolidatedBalanceService implements OnDestroy {
     const raw = this._rawBalance();
     if (!raw) return null;
 
-    // Trigger recalculation when prices change
-    const prices = this.priceSocket.prices();
+    // Get current prices - this creates the reactive dependency
+    const pricesMap = this.priceSocket.prices();
 
-    const enrichedAssets = this.enrichAssetsWithPrices(raw.byAsset);
+    // Pass prices explicitly to ensure Angular detects the dependency
+    const enrichedAssets = this.enrichAssetsWithPrices(raw.byAsset, pricesMap);
     const totalValueUsd = enrichedAssets.reduce((sum, a) => sum + (a.valueUsd || 0), 0);
 
     // Also update exchange totals based on new prices
@@ -201,9 +202,9 @@ export class ConsolidatedBalanceService implements OnDestroy {
   /**
    * Enrich assets with real-time prices
    */
-  private enrichAssetsWithPrices(assets: AssetBalance[]): EnrichedAssetBalance[] {
+  private enrichAssetsWithPrices(assets: AssetBalance[], pricesMap: Map<string, any>): EnrichedAssetBalance[] {
     return assets.map((asset) => {
-      const priceResult = this.calculateAssetPrice(asset);
+      const priceResult = this.calculateAssetPrice(asset, pricesMap);
 
       if (priceResult) {
         return {
@@ -224,54 +225,70 @@ export class ConsolidatedBalanceService implements OnDestroy {
   /**
    * Calculate the price for an asset using multi-exchange logic
    */
-  private calculateAssetPrice(asset: AssetBalance): {
+  private calculateAssetPrice(asset: AssetBalance, pricesMap: Map<string, any>): {
     price: number;
     pair: string;
     pricesByExchange: { exchange: string; price: number; pair: string; change24h?: number }[];
     isAverage: boolean;
     change24h?: number;
   } | undefined {
-    const multiPrice = this.priceSocket.getMultiExchangePrice(asset.asset);
-    if (!multiPrice || multiPrice.prices.length === 0) {
-      // Fallback: try simple price lookup
-      const simplePrice = this.priceSocket.getPriceByAssetWithPair(asset.asset);
-      if (simplePrice) {
-        return {
-          price: simplePrice.price,
-          pair: simplePrice.pair,
-          pricesByExchange: [],
-          isAverage: false,
-          change24h: undefined,
-        };
-      }
+    // Try to get price from the map directly first
+    const usdtPair = `${asset.asset}/USDT`;
+    const usdPair = `${asset.asset}/USD`;
+
+    const priceData = pricesMap.get(usdtPair) || pricesMap.get(usdPair);
+
+    if (!priceData) {
       return undefined;
     }
 
+    const pair = pricesMap.has(usdtPair) ? usdtPair : usdPair;
     const assetExchanges = asset.exchanges || [];
 
-    // Case: Asset in only one exchange - use that exchange's price if available
-    if (assetExchanges.length === 1) {
-      const assetExchange = assetExchanges[0];
-      const matchingPrice = multiPrice.prices.find((p) => p.exchange === assetExchange);
+    // If we have exchange breakdown in the price data
+    if (priceData.prices && priceData.prices.length > 0) {
+      // Case: Asset in only one exchange - use that exchange's price if available
+      if (assetExchanges.length === 1) {
+        const assetExchange = assetExchanges[0];
+        const matchingPrice = priceData.prices.find((p: any) => p.exchange === assetExchange);
 
-      if (matchingPrice) {
-        return {
-          price: matchingPrice.price,
-          pair: matchingPrice.pair,
-          pricesByExchange: [matchingPrice],
-          isAverage: false,
-          change24h: matchingPrice.change24h,
-        };
+        if (matchingPrice) {
+          return {
+            price: matchingPrice.price,
+            pair,
+            pricesByExchange: [matchingPrice],
+            isAverage: false,
+            change24h: matchingPrice.change24h,
+          };
+        }
       }
+
+      // Case: Asset in multiple exchanges - calculate average
+      const total = priceData.prices.reduce((sum: number, p: any) => sum + p.price, 0);
+      const averagePrice = total / priceData.prices.length;
+
+      // Calculate average change24h
+      const pricesWithChange = priceData.prices.filter((p: any) => p.change24h !== undefined);
+      const avgChange24h = pricesWithChange.length > 0
+        ? pricesWithChange.reduce((sum: number, p: any) => sum + (p.change24h || 0), 0) / pricesWithChange.length
+        : priceData.change24h;
+
+      return {
+        price: averagePrice,
+        pair,
+        pricesByExchange: priceData.prices,
+        isAverage: priceData.prices.length > 1,
+        change24h: avgChange24h,
+      };
     }
 
-    // Case: Asset in multiple exchanges or no specific price - use average
+    // Simple price without exchange breakdown
     return {
-      price: multiPrice.averagePrice,
-      pair: multiPrice.pair,
-      pricesByExchange: multiPrice.prices,
-      isAverage: multiPrice.prices.length > 1,
-      change24h: multiPrice.change24h,
+      price: priceData.price,
+      pair,
+      pricesByExchange: priceData.source ? [{ exchange: priceData.source, price: priceData.price, pair, change24h: priceData.change24h }] : [],
+      isAverage: false,
+      change24h: priceData.change24h,
     };
   }
 

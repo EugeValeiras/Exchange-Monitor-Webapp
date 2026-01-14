@@ -9,6 +9,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ExchangeType, ExchangeCredential, CredentialsService } from '../../core/services/credentials.service';
+import { ExchangeLogoComponent } from '../../shared/components/exchange-logo/exchange-logo.component';
 
 export interface CredentialDialogData {
   credential?: ExchangeCredential;
@@ -26,7 +27,8 @@ export interface CredentialDialogData {
     MatSelectModule,
     MatButtonModule,
     MatIconModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    ExchangeLogoComponent
   ],
   template: `
     <h2 mat-dialog-title>{{ isEditing ? 'Editar Exchange' : 'Agregar Exchange' }}</h2>
@@ -36,10 +38,20 @@ export interface CredentialDialogData {
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Exchange</mat-label>
           <mat-select formControlName="exchange" [disabled]="isEditing">
+            <mat-select-trigger>
+              @if (form.get('exchange')?.value) {
+                <div class="selected-exchange">
+                  <app-exchange-logo [exchange]="form.get('exchange')?.value" [size]="24"></app-exchange-logo>
+                  <span>{{ getExchangeLabel(form.get('exchange')?.value) }}</span>
+                </div>
+              }
+            </mat-select-trigger>
             @for (exchange of exchanges; track exchange.value) {
               <mat-option [value]="exchange.value">
-                <mat-icon>{{ exchange.icon }}</mat-icon>
-                {{ exchange.label }}
+                <div class="exchange-option">
+                  <app-exchange-logo [exchange]="exchange.value" [size]="28"></app-exchange-logo>
+                  <span>{{ exchange.label }}</span>
+                </div>
               </mat-option>
             }
           </mat-select>
@@ -140,9 +152,25 @@ export interface CredentialDialogData {
       max-height: 70vh;
     }
 
-    mat-option mat-icon {
-      margin-right: 8px;
-      vertical-align: middle;
+    .selected-exchange {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .exchange-option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 4px 0;
+    }
+
+    .exchange-option span {
+      font-size: 14px;
+    }
+
+    ::ng-deep .mat-mdc-option {
+      min-height: 48px !important;
     }
 
     .nexo-manual-info {
@@ -176,10 +204,10 @@ export class CredentialDialogComponent {
   hidePassphrase = true;
 
   exchanges = [
-    { value: ExchangeType.BINANCE, label: 'Binance', icon: 'currency_bitcoin' },
-    { value: ExchangeType.KRAKEN, label: 'Kraken', icon: 'waves' },
-    { value: ExchangeType.NEXO_PRO, label: 'Nexo Pro', icon: 'account_balance' },
-    { value: ExchangeType.NEXO_MANUAL, label: 'Nexo Manual (CSV)', icon: 'upload_file' }
+    { value: ExchangeType.BINANCE, label: 'Binance' },
+    { value: ExchangeType.KRAKEN, label: 'Kraken' },
+    { value: ExchangeType.NEXO_PRO, label: 'Nexo Pro' },
+    { value: ExchangeType.NEXO_MANUAL, label: 'Nexo Manual (CSV)' }
   ];
 
   constructor(
@@ -227,6 +255,11 @@ export class CredentialDialogComponent {
 
   get showApiFields(): boolean {
     return !this.isNexoManual;
+  }
+
+  getExchangeLabel(value: string): string {
+    const exchange = this.exchanges.find(e => e.value === value);
+    return exchange?.label || value;
   }
 
   onCancel(): void {

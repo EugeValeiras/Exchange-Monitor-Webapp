@@ -56,6 +56,9 @@ export class PriceSocketService implements OnDestroy {
   // Persistent cache for exchange prices (never cleared)
   private exchangePricesCache = new Map<string, Map<string, ExchangePrice>>();
 
+  // Track subscribed symbols for re-subscription on reconnect
+  private subscribedSymbols = new Set<string>();
+
   // Public readonly signals
   readonly prices = this._prices.asReadonly();
   readonly connectionStatus = this._connectionStatus.asReadonly();
@@ -142,6 +145,13 @@ export class PriceSocketService implements OnDestroy {
     this.socket.on('connect', () => {
       console.log('[PriceSocket] Connected');
       this._connectionStatus.update((s) => ({ ...s, connected: true }));
+
+      // Re-subscribe to symbols on connect/reconnect
+      if (this.subscribedSymbols.size > 0) {
+        const symbols = Array.from(this.subscribedSymbols);
+        console.log('[PriceSocket] Re-subscribing to', symbols.length, 'symbols');
+        this.socket?.emit('subscribe', symbols);
+      }
     });
 
     this.socket.on('disconnect', () => {
@@ -218,14 +228,26 @@ export class PriceSocketService implements OnDestroy {
   }
 
   subscribe(symbols: string[]): void {
-    if (this.socket?.connected && symbols.length > 0) {
-      console.log('[PriceSocket] Subscribing to:', symbols);
+    if (symbols.length === 0) return;
+
+    // Always track symbols for re-subscription on reconnect
+    symbols.forEach(s => this.subscribedSymbols.add(s));
+
+    if (this.socket?.connected) {
+      console.log('[PriceSocket] Subscribing to:', symbols.length, 'symbols');
       this.socket.emit('subscribe', symbols);
+    } else {
+      console.log('[PriceSocket] Socket not connected, queued', symbols.length, 'symbols for subscription');
     }
   }
 
   unsubscribe(symbols: string[]): void {
-    if (this.socket?.connected && symbols.length > 0) {
+    if (symbols.length === 0) return;
+
+    // Remove from tracked symbols
+    symbols.forEach(s => this.subscribedSymbols.delete(s));
+
+    if (this.socket?.connected) {
       this.socket.emit('unsubscribe', symbols);
     }
   }

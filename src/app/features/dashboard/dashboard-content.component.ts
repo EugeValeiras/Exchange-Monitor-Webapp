@@ -9,6 +9,7 @@ import { RouterLink } from '@angular/router';
 import { ConsolidatedBalanceService } from '../../core/services/consolidated-balance.service';
 import { BalanceChartComponent } from './components/balance-chart.component';
 import { PnlSummaryComponent } from './components/pnl-summary.component';
+import { FlipNumberComponent } from '../../shared/components/flip-number/flip-number.component';
 
 @Component({
   selector: 'app-dashboard-content',
@@ -23,7 +24,8 @@ import { PnlSummaryComponent } from './components/pnl-summary.component';
     MatProgressSpinnerModule,
     MatTooltipModule,
     BalanceChartComponent,
-    PnlSummaryComponent
+    PnlSummaryComponent,
+    FlipNumberComponent
   ],
   template: `
     <div class="dashboard-content">
@@ -56,7 +58,9 @@ import { PnlSummaryComponent } from './components/pnl-summary.component';
                 <span class="skeleton-text skeleton-pulse stat-value-skeleton"></span>
                 <span class="skeleton-text skeleton-pulse" style="width: 140px; height: 13px;"></span>
               } @else {
-                <span class="stat-value">{{ balanceService.totalValueUsd() | currency:'USD':'symbol':'1.2-2' }}</span>
+                <span class="stat-value">
+                  <app-flip-number [value]="balanceService.totalValueUsd()" format="currency" [decimals]="2" size="large"></app-flip-number>
+                </span>
                 @if (balanceService.change24h() !== null) {
                   <div class="stat-change" [class.positive]="balanceService.change24h()! >= 0" [class.negative]="balanceService.change24h()! < 0">
                     <span class="change-value">
