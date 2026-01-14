@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-label="USD coin">
+  <defs>
+    <!-- Soft drop shadow -->
+    <filter id="fShadow" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB">
+      <feOffset dy="3"/>
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0
+                                                     0 0 0 0 0
+                                                     0 0 0 0 0
+                                                     0 0 0 .28 0" result="shadow"/>
+      <feMerge>
+        <feMergeNode in="shadow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Inner shadow for depth (very subtle) -->
+    <filter id="fInner" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB">
+      <feOffset dx="0" dy="1"/>
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feComposite in="blur" in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1" result="inner"/>
+      <feColorMatrix in="inner" type="matrix" values="0 0 0 0 0
+                                                     0 0 0 0 0
+                                                     0 0 0 0 0
+                                                     0 0 0 .18 0"/>
+      <feComposite in2="SourceGraphic" operator="over"/>
+    </filter>
+
+    <!-- Flag colors -->
+    <linearGradient id="gStripeRed" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#D32F2F"/>
+      <stop offset="100%" stop-color="#B71C1C"/>
+    </linearGradient>
+    <linearGradient id="gStripeWhite" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#F3F4F6"/>
+    </linearGradient>
+    <linearGradient id="gCanton" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1E3A8A"/>
+      <stop offset="100%" stop-color="#0B1F4A"/>
+    </linearGradient>
+
+    <!-- Clip for the circle -->
+    <clipPath id="clipCoin">
+      <circle cx="64" cy="64" r="54"/>
+    </clipPath>
+
+    <!-- Gloss highlight overlay -->
+    <linearGradient id="gHighlight" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.45"/>
+      <stop offset="60%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Coin (flag face only) -->
+  <g filter="url(#fShadow)" clip-path="url(#clipCoin)">
+    <!-- Base background (white) -->
+    <rect x="10" y="10" width="108" height="108" fill="url(#gStripeWhite)" filter="url(#fInner)"/>
+
+    <!-- 13 stripes across full circle bounding box -->
+    <!-- Height = 108 / 13 ≈ 8.3077 -->
+    <g filter="url(#fInner)">
+      <rect x="10" y="10" width="108" height="8.31" fill="url(#gStripeRed)"/>
+      <rect x="10" y="26.62" width="108" height="8.31" fill="url(#gStripeRed)"/>
+      <rect x="10" y="43.23" width="108" height="8.31" fill="url(#gStripeRed)"/>
+      <rect x="10" y="59.85" width="108" height="8.31" fill="url(#gStripeRed)"/>
+      <rect x="10" y="76.46" width="108" height="8.31" fill="url(#gStripeRed)"/>
+      <rect x="10" y="93.08" width="108" height="8.31" fill="url(#gStripeRed)"/>
+      <rect x="10" y="109.69" width="108" height="8.31" fill="url(#gStripeRed)"/>
+    </g>
+
+    <!-- Canton (top-left) scaled relative to circle box -->
+    <rect x="10" y="10" width="56" height="44" rx="3" fill="url(#gCanton)" filter="url(#fInner)"/>
+
+    <!-- Simplified stars (dots) -->
+    <g fill="rgba(255,255,255,0.92)">
+      <circle cx="18" cy="18" r="1.6"/>
+      <circle cx="27" cy="18" r="1.6"/>
+      <circle cx="36" cy="18" r="1.6"/>
+      <circle cx="45" cy="18" r="1.6"/>
+      <circle cx="54" cy="18" r="1.6"/>
+      <circle cx="63" cy="18" r="1.6"/>
+
+      <circle cx="22.5" cy="26" r="1.35"/>
+      <circle cx="31.5" cy="26" r="1.35"/>
+      <circle cx="40.5" cy="26" r="1.35"/>
+      <circle cx="49.5" cy="26" r="1.35"/>
+      <circle cx="58.5" cy="26" r="1.35"/>
+
+      <circle cx="18" cy="34" r="1.6"/>
+      <circle cx="27" cy="34" r="1.6"/>
+      <circle cx="36" cy="34" r="1.6"/>
+      <circle cx="45" cy="34" r="1.6"/>
+      <circle cx="54" cy="34" r="1.6"/>
+      <circle cx="63" cy="34" r="1.6"/>
+
+      <circle cx="22.5" cy="42" r="1.35"/>
+      <circle cx="31.5" cy="42" r="1.35"/>
+      <circle cx="40.5" cy="42" r="1.35"/>
+      <circle cx="49.5" cy="42" r="1.35"/>
+      <circle cx="58.5" cy="42" r="1.35"/>
+
+      <circle cx="18" cy="50" r="1.6"/>
+      <circle cx="27" cy="50" r="1.6"/>
+      <circle cx="36" cy="50" r="1.6"/>
+      <circle cx="45" cy="50" r="1.6"/>
+      <circle cx="54" cy="50" r="1.6"/>
+      <circle cx="63" cy="50" r="1.6"/>
+    </g>
+
+    <!-- Gloss highlight -->
+    <path d="M18 55c12-22 40-34 68-29 12 2 22 7 30 15-9-4-19-6-30-6-26 0-48 12-62 30-3 4-5 8-6 12-2-7-2-14 0-22z" fill="url(#gHighlight)" opacity="0.55"/>
+  </g>
+
+  <!-- Subtle outline (no grey rim) -->
+  <circle cx="64" cy="64" r="54" fill="none" stroke="rgba(0,0,0,0.18)" stroke-width="2"/>
+  <circle cx="64" cy="64" r="53" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="1"/>
+</svg>
