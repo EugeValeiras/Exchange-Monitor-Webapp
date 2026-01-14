@@ -154,16 +154,6 @@ interface QuoteStat {
 
       <!-- Prices Table -->
       <div class="section">
-        <div class="section-header">
-          <h2>Precios en Tiempo Real</h2>
-          <div class="section-actions">
-            <mat-form-field appearance="outline" class="filter-field">
-              <mat-icon matPrefix>search</mat-icon>
-              <input matInput (keyup)="applyTextFilter($event)" placeholder="Buscar par...">
-            </mat-form-field>
-          </div>
-        </div>
-
         @if (pricesCount() === 0) {
           <div class="empty-state">
             <mat-icon>show_chart</mat-icon>

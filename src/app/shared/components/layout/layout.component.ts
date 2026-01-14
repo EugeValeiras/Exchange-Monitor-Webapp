@@ -102,10 +102,12 @@ interface NavItem {
 
     .sidebar {
       width: 240px;
+      min-width: 240px;
       background: #181a20;
       display: flex;
       flex-direction: column;
       border-right: 1px solid var(--border-color);
+      overflow-x: hidden;
     }
 
     .sidebar-header {
@@ -134,6 +136,7 @@ interface NavItem {
       flex: 1;
       padding: 0 12px;
       overflow-y: auto;
+      overflow-x: hidden;
     }
 
     .nav-group {
@@ -359,6 +362,7 @@ export class LayoutComponent {
     const path = window.location.pathname;
     const titles: Record<string, string> = {
       '/dashboard': 'Dashboard',
+      '/prices': 'Precios en Tiempo Real',
       '/balances': 'Balances',
       '/transactions': 'Transacciones',
       '/exchanges': 'Exchanges',

@@ -149,10 +149,6 @@ type AssetBalance = EnrichedAssetBalance;
 
         <!-- Exchanges Summary -->
         <div class="section">
-          <div class="section-header">
-            <h2>Por Exchange</h2>
-          </div>
-
           <div class="exchanges-grid">
             @if (loading()) {
               @for (i of [1, 2]; track i) {
@@ -198,10 +194,6 @@ type AssetBalance = EnrichedAssetBalance;
 
         <!-- Top Assets -->
         <div class="section">
-          <div class="section-header">
-            <h2>Top Activos</h2>
-          </div>
-
           <div class="top-assets-grid">
             @if (loading()) {
               @for (i of [1, 2, 3, 4]; track i) {
@@ -233,9 +225,8 @@ type AssetBalance = EnrichedAssetBalance;
 
         <!-- Assets Table -->
         <div class="section">
-          <div class="section-header">
-            <h2>Balances por Activo</h2>
-            @if (!loading()) {
+          @if (!loading()) {
+            <div class="section-header">
               <div class="section-actions">
                 <mat-slide-toggle
                   [(ngModel)]="showAllAssets"
@@ -247,8 +238,8 @@ type AssetBalance = EnrichedAssetBalance;
                   <mat-icon>refresh</mat-icon>
                 </button>
               </div>
-            }
-          </div>
+            </div>
+          }
 
           <div class="table-container">
             @if (loading()) {
@@ -653,7 +644,7 @@ type AssetBalance = EnrichedAssetBalance;
 
     .section-header {
       display: flex;
-      justify-content: space-between;
+      justify-content: flex-start;
       align-items: center;
       margin-bottom: 16px;
       flex-wrap: wrap;

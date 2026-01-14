@@ -69,11 +69,6 @@ import {
           <div class="chart-skeleton">
             <div class="chart-skeleton-area skeleton-pulse"></div>
           </div>
-          <div class="chart-summary skeleton-summary">
-            <span class="skeleton-text skeleton-pulse" style="width: 100px; height: 20px;"></span>
-            <span class="skeleton-text skeleton-pulse" style="width: 70px; height: 16px;"></span>
-            <span class="skeleton-text skeleton-pulse" style="width: 120px; height: 14px; margin-left: auto;"></span>
-          </div>
         } @else if (hasData()) {
           <div class="chart-container">
             <canvas
@@ -82,15 +77,6 @@ import {
               [options]="chartOptions"
               [type]="'line'">
             </canvas>
-          </div>
-          <div class="chart-summary" [class.positive]="changeUsd() >= 0" [class.negative]="changeUsd() < 0">
-            <span class="change-value">
-              {{ changeUsd() >= 0 ? '+' : '' }}{{ changeUsd() | currency:'USD':'symbol':'1.2-2' }}
-            </span>
-            <span class="change-percent">
-              ({{ changePercent() >= 0 ? '+' : '' }}{{ changePercent() | number:'1.2-2' }}%)
-            </span>
-            <span class="timeframe-label">{{ getTimeframeLabel() }}</span>
           </div>
         } @else {
           <div class="empty-container">
