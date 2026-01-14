@@ -320,6 +320,7 @@ export class LayoutComponent {
 
   navItems: NavItem[] = [
     { label: 'Dashboard', icon: 'space_dashboard', route: '/dashboard' },
+    { label: 'Precios', icon: 'show_chart', route: '/prices' },
     { label: 'Balances', icon: 'account_balance_wallet', route: '/balances' },
     { label: 'Transacciones', icon: 'swap_horiz', route: '/transactions' },
     { label: 'Exchanges', icon: 'currency_exchange', route: '/exchanges' },

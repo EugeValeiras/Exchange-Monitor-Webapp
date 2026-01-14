@@ -30,6 +30,7 @@ interface AssetBalance {
   valueUsd?: number;
   exchanges?: string[];
   exchangeBreakdown?: { exchange: string; total: number }[];
+  pricePair?: string; // e.g., "BTC/USDT" or "BTC/USD"
 }
 
 interface ExchangeBalance {
@@ -138,7 +139,7 @@ interface ConsolidatedBalance {
                 <mat-icon>trending_up</mat-icon>
               </div>
               <span class="stat-value">{{ balances()?.totalValueUsd | currency:'USD':'symbol':'1.2-2' }}</span>
-              <span class="stat-hint">Valor consolidado en USD</span>
+              <span class="stat-hint">Valor consolidado en USDT</span>
             </div>
           </div>
 
@@ -173,7 +174,7 @@ interface ConsolidatedBalance {
             </div>
 
             <div class="exchanges-grid">
-              @for (exchange of balances()?.byExchange; track exchange.credentialId) {
+              @for (exchange of getSortedExchanges(); track exchange.credentialId) {
                 <div
                   class="exchange-card"
                   [class.selected]="isExchangeSelected(exchange.exchange)"
@@ -193,6 +194,30 @@ interface ConsolidatedBalance {
                   </div>
                   <div class="exchange-assets">
                     {{ exchange.balances.length }} activos
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Top Assets -->
+        @if (getTopAssets().length > 0) {
+          <div class="section">
+            <div class="section-header">
+              <h2>Top Activos</h2>
+            </div>
+
+            <div class="top-assets-grid">
+              @for (asset of getTopAssets(); track asset.asset) {
+                <div class="top-asset-card">
+                  <img [src]="getAssetLogo(asset.asset)" [alt]="asset.asset" class="top-asset-logo" (error)="onLogoError($event, asset.asset)">
+                  <div class="top-asset-info">
+                    <span class="top-asset-name">{{ asset.asset }}</span>
+                    <span class="top-asset-amount">{{ asset.total | number:'1.4-8' }}</span>
+                  </div>
+                  <div class="top-asset-value">
+                    {{ asset.valueUsd | currency:'USD':'symbol':'1.2-2' }}
                   </div>
                 </div>
               }
@@ -253,7 +278,12 @@ interface ConsolidatedBalance {
                 <ng-container matColumnDef="price">
                   <th mat-header-cell *matHeaderCellDef mat-sort-header="priceUsd">Precio</th>
                   <td mat-cell *matCellDef="let row">
-                    <span class="price-cell">{{ row.priceUsd | currency:'USD':'symbol':'1.2-4' }}</span>
+                    <span class="price-cell">
+                      {{ row.priceUsd | currency:'USD':'symbol':'1.2-4' }}
+                      @if (row.pricePair && row.pricePair.endsWith('/USD')) {
+                        <mat-icon class="usd-indicator" [matTooltip]="'Precio en USD (' + row.pricePair + ')'" matTooltipPosition="above">info_outline</mat-icon>
+                      }
+                    </span>
                   </td>
                 </ng-container>
 
@@ -608,6 +638,17 @@ interface ConsolidatedBalance {
     .price-cell {
       font-weight: 700;
       color: var(--text-primary);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .usd-indicator {
+      font-size: 14px;
+      width: 14px;
+      height: 14px;
+      color: var(--text-tertiary);
+      cursor: help;
     }
 
     .quantity-cell {
@@ -689,6 +730,66 @@ interface ConsolidatedBalance {
       font-size: 13px;
       color: var(--text-tertiary);
     }
+
+    .top-assets-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    @media (max-width: 1200px) {
+      .top-assets-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .top-assets-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .top-asset-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .top-asset-logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: contain;
+    }
+
+    .top-asset-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .top-asset-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .top-asset-amount {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+    }
+
+    .top-asset-value {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
   `]
 })
 export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -745,16 +846,19 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private loadConfiguredAssets(): void {
-    this.settingsService.loadSymbols().subscribe({
-      next: (response) => {
+    this.settingsService.loadAllSymbols().subscribe({
+      next: (response: { symbolsByExchange: Record<string, string[]> }) => {
         this.configuredAssets.clear();
-        for (const symbol of response.symbols) {
-          const base = symbol.split('/')[0];
-          this.configuredAssets.add(base);
+        // Collect assets from all exchanges
+        for (const symbols of Object.values(response.symbolsByExchange || {})) {
+          for (const symbol of symbols) {
+            const base = symbol.split('/')[0];
+            this.configuredAssets.add(base);
+          }
         }
         this.applyExchangeFilter();
       },
-      error: (err) => {
+      error: (err: Error) => {
         console.error('Error loading configured assets:', err);
       }
     });
@@ -779,25 +883,27 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
     let hasUpdates = false;
 
     this.originalAssets = this.originalAssets.map(asset => {
-      const wsPrice = this.priceSocket.getPriceByAsset(asset.asset);
-      if (wsPrice && wsPrice !== asset.priceUsd) {
+      const priceResult = this.priceSocket.getPriceByAssetWithPair(asset.asset);
+      if (priceResult && priceResult.price !== asset.priceUsd) {
         hasUpdates = true;
         return {
           ...asset,
-          priceUsd: wsPrice,
-          valueUsd: asset.total * wsPrice,
+          priceUsd: priceResult.price,
+          valueUsd: asset.total * priceResult.price,
+          pricePair: priceResult.pair,
         };
       }
       return asset;
     });
 
     this.allAssets = this.allAssets.map(asset => {
-      const wsPrice = this.priceSocket.getPriceByAsset(asset.asset);
-      if (wsPrice && wsPrice !== asset.priceUsd) {
+      const priceResult = this.priceSocket.getPriceByAssetWithPair(asset.asset);
+      if (priceResult && priceResult.price !== asset.priceUsd) {
         return {
           ...asset,
-          priceUsd: wsPrice,
-          valueUsd: asset.total * wsPrice,
+          priceUsd: priceResult.price,
+          valueUsd: asset.total * priceResult.price,
+          pricePair: priceResult.pair,
         };
       }
       return asset;
@@ -813,6 +919,17 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
 
   hasExchanges(): boolean {
     return (this.balances()?.byExchange?.length || 0) > 0;
+  }
+
+  getSortedExchanges(): ExchangeBalance[] {
+    const exchanges = this.balances()?.byExchange || [];
+    return [...exchanges].sort((a, b) => b.totalValueUsd - a.totalValueUsd);
+  }
+
+  getTopAssets(): AssetBalance[] {
+    return this.allAssets
+      .filter(a => (a.valueUsd || 0) > 0)
+      .slice(0, 4);
   }
 
   applyFilter(event: Event) {

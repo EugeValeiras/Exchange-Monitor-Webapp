@@ -3,11 +3,21 @@ import { io, Socket } from 'socket.io-client';
 import { environment } from '../../../environments/environment';
 import { AuthService } from './auth.service';
 
+export interface ExchangePrice {
+  exchange: string;
+  price: number;
+  change24h?: number;
+}
+
 export interface PriceUpdate {
   symbol: string;
   price: number;
   timestamp: Date;
   source?: string;
+  change24h?: number;
+  high24h?: number;
+  low24h?: number;
+  prices?: ExchangePrice[];
 }
 
 export interface ConnectionStatus {
@@ -15,6 +25,12 @@ export interface ConnectionStatus {
   binance: boolean;
   kraken: boolean;
 }
+
+export interface PriceResult {
+  price: number;
+  pair: string; // e.g., "BTC/USDT" or "BTC/USD"
+}
+
 
 @Injectable({
   providedIn: 'root',
@@ -75,12 +91,19 @@ export class PriceSocketService implements OnDestroy {
       console.error('[PriceSocket] Connection error:', error.message);
     });
 
-    // Initial prices on connect
+    // Initial prices on connect - merge with existing
     this.socket.on('prices:initial', (prices: PriceUpdate[]) => {
       console.log('[PriceSocket] Received initial prices:', prices.length);
-      const priceMap = new Map<string, PriceUpdate>();
-      prices.forEach((p) => priceMap.set(p.symbol, p));
-      this._prices.set(priceMap);
+      this._prices.update((existing) => {
+        const newMap = new Map(existing);
+        prices.forEach((p) => {
+          newMap.set(p.symbol, {
+            ...p,
+            timestamp: new Date(p.timestamp),
+          });
+        });
+        return newMap;
+      });
     });
 
     // Individual price updates
@@ -98,7 +121,7 @@ export class PriceSocketService implements OnDestroy {
     // Price ticks (lightweight updates)
     this.socket.on(
       'price:tick',
-      (tick: { symbol: string; price: number; timestamp: string }) => {
+      (tick: { symbol: string; price: number; timestamp: string; change24h?: number }) => {
         this._prices.update((prices) => {
           const newMap = new Map(prices);
           const existing = newMap.get(tick.symbol);
@@ -107,6 +130,9 @@ export class PriceSocketService implements OnDestroy {
             price: tick.price,
             timestamp: new Date(tick.timestamp),
             source: existing?.source,
+            change24h: tick.change24h ?? existing?.change24h,
+            high24h: existing?.high24h,
+            low24h: existing?.low24h,
           });
           return newMap;
         });
@@ -150,14 +176,19 @@ export class PriceSocketService implements OnDestroy {
   }
 
   getPriceByAsset(asset: string): number | undefined {
-    // Try common pairs
-    const pairs = [`${asset}/USDT`, `${asset}/USD`];
-    for (const pair of pairs) {
-      const price = this._prices().get(pair);
-      if (price) {
-        return price.price;
-      }
-    }
+    return this.getPriceByAssetWithPair(asset)?.price;
+  }
+
+  getPriceByAssetWithPair(asset: string): PriceResult | undefined {
+    // Try USDT first, then USD (treated as equivalent)
+    const usdtPair = `${asset}/USDT`;
+    let price = this._prices().get(usdtPair);
+    if (price) return { price: price.price, pair: usdtPair };
+
+    const usdPair = `${asset}/USD`;
+    price = this._prices().get(usdPair);
+    if (price) return { price: price.price, pair: usdPair };
+
     return undefined;
   }
 

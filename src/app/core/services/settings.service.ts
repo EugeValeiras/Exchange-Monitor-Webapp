@@ -15,7 +15,14 @@ export interface AvailableSymbolsResponse {
   cachedAt: string;
 }
 
-export interface PricingSymbolsResponse {
+// Response for all symbols grouped by exchange
+export interface AllSymbolsResponse {
+  symbolsByExchange: Record<string, string[]>;
+}
+
+// Response for single exchange symbols
+export interface ExchangeSymbolsResponse {
+  exchange: string;
   symbols: string[];
 }
 
@@ -23,36 +30,90 @@ export interface PricingSymbolsResponse {
   providedIn: 'root'
 })
 export class SettingsService {
-  private symbolsSignal = signal<string[]>([]);
+  // Signals per exchange
+  private binanceSymbolsSignal = signal<string[]>([]);
+  private krakenSymbolsSignal = signal<string[]>([]);
 
-  symbols = this.symbolsSignal.asReadonly();
+  binanceSymbols = this.binanceSymbolsSignal.asReadonly();
+  krakenSymbols = this.krakenSymbolsSignal.asReadonly();
 
   constructor(private api: ApiService) {}
 
-  loadSymbols(): Observable<PricingSymbolsResponse> {
-    return this.api.get<PricingSymbolsResponse>('/settings/symbols').pipe(
-      tap(response => this.symbolsSignal.set(response.symbols))
+  /**
+   * Load all symbols grouped by exchange
+   */
+  loadAllSymbols(): Observable<AllSymbolsResponse> {
+    return this.api.get<AllSymbolsResponse>('/settings/symbols').pipe(
+      tap(response => {
+        this.binanceSymbolsSignal.set(response.symbolsByExchange?.['binance'] || []);
+        this.krakenSymbolsSignal.set(response.symbolsByExchange?.['kraken'] || []);
+      })
     );
   }
 
-  updateSymbols(symbols: string[]): Observable<PricingSymbolsResponse> {
-    return this.api.put<PricingSymbolsResponse>('/settings/symbols', { symbols }).pipe(
-      tap(response => this.symbolsSignal.set(response.symbols))
+  /**
+   * Get symbols for a specific exchange
+   */
+  getExchangeSymbols(exchange: string): Observable<ExchangeSymbolsResponse> {
+    return this.api.get<ExchangeSymbolsResponse>(`/settings/symbols/${exchange}`);
+  }
+
+  /**
+   * Update symbols for a specific exchange
+   */
+  updateExchangeSymbols(exchange: string, symbols: string[]): Observable<ExchangeSymbolsResponse> {
+    return this.api.put<ExchangeSymbolsResponse>(`/settings/symbols/${exchange}`, { symbols }).pipe(
+      tap(response => {
+        if (exchange === 'binance') {
+          this.binanceSymbolsSignal.set(response.symbols);
+        } else if (exchange === 'kraken') {
+          this.krakenSymbolsSignal.set(response.symbols);
+        }
+      })
     );
   }
 
+  /**
+   * Get available symbols for an exchange (for search)
+   */
   getAvailableSymbols(exchange: string, search?: string): Observable<AvailableSymbolsResponse> {
     const searchParam = search ? `?search=${encodeURIComponent(search)}` : '';
     return this.api.get<AvailableSymbolsResponse>(`/settings/symbols/available/${exchange}${searchParam}`);
   }
 
+  /**
+   * Get all configured base assets (from all exchanges)
+   */
   getConfiguredAssets(): Set<string> {
-    const symbols = this.symbolsSignal();
     const assets = new Set<string>();
+
+    // From Binance
+    for (const symbol of this.binanceSymbolsSignal()) {
+      const base = symbol.split('/')[0];
+      assets.add(base);
+    }
+
+    // From Kraken
+    for (const symbol of this.krakenSymbolsSignal()) {
+      const base = symbol.split('/')[0];
+      assets.add(base);
+    }
+
+    return assets;
+  }
+
+  /**
+   * Get configured assets for a specific exchange
+   */
+  getConfiguredAssetsForExchange(exchange: string): Set<string> {
+    const assets = new Set<string>();
+    const symbols = exchange === 'binance' ? this.binanceSymbolsSignal() : this.krakenSymbolsSignal();
+
     for (const symbol of symbols) {
       const base = symbol.split('/')[0];
       assets.add(base);
     }
+
     return assets;
   }
 }
