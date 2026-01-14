@@ -31,6 +31,9 @@ interface AssetBalance {
   exchanges?: string[];
   exchangeBreakdown?: { exchange: string; total: number }[];
   pricePair?: string; // e.g., "BTC/USDT" or "BTC/USD"
+  pricesByExchange?: { exchange: string; price: number; pair: string; change24h?: number }[];
+  isAveragePrice?: boolean;
+  change24h?: number;
 }
 
 interface ExchangeBalance {
@@ -278,12 +281,32 @@ interface ConsolidatedBalance {
                 <ng-container matColumnDef="price">
                   <th mat-header-cell *matHeaderCellDef mat-sort-header="priceUsd">Precio</th>
                   <td mat-cell *matCellDef="let row">
-                    <span class="price-cell">
-                      {{ row.priceUsd | currency:'USD':'symbol':'1.2-4' }}
-                      @if (row.pricePair && row.pricePair.endsWith('/USD')) {
-                        <mat-icon class="usd-indicator" [matTooltip]="'Precio en USD (' + row.pricePair + ')'" matTooltipPosition="above">info_outline</mat-icon>
+                    <div class="price-cell-row">
+                      <span class="price-cell">
+                        {{ row.priceUsd | currency:'USD':'symbol':'1.2-4' }}
+                      </span>
+                      @if (row.pricesByExchange && row.pricesByExchange.length > 0) {
+                        <div class="price-sources">
+                          @for (ep of row.pricesByExchange; track ep.exchange) {
+                            <img [src]="'/' + ep.exchange + '.svg'" [alt]="ep.exchange" class="price-source-logo" [matTooltip]="ep.exchange + ': ' + (ep.price | currency:'USD':'symbol':'1.2-4')" matTooltipPosition="above">
+                          }
+                        </div>
                       }
-                    </span>
+                    </div>
+                  </td>
+                </ng-container>
+
+                <!-- Change 24h Column -->
+                <ng-container matColumnDef="change24h">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header>24h</th>
+                  <td mat-cell *matCellDef="let row">
+                    @if (row.change24h !== undefined && row.change24h !== null) {
+                      <span class="change-cell" [class.positive]="row.change24h > 0" [class.negative]="row.change24h < 0">
+                        {{ row.change24h > 0 ? '+' : '' }}{{ row.change24h | number:'1.2-2' }}%
+                      </span>
+                    } @else {
+                      <span class="change-cell neutral">--</span>
+                    }
                   </td>
                 </ng-container>
 
@@ -635,20 +658,51 @@ interface ConsolidatedBalance {
       object-fit: contain;
     }
 
+    .price-cell-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
     .price-cell {
       font-weight: 700;
       color: var(--text-primary);
-      display: inline-flex;
+    }
+
+    .price-sources {
+      display: flex;
       align-items: center;
       gap: 4px;
     }
 
-    .usd-indicator {
-      font-size: 14px;
-      width: 14px;
-      height: 14px;
-      color: var(--text-tertiary);
+    .price-source-logo {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      opacity: 0.7;
       cursor: help;
+      transition: opacity 0.15s ease;
+    }
+
+    .price-source-logo:hover {
+      opacity: 1;
+    }
+
+    .change-cell {
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .change-cell.positive {
+      color: var(--color-success);
+    }
+
+    .change-cell.negative {
+      color: var(--color-error);
+    }
+
+    .change-cell.neutral {
+      color: var(--text-tertiary);
     }
 
     .quantity-cell {
@@ -801,7 +855,7 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
   error = signal('');
   isSyncing = signal(false);
 
-  displayedColumns = ['asset', 'exchanges', 'price', 'total', 'value'];
+  displayedColumns = ['asset', 'exchanges', 'price', 'change24h', 'total', 'value'];
   dataSource = new MatTableDataSource<AssetBalance>([]);
   originalAssets: AssetBalance[] = [];
   allAssets: AssetBalance[] = [];
@@ -883,27 +937,33 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
     let hasUpdates = false;
 
     this.originalAssets = this.originalAssets.map(asset => {
-      const priceResult = this.priceSocket.getPriceByAssetWithPair(asset.asset);
-      if (priceResult && priceResult.price !== asset.priceUsd) {
+      const priceResult = this.calculateAssetPrice(asset);
+      if (priceResult && (priceResult.price !== asset.priceUsd || priceResult.change24h !== asset.change24h)) {
         hasUpdates = true;
         return {
           ...asset,
           priceUsd: priceResult.price,
           valueUsd: asset.total * priceResult.price,
           pricePair: priceResult.pair,
+          pricesByExchange: priceResult.pricesByExchange,
+          isAveragePrice: priceResult.isAverage,
+          change24h: priceResult.change24h,
         };
       }
       return asset;
     });
 
     this.allAssets = this.allAssets.map(asset => {
-      const priceResult = this.priceSocket.getPriceByAssetWithPair(asset.asset);
-      if (priceResult && priceResult.price !== asset.priceUsd) {
+      const priceResult = this.calculateAssetPrice(asset);
+      if (priceResult && (priceResult.price !== asset.priceUsd || priceResult.change24h !== asset.change24h)) {
         return {
           ...asset,
           priceUsd: priceResult.price,
           valueUsd: asset.total * priceResult.price,
           pricePair: priceResult.pair,
+          pricesByExchange: priceResult.pricesByExchange,
+          isAveragePrice: priceResult.isAverage,
+          change24h: priceResult.change24h,
         };
       }
       return asset;
@@ -915,6 +975,79 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
       );
       this.applyExchangeFilter();
     }
+  }
+
+  /**
+   * Calculate the price for an asset based on:
+   * 1. If 1 exchange is selected in filter and we have price from it → use it
+   * 2. If asset is in 1 exchange and we have that exchange's price → use it
+   * 3. If asset is in multiple exchanges → average
+   * 4. If asset is in 1 exchange but no price from that exchange → average of available
+   */
+  private calculateAssetPrice(asset: AssetBalance): { price: number; pair: string; pricesByExchange: { exchange: string; price: number; pair: string; change24h?: number }[]; isAverage: boolean; change24h?: number } | undefined {
+    const multiPrice = this.priceSocket.getMultiExchangePrice(asset.asset);
+    if (!multiPrice || multiPrice.prices.length === 0) {
+      // Fallback: try simple price lookup
+      const simplePrice = this.priceSocket.getPriceByAssetWithPair(asset.asset);
+      if (simplePrice) {
+        return {
+          price: simplePrice.price,
+          pair: simplePrice.pair,
+          pricesByExchange: [], // No exchange info available
+          isAverage: false,
+          change24h: undefined,
+        };
+      }
+      return undefined;
+    }
+
+    // Case: 1 exchange selected in filter and we have price from it
+    if (this.selectedExchanges.size === 1) {
+      const selectedExchange = Array.from(this.selectedExchanges)[0];
+      const matchingPrice = multiPrice.prices.find(p => p.exchange === selectedExchange);
+
+      if (matchingPrice) {
+        return {
+          price: matchingPrice.price,
+          pair: matchingPrice.pair,
+          pricesByExchange: [matchingPrice],
+          isAverage: false,
+          change24h: matchingPrice.change24h,
+        };
+      }
+      // No price from selected exchange, fall through to other logic
+    }
+
+    const assetExchanges = asset.exchanges || [];
+
+    // Case: Asset in only one exchange
+    if (assetExchanges.length === 1) {
+      const assetExchange = assetExchanges[0];
+      // Check if we have price from that specific exchange
+      const matchingPrice = multiPrice.prices.find(p => p.exchange === assetExchange);
+
+      if (matchingPrice) {
+        // Use the price from the exchange where the asset is held
+        return {
+          price: matchingPrice.price,
+          pair: matchingPrice.pair,
+          pricesByExchange: [matchingPrice],
+          isAverage: false,
+          change24h: matchingPrice.change24h,
+        };
+      }
+      // No price from that exchange, use average of available
+    }
+
+    // Case: Asset in multiple exchanges OR no price from specific exchange
+    // Use average of all available prices
+    return {
+      price: multiPrice.averagePrice,
+      pair: multiPrice.pair,
+      pricesByExchange: multiPrice.prices,
+      isAverage: multiPrice.prices.length > 1,
+      change24h: multiPrice.change24h,
+    };
   }
 
   hasExchanges(): boolean {
@@ -1006,6 +1139,23 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
       );
     }
 
+    // Recalculate prices based on current filter
+    assetsToProcess = assetsToProcess.map(asset => {
+      const priceResult = this.calculateAssetPrice(asset);
+      if (priceResult) {
+        return {
+          ...asset,
+          priceUsd: priceResult.price,
+          valueUsd: asset.total * priceResult.price,
+          pricePair: priceResult.pair,
+          pricesByExchange: priceResult.pricesByExchange,
+          isAveragePrice: priceResult.isAverage,
+          change24h: priceResult.change24h,
+        };
+      }
+      return asset;
+    });
+
     // If no exchanges selected, show all
     if (this.selectedExchanges.size === 0) {
       this.allAssets = assetsToProcess.sort((a, b) =>
@@ -1037,14 +1187,21 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
         }
 
         const filteredTotal = filteredBreakdown.reduce((sum, b) => sum + b.total, 0);
-        const filteredValueUsd = filteredTotal * (asset.priceUsd || 0);
+        // Recalculate price for filtered asset
+        const priceResult = this.calculateAssetPrice({ ...asset, exchanges: filteredBreakdown.map(b => b.exchange) });
+        const priceUsd = priceResult?.price || asset.priceUsd || 0;
+        const filteredValueUsd = filteredTotal * priceUsd;
 
         filteredAssets.push({
           ...asset,
           total: filteredTotal,
+          priceUsd: priceUsd,
           valueUsd: filteredValueUsd,
           exchanges: filteredBreakdown.map(b => b.exchange),
           exchangeBreakdown: filteredBreakdown,
+          pricesByExchange: priceResult?.pricesByExchange || asset.pricesByExchange,
+          isAveragePrice: priceResult?.isAverage,
+          change24h: priceResult?.change24h,
         });
       }
 
@@ -1075,6 +1232,24 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
       return `${amount} ${row.asset} (${usdFormatted})`;
     }
     return exchange;
+  }
+
+  getPriceBreakdownTooltip(row: AssetBalance): string {
+    if (!row.pricesByExchange || row.pricesByExchange.length === 0) {
+      return 'Precio';
+    }
+
+    const lines = row.pricesByExchange.map(ep => {
+      const priceFormatted = ep.price.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 4 });
+      return `${this.getExchangeDisplayName(ep.exchange)}: ${priceFormatted}`;
+    });
+
+    if (row.isAveragePrice) {
+      const avgFormatted = (row.priceUsd || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 4 });
+      lines.push(`Promedio: ${avgFormatted}`);
+    }
+
+    return lines.join('\n');
   }
 
   private formatAmount(value: number): string {

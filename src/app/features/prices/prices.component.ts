@@ -38,6 +38,11 @@ interface AssetStat {
   count: number;
 }
 
+interface QuoteStat {
+  name: string;
+  count: number;
+}
+
 @Component({
   selector: 'app-prices',
   standalone: true,
@@ -113,6 +118,21 @@ interface AssetStat {
                   <mat-chip-option [value]="asset.name" [selected]="selectedAssets.has(asset.name)" class="asset-chip">
                     <img [src]="getAssetLogo(asset.name)" [alt]="asset.name" class="asset-chip-logo" (error)="onChipLogoError($event, asset.name)">
                     {{ asset.name }}
+                  </mat-chip-option>
+                }
+              </mat-chip-listbox>
+            </div>
+          </div>
+
+          <!-- Quote Currency Filter -->
+          <div class="filter-section">
+            <span class="filter-label">Moneda</span>
+            <div class="quote-chips-container">
+              <mat-chip-listbox multiple (change)="onQuoteFilterChange($event)" class="quote-chips">
+                @for (quote of quoteStats; track quote.name) {
+                  <mat-chip-option [value]="quote.name" [selected]="selectedQuotes.has(quote.name)" class="quote-chip">
+                    <img [src]="getAssetLogo(quote.name)" [alt]="quote.name" class="quote-chip-logo" (error)="onChipLogoError($event, quote.name)">
+                    {{ quote.name }}
                   </mat-chip-option>
                 }
               </mat-chip-listbox>
@@ -337,18 +357,18 @@ interface AssetStat {
       letter-spacing: 0.5px;
     }
 
-    .exchange-chips, .asset-chips {
+    .exchange-chips, .asset-chips, .quote-chips {
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
     }
 
-    .asset-chips-container {
+    .asset-chips-container, .quote-chips-container {
       max-width: 600px;
       overflow-x: auto;
     }
 
-    ::ng-deep .exchange-chip, ::ng-deep .asset-chip {
+    ::ng-deep .exchange-chip, ::ng-deep .asset-chip, ::ng-deep .quote-chip {
       --mdc-chip-elevated-container-color: var(--bg-tertiary) !important;
       --mdc-chip-label-text-color: var(--text-primary) !important;
       --mdc-chip-elevated-selected-container-color: var(--bg-tertiary) !important;
@@ -392,7 +412,7 @@ interface AssetStat {
         margin-left: 4px;
       }
 
-      .asset-chip-logo {
+      .asset-chip-logo, .quote-chip-logo {
         width: 18px;
         height: 18px;
         border-radius: 50%;
@@ -617,11 +637,13 @@ export class PricesComponent implements OnInit, OnDestroy, AfterViewInit {
   // Filter state
   selectedExchanges = new Set<string>();
   selectedAssets = new Set<string>();
+  selectedQuotes = new Set<string>();
   textFilter = '';
 
   // Stats for filters
   exchangeStats: ExchangeStat[] = [];
   assetStats: AssetStat[] = [];
+  quoteStats: QuoteStat[] = [];
 
   pricesCount = computed(() => this.priceSocket.prices().size);
 
@@ -739,6 +761,16 @@ export class PricesComponent implements OnInit, OnDestroy, AfterViewInit {
     this.assetStats = Array.from(assetCounts.entries())
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => a.name.localeCompare(b.name));
+
+    // Quote currency stats
+    const quoteCounts = new Map<string, number>();
+    this.allPrices.forEach(p => {
+      quoteCounts.set(p.quote, (quoteCounts.get(p.quote) || 0) + 1);
+    });
+
+    this.quoteStats = Array.from(quoteCounts.entries())
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => a.name.localeCompare(b.name));
   }
 
   private getExchangeLabel(exchange: string): string {
@@ -762,12 +794,18 @@ export class PricesComponent implements OnInit, OnDestroy, AfterViewInit {
       filtered = filtered.filter(p => this.selectedAssets.has(p.asset));
     }
 
+    // Filter by quote currency
+    if (this.selectedQuotes.size > 0) {
+      filtered = filtered.filter(p => this.selectedQuotes.has(p.quote));
+    }
+
     // Filter by text
     if (this.textFilter) {
       const filter = this.textFilter.toLowerCase();
       filtered = filtered.filter(p =>
         p.asset.toLowerCase().includes(filter) ||
-        p.symbol.toLowerCase().includes(filter)
+        p.symbol.toLowerCase().includes(filter) ||
+        p.quote.toLowerCase().includes(filter)
       );
     }
 
@@ -795,13 +833,22 @@ export class PricesComponent implements OnInit, OnDestroy, AfterViewInit {
     this.applyFilters();
   }
 
+  onQuoteFilterChange(event: { value: string[] }): void {
+    this.selectedQuotes.clear();
+    if (event.value) {
+      event.value.forEach(quote => this.selectedQuotes.add(quote));
+    }
+    this.applyFilters();
+  }
+
   hasActiveFilters(): boolean {
-    return this.selectedExchanges.size > 0 || this.selectedAssets.size > 0;
+    return this.selectedExchanges.size > 0 || this.selectedAssets.size > 0 || this.selectedQuotes.size > 0;
   }
 
   clearFilters(): void {
     this.selectedExchanges.clear();
     this.selectedAssets.clear();
+    this.selectedQuotes.clear();
     this.applyFilters();
   }
 

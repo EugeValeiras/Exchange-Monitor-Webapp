@@ -73,6 +73,9 @@ interface ConsolidatedBalance {
               <a class="quick-action" routerLink="/balances" matTooltip="Balances">
                 <mat-icon>account_balance_wallet</mat-icon>
               </a>
+              <a class="quick-action" routerLink="/prices" matTooltip="Precios">
+                <mat-icon>show_chart</mat-icon>
+              </a>
               <a class="quick-action" routerLink="/transactions" matTooltip="Transacciones">
                 <mat-icon>swap_horiz</mat-icon>
               </a>
