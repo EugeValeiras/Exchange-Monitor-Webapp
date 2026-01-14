@@ -53,7 +53,7 @@ export class BalanceSocketService implements OnDestroy {
     }
 
     const token = this.authService.getToken();
-    const wsUrl = environment.apiUrl.replace('/api', '');
+    const wsUrl = environment.apiUrl.replace('http', 'ws').replace('/api', '');
 
     this.socket = io(`${wsUrl}/balances`, {
       auth: { token },
