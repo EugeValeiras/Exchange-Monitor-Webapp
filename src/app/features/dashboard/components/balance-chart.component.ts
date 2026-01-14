@@ -36,7 +36,6 @@ import {
   ChartTimeframe,
   ChartDataResponse,
 } from '../../../core/services/chart.service';
-import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo-loader.component';
 
 @Component({
   selector: 'app-balance-chart',
@@ -48,7 +47,6 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
     MatProgressSpinnerModule,
     MatIconModule,
     BaseChartDirective,
-    LogoLoaderComponent,
   ],
   template: `
     <mat-card class="chart-card">
@@ -68,8 +66,13 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
       </mat-card-header>
       <mat-card-content>
         @if (loading()) {
-          <div class="loading-container">
-            <app-logo-loader [size]="56" [showText]="false"></app-logo-loader>
+          <div class="chart-skeleton">
+            <div class="chart-skeleton-area skeleton-pulse"></div>
+          </div>
+          <div class="chart-summary skeleton-summary">
+            <span class="skeleton-text skeleton-pulse" style="width: 100px; height: 20px;"></span>
+            <span class="skeleton-text skeleton-pulse" style="width: 70px; height: 16px;"></span>
+            <span class="skeleton-text skeleton-pulse" style="width: 120px; height: 14px; margin-left: auto;"></span>
           </div>
         } @else if (hasData()) {
           <div class="chart-container">
@@ -127,40 +130,78 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
     }
 
     .timeframe-toggle {
-      background: var(--bg-tertiary);
-      border-radius: 8px;
-      border: none;
-      padding: 4px;
+      background: var(--bg-elevated);
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      padding: 3px;
 
       ::ng-deep .mat-button-toggle-group {
         border: none;
       }
 
       ::ng-deep .mat-button-toggle {
-        font-size: 12px;
-        font-weight: 500;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
         border: none !important;
         background: transparent;
-        border-radius: 6px;
+        border-radius: 7px;
+        transition: all 0.2s ease;
       }
 
       ::ng-deep .mat-button-toggle-appearance-standard {
         background: transparent;
+        color: var(--text-tertiary);
       }
 
       ::ng-deep .mat-button-toggle + .mat-button-toggle {
         border-left: none !important;
       }
 
+      ::ng-deep .mat-button-toggle:hover:not(.mat-button-toggle-checked) {
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+      }
+
       ::ng-deep .mat-button-toggle-checked {
         background: var(--brand-primary) !important;
-        color: white;
-        border-radius: 6px;
+        color: white !important;
+        border-radius: 7px;
+        box-shadow: 0 2px 8px rgba(240, 185, 11, 0.3);
+      }
+
+      ::ng-deep .mat-button-toggle-checked .mat-button-toggle-label-content {
+        color: white !important;
+      }
+
+      ::ng-deep .mat-button-toggle-focus-overlay {
+        display: none !important;
+      }
+
+      ::ng-deep .mat-pseudo-checkbox {
+        display: none !important;
+        width: 0 !important;
+        margin: 0 !important;
+      }
+
+      ::ng-deep .mat-button-toggle-checked .mat-pseudo-checkbox {
+        display: none !important;
+        width: 0 !important;
+        margin: 0 !important;
+      }
+
+      ::ng-deep .mat-button-toggle-label-content {
+        margin-left: 0 !important;
+        padding-left: 0 !important;
       }
 
       ::ng-deep .mat-button-toggle-button {
-        padding: 0 12px;
-        height: 28px;
+        padding: 0 14px;
+        height: 32px;
+      }
+
+      ::ng-deep .mat-button-toggle-label-content {
+        line-height: 32px;
       }
     }
 
@@ -169,11 +210,41 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
       position: relative;
     }
 
-    .loading-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
+    .chart-skeleton {
       height: 300px;
+      position: relative;
+    }
+
+    .chart-skeleton-area {
+      width: 100%;
+      height: 100%;
+      border-radius: 8px;
+    }
+
+    .skeleton-summary {
+      background: var(--bg-elevated);
+    }
+
+    /* Skeleton Styles */
+    .skeleton-pulse {
+      background: linear-gradient(
+        90deg,
+        var(--bg-tertiary) 0%,
+        var(--bg-elevated) 50%,
+        var(--bg-tertiary) 100%
+      );
+      background-size: 200% 100%;
+      animation: skeleton-shimmer 1.5s infinite;
+    }
+
+    @keyframes skeleton-shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .skeleton-text {
+      display: block;
+      border-radius: 4px;
     }
 
     .chart-summary {

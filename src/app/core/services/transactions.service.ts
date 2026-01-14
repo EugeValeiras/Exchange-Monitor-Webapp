@@ -79,8 +79,27 @@ export class TransactionsService {
     return this.api.get<PaginatedTransactions>(url);
   }
 
-  getStats(): Observable<TransactionStats> {
-    return this.api.get<TransactionStats>('/transactions/stats');
+  getStats(filter?: {
+    exchange?: string;
+    startDate?: string;
+    endDate?: string;
+    types?: string[];
+    assets?: string[];
+  }): Observable<TransactionStats> {
+    const params = new URLSearchParams();
+    if (filter?.exchange) params.set('exchange', filter.exchange);
+    if (filter?.startDate) params.set('startDate', filter.startDate);
+    if (filter?.endDate) params.set('endDate', filter.endDate);
+    if (filter?.types && filter.types.length > 0) {
+      params.set('types', filter.types.join(','));
+    }
+    if (filter?.assets && filter.assets.length > 0) {
+      params.set('assets', filter.assets.join(','));
+    }
+
+    const queryString = params.toString();
+    const url = queryString ? `/transactions/stats?${queryString}` : '/transactions/stats';
+    return this.api.get<TransactionStats>(url);
   }
 
   getTypeLabel(type: TransactionType): string {

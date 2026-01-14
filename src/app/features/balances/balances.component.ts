@@ -77,11 +77,7 @@ interface ConsolidatedBalance {
   ],
   template: `
     <div class="balances-content">
-      @if (loading()) {
-        <div class="loading-container">
-          <app-logo-loader [size]="140" text="Cargando balances..."></app-logo-loader>
-        </div>
-      } @else if (error()) {
+      @if (error()) {
         <div class="error-container">
           <mat-icon>error_outline</mat-icon>
           <h3>Error al cargar datos</h3>
@@ -91,7 +87,7 @@ interface ConsolidatedBalance {
             Reintentar
           </button>
         </div>
-      } @else if (!hasExchanges()) {
+      } @else if (!loading() && !hasExchanges()) {
         <div class="empty-container">
           <div class="empty-icon">
             <mat-icon>account_balance_wallet</mat-icon>
@@ -106,30 +102,38 @@ interface ConsolidatedBalance {
       } @else {
         <!-- Indicators row -->
         <div class="indicators-row">
-          <!-- Real-time indicator -->
-          @if (priceSocket.isConnected()) {
-            <div class="realtime-indicator connected">
-              <span class="pulse"></span>
-              <span>Precios en tiempo real</span>
+          @if (loading()) {
+            <!-- Skeleton indicator -->
+            <div class="realtime-indicator skeleton">
+              <span class="skeleton-circle skeleton-pulse"></span>
+              <span class="skeleton-text skeleton-pulse" style="width: 130px; height: 12px;"></span>
             </div>
           } @else {
-            <div class="realtime-indicator disconnected">
-              <mat-icon>wifi_off</mat-icon>
-              <span>Conectando...</span>
-            </div>
-          }
+            <!-- Real-time indicator -->
+            @if (priceSocket.isConnected()) {
+              <div class="realtime-indicator connected">
+                <span class="pulse"></span>
+                <span>Precios en tiempo real</span>
+              </div>
+            } @else {
+              <div class="realtime-indicator disconnected">
+                <mat-icon>wifi_off</mat-icon>
+                <span>Conectando...</span>
+              </div>
+            }
 
-          <!-- Sync indicator -->
-          @if (isSyncing()) {
-            <div class="sync-indicator">
-              <mat-spinner diameter="14"></mat-spinner>
-              <span>Sincronizando balances...</span>
-            </div>
-          } @else if (balances()?.isCached) {
-            <div class="sync-indicator cached">
-              <mat-icon>schedule</mat-icon>
-              <span>Datos en cache</span>
-            </div>
+            <!-- Sync indicator -->
+            @if (isSyncing()) {
+              <div class="sync-indicator">
+                <mat-spinner diameter="14"></mat-spinner>
+                <span>Sincronizando balances...</span>
+              </div>
+            } @else if (balances()?.isCached) {
+              <div class="sync-indicator cached">
+                <mat-icon>schedule</mat-icon>
+                <span>Datos en cache</span>
+              </div>
+            }
           }
         </div>
 
@@ -138,26 +142,49 @@ interface ConsolidatedBalance {
           <div class="stat-card primary">
             <div class="stat-content">
               <div class="stat-header">
-                <span class="stat-label">Balance Total</span>
+                @if (loading()) {
+                  <span class="skeleton-text skeleton-pulse" style="width: 100px; height: 14px;"></span>
+                } @else {
+                  <span class="stat-label">Balance Total</span>
+                }
                 <mat-icon>trending_up</mat-icon>
               </div>
-              <span class="stat-value">{{ balances()?.totalValueUsd | currency:'USD':'symbol':'1.2-2' }}</span>
-              <span class="stat-hint">
-                {{ balances()?.byExchange?.length || 0 }} exchange{{ (balances()?.byExchange?.length || 0) !== 1 ? 's' : '' }} ·
-                {{ dataSource.data.length }} activo{{ dataSource.data.length !== 1 ? 's' : '' }}
-              </span>
+              @if (loading()) {
+                <span class="skeleton-text skeleton-pulse stat-value-skeleton"></span>
+                <span class="skeleton-text skeleton-pulse" style="width: 140px; height: 13px;"></span>
+              } @else {
+                <span class="stat-value">{{ balances()?.totalValueUsd | currency:'USD':'symbol':'1.2-2' }}</span>
+                <span class="stat-hint">
+                  {{ balances()?.byExchange?.length || 0 }} exchange{{ (balances()?.byExchange?.length || 0) !== 1 ? 's' : '' }} ·
+                  {{ dataSource.data.length }} activo{{ dataSource.data.length !== 1 ? 's' : '' }}
+                </span>
+              }
             </div>
           </div>
         </div>
 
         <!-- Exchanges Summary -->
-        @if (balances()?.byExchange?.length) {
-          <div class="section">
-            <div class="section-header">
-              <h2>Por Exchange</h2>
-            </div>
+        <div class="section">
+          <div class="section-header">
+            <h2>Por Exchange</h2>
+          </div>
 
-            <div class="exchanges-grid">
+          <div class="exchanges-grid">
+            @if (loading()) {
+              @for (i of [1, 2]; track i) {
+                <div class="exchange-card skeleton-card">
+                  <div class="exchange-header">
+                    <div class="skeleton-logo skeleton-pulse"></div>
+                    <div class="exchange-info">
+                      <span class="skeleton-text skeleton-pulse" style="width: 80px; height: 16px;"></span>
+                      <span class="skeleton-text skeleton-pulse" style="width: 60px; height: 13px; margin-top: 4px;"></span>
+                    </div>
+                  </div>
+                  <div class="skeleton-text skeleton-pulse" style="width: 120px; height: 24px; margin-bottom: 4px;"></div>
+                  <div class="skeleton-text skeleton-pulse" style="width: 70px; height: 13px;"></div>
+                </div>
+              }
+            } @else {
               @for (exchange of getSortedExchanges(); track exchange.credentialId) {
                 <div
                   class="exchange-card"
@@ -181,18 +208,29 @@ interface ConsolidatedBalance {
                   </div>
                 </div>
               }
-            </div>
+            }
           </div>
-        }
+        </div>
 
         <!-- Top Assets -->
-        @if (getTopAssets().length > 0) {
-          <div class="section">
-            <div class="section-header">
-              <h2>Top Activos</h2>
-            </div>
+        <div class="section">
+          <div class="section-header">
+            <h2>Top Activos</h2>
+          </div>
 
-            <div class="top-assets-grid">
+          <div class="top-assets-grid">
+            @if (loading()) {
+              @for (i of [1, 2, 3, 4]; track i) {
+                <div class="top-asset-card">
+                  <div class="skeleton-asset-logo skeleton-pulse"></div>
+                  <div class="top-asset-info">
+                    <span class="skeleton-text skeleton-pulse" style="width: 50px; height: 16px;"></span>
+                    <span class="skeleton-text skeleton-pulse" style="width: 80px; height: 12px; margin-top: 4px;"></span>
+                  </div>
+                  <div class="skeleton-text skeleton-pulse" style="width: 70px; height: 18px;"></div>
+                </div>
+              }
+            } @else {
               @for (asset of getTopAssets(); track asset.asset) {
                 <div class="top-asset-card">
                   <img [src]="getAssetLogo(asset.asset)" [alt]="asset.asset" class="top-asset-logo" (error)="onLogoError($event, asset.asset)">
@@ -205,15 +243,15 @@ interface ConsolidatedBalance {
                   </div>
                 </div>
               }
-            </div>
+            }
           </div>
-        }
+        </div>
 
         <!-- Assets Table -->
-        @if (balances()?.byAsset?.length) {
-          <div class="section">
-            <div class="section-header">
-              <h2>Balances por Activo</h2>
+        <div class="section">
+          <div class="section-header">
+            <h2>Balances por Activo</h2>
+            @if (!loading()) {
               <div class="section-actions">
                 <mat-slide-toggle
                   [(ngModel)]="showAllAssets"
@@ -225,9 +263,45 @@ interface ConsolidatedBalance {
                   <mat-icon>refresh</mat-icon>
                 </button>
               </div>
-            </div>
+            }
+          </div>
 
-            <div class="table-container">
+          <div class="table-container">
+            @if (loading()) {
+              <div class="skeleton-table">
+                <div class="skeleton-table-header">
+                  <span class="skeleton-text skeleton-pulse" style="width: 60px;"></span>
+                  <span class="skeleton-text skeleton-pulse" style="width: 70px;"></span>
+                  <span class="skeleton-text skeleton-pulse" style="width: 50px;"></span>
+                  <span class="skeleton-text skeleton-pulse" style="width: 40px;"></span>
+                  <span class="skeleton-text skeleton-pulse" style="width: 70px;"></span>
+                  <span class="skeleton-text skeleton-pulse" style="width: 70px;"></span>
+                </div>
+                @for (i of [1, 2, 3, 4, 5, 6]; track i) {
+                  <div class="skeleton-table-row">
+                    <div class="skeleton-cell asset-cell">
+                      <div class="skeleton-asset-logo-sm skeleton-pulse"></div>
+                      <span class="skeleton-text skeleton-pulse" style="width: 50px;"></span>
+                    </div>
+                    <div class="skeleton-cell">
+                      <div class="skeleton-exchange-logo skeleton-pulse"></div>
+                    </div>
+                    <div class="skeleton-cell">
+                      <span class="skeleton-text skeleton-pulse" style="width: 80px;"></span>
+                    </div>
+                    <div class="skeleton-cell">
+                      <span class="skeleton-text skeleton-pulse" style="width: 50px;"></span>
+                    </div>
+                    <div class="skeleton-cell">
+                      <span class="skeleton-text skeleton-pulse" style="width: 90px;"></span>
+                    </div>
+                    <div class="skeleton-cell">
+                      <span class="skeleton-text skeleton-pulse" style="width: 70px;"></span>
+                    </div>
+                  </div>
+                }
+              </div>
+            } @else {
               <table mat-table [dataSource]="dataSource" matSort>
                 <ng-container matColumnDef="asset">
                   <th mat-header-cell *matHeaderCellDef mat-sort-header>Activo</th>
@@ -304,9 +378,9 @@ interface ConsolidatedBalance {
                 <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
                 <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
               </table>
-            </div>
+            }
           </div>
-        }
+        </div>
       }
     </div>
   `,
@@ -365,6 +439,10 @@ interface ConsolidatedBalance {
       color: #ff9800;
     }
 
+    .realtime-indicator.skeleton {
+      background: var(--bg-tertiary);
+    }
+
     .realtime-indicator mat-icon {
       font-size: 16px;
       width: 16px;
@@ -383,14 +461,6 @@ interface ConsolidatedBalance {
       0% { opacity: 1; transform: scale(1); }
       50% { opacity: 0.5; transform: scale(1.2); }
       100% { opacity: 1; transform: scale(1); }
-    }
-
-    .loading-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: calc(100vh - 200px);
     }
 
     .error-container {
@@ -603,6 +673,24 @@ interface ConsolidatedBalance {
 
     table {
       width: 100%;
+    }
+
+    ::ng-deep .table-container .mat-mdc-header-row {
+      background: var(--bg-elevated);
+    }
+
+    ::ng-deep .table-container .mat-mdc-header-cell {
+      padding: 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    ::ng-deep .table-container .mat-mdc-cell {
+      padding: 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    ::ng-deep .table-container .mat-mdc-row:last-child .mat-mdc-cell {
+      border-bottom: none;
     }
 
     .asset-cell {
@@ -820,6 +908,120 @@ interface ConsolidatedBalance {
       font-size: 18px;
       font-weight: 600;
       color: var(--text-primary);
+    }
+
+    /* Skeleton Styles */
+    .skeleton-pulse {
+      background: linear-gradient(
+        90deg,
+        var(--bg-tertiary) 0%,
+        var(--bg-elevated) 50%,
+        var(--bg-tertiary) 100%
+      );
+      background-size: 200% 100%;
+      animation: skeleton-shimmer 1.5s infinite;
+    }
+
+    @keyframes skeleton-shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .skeleton-text {
+      display: block;
+      height: 14px;
+      border-radius: 4px;
+    }
+
+    .skeleton-circle {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .stat-value-skeleton {
+      width: 180px;
+      height: 38px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+    }
+
+    .stat-card.primary .skeleton-pulse {
+      background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.1) 0%,
+        rgba(255, 255, 255, 0.2) 50%,
+        rgba(255, 255, 255, 0.1) 100%
+      );
+      background-size: 200% 100%;
+      animation: skeleton-shimmer 1.5s infinite;
+    }
+
+    .skeleton-card {
+      pointer-events: none;
+    }
+
+    .skeleton-logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+    }
+
+    .skeleton-asset-logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+    }
+
+    .skeleton-asset-logo-sm {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+    }
+
+    .skeleton-exchange-logo {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+    }
+
+    .skeleton-table {
+      padding: 0;
+    }
+
+    .skeleton-table-header {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr 0.8fr 1.2fr 1fr;
+      gap: 16px;
+      padding: 16px;
+      background: var(--bg-elevated);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .skeleton-table-header .skeleton-text {
+      height: 12px;
+    }
+
+    .skeleton-table-row {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr 0.8fr 1.2fr 1fr;
+      gap: 16px;
+      padding: 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .skeleton-table-row:last-child {
+      border-bottom: none;
+    }
+
+    .skeleton-cell {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .skeleton-cell .skeleton-text {
+      height: 14px;
     }
   `]
 })

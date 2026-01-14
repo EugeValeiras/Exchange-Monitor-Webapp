@@ -12,7 +12,6 @@ import { AuthService } from '../../core/services/auth.service';
 import { BalanceSocketService } from '../../core/services/balance-socket.service';
 import { BalanceChartComponent } from './components/balance-chart.component';
 import { PnlSummaryComponent } from './components/pnl-summary.component';
-import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-loader.component';
 
 interface ConsolidatedBalance {
   totalValueUsd: number;
@@ -33,16 +32,11 @@ interface ConsolidatedBalance {
     MatProgressSpinnerModule,
     MatTooltipModule,
     BalanceChartComponent,
-    PnlSummaryComponent,
-    LogoLoaderComponent
+    PnlSummaryComponent
   ],
   template: `
     <div class="dashboard-content">
-      @if (loading()) {
-        <div class="loading-container">
-          <app-logo-loader [size]="140" text="Cargando dashboard..."></app-logo-loader>
-        </div>
-      } @else if (!hasExchanges()) {
+      @if (!loading() && !hasExchanges()) {
         <div class="empty-container">
           <div class="empty-icon">
             <mat-icon>dashboard</mat-icon>
@@ -60,31 +54,48 @@ interface ConsolidatedBalance {
           <div class="quick-stat-card primary">
             <a class="stat-content" routerLink="/balances">
               <div class="stat-header">
-                <span class="stat-label">Balance Total</span>
+                @if (loading()) {
+                  <span class="skeleton-text skeleton-pulse" style="width: 100px; height: 14px;"></span>
+                } @else {
+                  <span class="stat-label">Balance Total</span>
+                }
                 <mat-icon>account_balance_wallet</mat-icon>
               </div>
-              <span class="stat-value">{{ totalValue() | currency:'USD':'symbol':'1.2-2' }}</span>
-              <span class="stat-hint">
-                {{ exchangeCount() }} exchange{{ exchangeCount() !== 1 ? 's' : '' }} ·
-                {{ assetCount() }} activo{{ assetCount() !== 1 ? 's' : '' }}
-              </span>
+              @if (loading()) {
+                <span class="skeleton-text skeleton-pulse stat-value-skeleton"></span>
+                <span class="skeleton-text skeleton-pulse" style="width: 140px; height: 13px;"></span>
+              } @else {
+                <span class="stat-value">{{ totalValue() | currency:'USD':'symbol':'1.2-2' }}</span>
+                <span class="stat-hint">
+                  {{ exchangeCount() }} exchange{{ exchangeCount() !== 1 ? 's' : '' }} ·
+                  {{ assetCount() }} activo{{ assetCount() !== 1 ? 's' : '' }}
+                </span>
+              }
             </a>
             <div class="quick-actions">
-              <a class="quick-action" routerLink="/balances" matTooltip="Balances">
-                <mat-icon>account_balance_wallet</mat-icon>
-              </a>
-              <a class="quick-action" routerLink="/prices" matTooltip="Precios">
-                <mat-icon>show_chart</mat-icon>
-              </a>
-              <a class="quick-action" routerLink="/transactions" matTooltip="Transacciones">
-                <mat-icon>swap_horiz</mat-icon>
-              </a>
-              <a class="quick-action" routerLink="/exchanges" matTooltip="Exchanges">
-                <mat-icon>currency_exchange</mat-icon>
-              </a>
-              <a class="quick-action" routerLink="/settings" matTooltip="Configuración">
-                <mat-icon>settings</mat-icon>
-              </a>
+              @if (loading()) {
+                @for (i of [1, 2, 3, 4, 5]; track i) {
+                  <div class="quick-action skeleton">
+                    <div class="skeleton-icon skeleton-pulse"></div>
+                  </div>
+                }
+              } @else {
+                <a class="quick-action" routerLink="/balances" matTooltip="Balances">
+                  <mat-icon>account_balance_wallet</mat-icon>
+                </a>
+                <a class="quick-action" routerLink="/prices" matTooltip="Precios">
+                  <mat-icon>show_chart</mat-icon>
+                </a>
+                <a class="quick-action" routerLink="/transactions" matTooltip="Transacciones">
+                  <mat-icon>swap_horiz</mat-icon>
+                </a>
+                <a class="quick-action" routerLink="/exchanges" matTooltip="Exchanges">
+                  <mat-icon>currency_exchange</mat-icon>
+                </a>
+                <a class="quick-action" routerLink="/settings" matTooltip="Configuración">
+                  <mat-icon>settings</mat-icon>
+                </a>
+              }
             </div>
           </div>
         </div>
@@ -100,14 +111,6 @@ interface ConsolidatedBalance {
   styles: [`
     .dashboard-content {
       padding: 24px;
-    }
-
-    .loading-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: calc(100vh - 200px);
     }
 
     .empty-container {
@@ -237,6 +240,45 @@ interface ConsolidatedBalance {
 
     .quick-action:hover mat-icon {
       color: white;
+    }
+
+    /* Skeleton Styles */
+    .skeleton-pulse {
+      background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.1) 0%,
+        rgba(255, 255, 255, 0.2) 50%,
+        rgba(255, 255, 255, 0.1) 100%
+      );
+      background-size: 200% 100%;
+      animation: skeleton-shimmer 1.5s infinite;
+    }
+
+    @keyframes skeleton-shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .skeleton-text {
+      display: block;
+      border-radius: 4px;
+    }
+
+    .stat-value-skeleton {
+      width: 200px;
+      height: 40px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+    }
+
+    .quick-action.skeleton {
+      pointer-events: none;
+    }
+
+    .skeleton-icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 4px;
     }
   `]
 })

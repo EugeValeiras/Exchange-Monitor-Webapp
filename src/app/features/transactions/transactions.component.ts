@@ -82,145 +82,214 @@ interface ExchangeStat {
       </div>
 
       <!-- Stats Cards -->
-      @if (stats) {
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-icon total">
+      <div class="stats-grid" [class.filtered]="hasActiveFilters()" [class.single]="hasActiveFilters() && selectedTypes.size > 0 && !selectedTypes.has('interest')">
+        <!-- Total Transactions Card -->
+        <div class="stat-card">
+          <div class="stat-icon total" [class.skeleton-icon]="loading">
+            @if (loading) {
+              <div class="skeleton-pulse icon-pulse"></div>
+            } @else {
               <mat-icon>receipt_long</mat-icon>
-            </div>
-            <div class="stat-info">
-              <span class="stat-value">{{ stats.totalTransactions | number }}</span>
+            }
+          </div>
+          <div class="stat-info">
+            @if (loading) {
+              <span class="skeleton-value skeleton-pulse"></span>
+              <span class="skeleton-label skeleton-pulse"></span>
+            } @else {
+              <span class="stat-value">{{ stats?.totalTransactions | number }}</span>
               <span class="stat-label">Total Transacciones</span>
-            </div>
+            }
           </div>
+        </div>
 
+        <!-- Interest Card -->
+        @if (selectedTypes.size === 0 || selectedTypes.has('interest')) {
           <div class="stat-card interest-card">
-            <div class="stat-icon interest">
-              <mat-icon>percent</mat-icon>
+            <div class="stat-icon interest" [class.skeleton-icon]="loading">
+              @if (loading) {
+                <div class="skeleton-pulse icon-pulse"></div>
+              } @else {
+                <mat-icon>percent</mat-icon>
+              }
             </div>
             <div class="stat-info">
-              <span class="stat-value">{{ stats.totalInterestUsd | currency:'USD':'symbol':'1.2-2' }}</span>
-              <span class="stat-label">Intereses Ganados</span>
+              @if (loading) {
+                <span class="skeleton-value skeleton-pulse"></span>
+                <span class="skeleton-label skeleton-pulse"></span>
+              } @else {
+                <span class="stat-value">{{ stats?.totalInterestUsd | currency:'USD':'symbol':'1.2-2' }}</span>
+                <span class="stat-label">Intereses Ganados</span>
+              }
             </div>
           </div>
+        }
 
+        <!-- P&L Cards (only when no filters) -->
+        @if (!hasActiveFilters()) {
           <div class="stat-card pnl-card" [class.positive]="pnlSummary && pnlSummary.totalPnl >= 0" [class.negative]="pnlSummary && pnlSummary.totalPnl < 0">
-            <div class="stat-icon pnl" [class.positive]="pnlSummary && pnlSummary.totalPnl >= 0" [class.negative]="pnlSummary && pnlSummary.totalPnl < 0">
-              <mat-icon>{{ pnlSummary && pnlSummary.totalPnl >= 0 ? 'trending_up' : 'trending_down' }}</mat-icon>
+            <div class="stat-icon pnl" [class.skeleton-icon]="loading" [class.positive]="!loading && pnlSummary && pnlSummary.totalPnl >= 0" [class.negative]="!loading && pnlSummary && pnlSummary.totalPnl < 0">
+              @if (loading) {
+                <div class="skeleton-pulse icon-pulse"></div>
+              } @else {
+                <mat-icon>{{ pnlSummary && pnlSummary.totalPnl >= 0 ? 'trending_up' : 'trending_down' }}</mat-icon>
+              }
             </div>
             <div class="stat-info">
-              @if (pnlLoading) {
-                <span class="stat-value">...</span>
+              @if (loading || pnlLoading) {
+                <span class="skeleton-value skeleton-pulse"></span>
+                <span class="skeleton-label skeleton-pulse"></span>
               } @else if (pnlSummary) {
                 <span class="stat-value" [class.positive]="pnlSummary.totalPnl >= 0" [class.negative]="pnlSummary.totalPnl < 0">
                   {{ pnlSummary.totalPnl >= 0 ? '+' : '' }}{{ pnlSummary.totalPnl | currency:'USD':'symbol':'1.2-2' }}
                 </span>
+                <span class="stat-label">P&L Total</span>
               } @else {
                 <span class="stat-value">$0.00</span>
+                <span class="stat-label">P&L Total</span>
               }
-              <span class="stat-label">P&L Total</span>
             </div>
           </div>
 
           <div class="stat-card" [class.positive]="pnlSummary && pnlSummary.totalRealizedPnl >= 0" [class.negative]="pnlSummary && pnlSummary.totalRealizedPnl < 0">
-            <div class="stat-icon realized">
-              <mat-icon>check_circle</mat-icon>
+            <div class="stat-icon realized" [class.skeleton-icon]="loading">
+              @if (loading) {
+                <div class="skeleton-pulse icon-pulse"></div>
+              } @else {
+                <mat-icon>check_circle</mat-icon>
+              }
             </div>
             <div class="stat-info">
-              @if (pnlLoading) {
-                <span class="stat-value">...</span>
+              @if (loading || pnlLoading) {
+                <span class="skeleton-value skeleton-pulse"></span>
+                <span class="skeleton-label skeleton-pulse"></span>
               } @else if (pnlSummary) {
                 <span class="stat-value" [class.positive]="pnlSummary.totalRealizedPnl >= 0" [class.negative]="pnlSummary.totalRealizedPnl < 0">
                   {{ pnlSummary.totalRealizedPnl >= 0 ? '+' : '' }}{{ pnlSummary.totalRealizedPnl | currency:'USD':'symbol':'1.2-2' }}
                 </span>
+                <span class="stat-label">P&L Realizado</span>
               } @else {
                 <span class="stat-value">$0.00</span>
+                <span class="stat-label">P&L Realizado</span>
               }
-              <span class="stat-label">P&L Realizado</span>
             </div>
           </div>
 
           <div class="stat-card" [class.positive]="pnlSummary && pnlSummary.totalUnrealizedPnl >= 0" [class.negative]="pnlSummary && pnlSummary.totalUnrealizedPnl < 0">
-            <div class="stat-icon unrealized">
-              <mat-icon>schedule</mat-icon>
+            <div class="stat-icon unrealized" [class.skeleton-icon]="loading">
+              @if (loading) {
+                <div class="skeleton-pulse icon-pulse"></div>
+              } @else {
+                <mat-icon>schedule</mat-icon>
+              }
             </div>
             <div class="stat-info">
-              @if (pnlLoading) {
-                <span class="stat-value">...</span>
+              @if (loading || pnlLoading) {
+                <span class="skeleton-value skeleton-pulse"></span>
+                <span class="skeleton-label skeleton-pulse"></span>
               } @else if (pnlSummary) {
                 <span class="stat-value" [class.positive]="pnlSummary.totalUnrealizedPnl >= 0" [class.negative]="pnlSummary.totalUnrealizedPnl < 0">
                   {{ pnlSummary.totalUnrealizedPnl >= 0 ? '+' : '' }}{{ pnlSummary.totalUnrealizedPnl | currency:'USD':'symbol':'1.2-2' }}
                 </span>
+                <span class="stat-label">P&L No Realizado</span>
               } @else {
                 <span class="stat-value">$0.00</span>
+                <span class="stat-label">P&L No Realizado</span>
               }
-              <span class="stat-label">P&L No Realizado</span>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Filters -->
+      <div class="filters-wrapper">
+        <!-- Skeleton Filters (only on initial load) -->
+        <div class="filters-container filters-skeleton" [class.hidden]="!initialLoading">
+          <div class="filter-section">
+            <span class="filter-label">Tipo</span>
+            <div class="skeleton-chips">
+              @for (i of [1, 2, 3, 4]; track i) {
+                <div class="skeleton-chip skeleton-pulse"></div>
+              }
+            </div>
+          </div>
+          <div class="filter-section">
+            <span class="filter-label">Exchange</span>
+            <div class="skeleton-chips">
+              @for (i of [1, 2]; track i) {
+                <div class="skeleton-chip skeleton-pulse"></div>
+              }
+            </div>
+          </div>
+          <div class="filter-section assets-section">
+            <span class="filter-label">Assets</span>
+            <div class="skeleton-chips">
+              @for (i of [1, 2, 3, 4, 5]; track i) {
+                <div class="skeleton-chip skeleton-pulse"></div>
+              }
             </div>
           </div>
         </div>
-
-        }
-
-      <!-- Filters -->
-      <div class="filters-container">
-        <div class="filter-section">
-          <span class="filter-label">Tipo</span>
-          <mat-chip-listbox multiple (change)="onTypeFilterChange($event)" class="type-chips">
-            <mat-chip-option value="deposit" [selected]="selectedTypes.has('deposit')" class="type-chip deposit">
-              <mat-icon>arrow_downward</mat-icon>
-              Depósito
-            </mat-chip-option>
-            <mat-chip-option value="withdrawal" [selected]="selectedTypes.has('withdrawal')" class="type-chip withdrawal">
-              <mat-icon>arrow_upward</mat-icon>
-              Retiro
-            </mat-chip-option>
-            <mat-chip-option value="trade" [selected]="selectedTypes.has('trade')" class="type-chip trade">
-              <mat-icon>swap_horiz</mat-icon>
-              Trade
-            </mat-chip-option>
-            <mat-chip-option value="interest" [selected]="selectedTypes.has('interest')" class="type-chip interest">
-              <mat-icon>percent</mat-icon>
-              Interés
-            </mat-chip-option>
-          </mat-chip-listbox>
-        </div>
-
-        @if (exchangeStats.length > 0) {
+        <!-- Real Filters (shown after initial load) -->
+        <div class="filters-container filters-real" [class.hidden]="initialLoading">
           <div class="filter-section">
-            <span class="filter-label">Exchange</span>
-            <mat-chip-listbox multiple (change)="onExchangeFilterChange($event)" class="exchange-chips">
-              @for (ex of exchangeStats; track ex.exchange) {
-                <mat-chip-option [value]="ex.exchange" [selected]="selectedExchanges.has(ex.exchange)" class="exchange-chip">
-                  <app-exchange-logo [exchange]="ex.exchange" [size]="18"></app-exchange-logo>
-                  {{ ex.label }}
-                  <span class="exchange-count">{{ ex.count }}</span>
-                </mat-chip-option>
-              }
+            <span class="filter-label">Tipo</span>
+            <mat-chip-listbox multiple (change)="onTypeFilterChange($event)" class="type-chips">
+              <mat-chip-option value="deposit" [selected]="selectedTypes.has('deposit')" class="type-chip deposit">
+                <mat-icon>arrow_downward</mat-icon>
+                Depósito
+              </mat-chip-option>
+              <mat-chip-option value="withdrawal" [selected]="selectedTypes.has('withdrawal')" class="type-chip withdrawal">
+                <mat-icon>arrow_upward</mat-icon>
+                Retiro
+              </mat-chip-option>
+              <mat-chip-option value="trade" [selected]="selectedTypes.has('trade')" class="type-chip trade">
+                <mat-icon>swap_horiz</mat-icon>
+                Trade
+              </mat-chip-option>
+              <mat-chip-option value="interest" [selected]="selectedTypes.has('interest')" class="type-chip interest">
+                <mat-icon>percent</mat-icon>
+                Interés
+              </mat-chip-option>
             </mat-chip-listbox>
           </div>
-        }
 
-        <div class="filter-section assets-section">
-          <span class="filter-label">Assets</span>
-          <div class="asset-chips-container">
-            <mat-chip-listbox multiple (change)="onAssetFilterChange($event)" class="asset-chips">
-              @for (asset of assetList; track asset.name) {
-                <mat-chip-option [value]="asset.name" [selected]="selectedAssets.has(asset.name)" class="asset-chip">
-                  <img [src]="getAssetLogo(asset.name)" [alt]="asset.name" class="asset-chip-logo" (error)="onAssetLogoError($event, asset.name)">
-                  {{ asset.name }}
-                  <span class="asset-count">{{ asset.count }}</span>
-                </mat-chip-option>
-              }
-            </mat-chip-listbox>
+          @if (exchangeStats.length > 0) {
+            <div class="filter-section">
+              <span class="filter-label">Exchange</span>
+              <mat-chip-listbox multiple (change)="onExchangeFilterChange($event)" class="exchange-chips">
+                @for (ex of exchangeStats; track ex.exchange) {
+                  <mat-chip-option [value]="ex.exchange" [selected]="selectedExchanges.has(ex.exchange)" class="exchange-chip">
+                    <app-exchange-logo [exchange]="ex.exchange" [size]="18"></app-exchange-logo>
+                    {{ ex.label }}
+                    <span class="exchange-count">{{ ex.count }}</span>
+                  </mat-chip-option>
+                }
+              </mat-chip-listbox>
+            </div>
+          }
+
+          <div class="filter-section assets-section">
+            <span class="filter-label">Assets</span>
+            <div class="asset-chips-container">
+              <mat-chip-listbox multiple (change)="onAssetFilterChange($event)" class="asset-chips">
+                @for (asset of assetList; track asset.name) {
+                  <mat-chip-option [value]="asset.name" [selected]="selectedAssets.has(asset.name)" class="asset-chip">
+                    <img [src]="getAssetLogo(asset.name)" [alt]="asset.name" class="asset-chip-logo" (error)="onAssetLogoError($event, asset.name)">
+                    {{ asset.name }}
+                    <span class="asset-count">{{ asset.count }}</span>
+                  </mat-chip-option>
+                }
+              </mat-chip-listbox>
+            </div>
           </div>
         </div>
-
-        </div>
+      </div>
 
       <!-- Table -->
       @if (loading) {
-        <div class="loading-container">
-          <app-logo-loader [size]="140" text="Cargando transacciones..."></app-logo-loader>
+        <div class="table-container table-loading">
+          <app-logo-loader [size]="100" text="Cargando transacciones..."></app-logo-loader>
         </div>
       } @else if (transactions.length === 0) {
         <div class="empty-container">
@@ -455,9 +524,22 @@ interface ExchangeStat {
       margin-bottom: 24px;
     }
 
+    .stats-grid.filtered {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .stats-grid.single {
+      grid-template-columns: 1fr;
+      max-width: 300px;
+    }
+
     @media (max-width: 1400px) {
       .stats-grid {
         grid-template-columns: repeat(3, 1fr);
+      }
+
+      .stats-grid.filtered {
+        grid-template-columns: repeat(2, 1fr);
       }
     }
 
@@ -481,6 +563,8 @@ interface ExchangeStat {
       display: flex;
       align-items: center;
       gap: 16px;
+      min-height: 88px;
+      box-sizing: border-box;
     }
 
     .stat-icon {
@@ -579,31 +663,115 @@ interface ExchangeStat {
     .stat-info {
       display: flex;
       flex-direction: column;
+      flex: 1;
+      min-height: 46px;
     }
 
     .stat-value {
       font-size: 24px;
       font-weight: 700;
       color: var(--text-primary);
+      line-height: 1.2;
     }
 
     .stat-label {
       font-size: 13px;
       color: var(--text-secondary);
+      line-height: 1.4;
+    }
+
+    /* Skeleton Loading */
+    .stat-icon.skeleton-icon {
+      background: var(--bg-tertiary) !important;
+      color: transparent !important;
+    }
+
+    .icon-pulse {
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+    }
+
+    .skeleton-value {
+      display: block;
+      width: 90px;
+      height: 29px;
+      border-radius: 6px;
+    }
+
+    .skeleton-label {
+      display: block;
+      width: 120px;
+      height: 18px;
+      border-radius: 4px;
+      margin-top: 2px;
+    }
+
+    .skeleton-pulse {
+      background: linear-gradient(
+        90deg,
+        var(--bg-tertiary) 0%,
+        var(--bg-elevated) 50%,
+        var(--bg-tertiary) 100%
+      );
+      background-size: 200% 100%;
+      animation: skeleton-shimmer 1.5s infinite;
+    }
+
+    @keyframes skeleton-shimmer {
+      0% {
+        background-position: 200% 0;
+      }
+      100% {
+        background-position: -200% 0;
+      }
+    }
+
+    .skeleton-chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .skeleton-chip {
+      width: 80px;
+      height: 32px;
+      border-radius: 16px;
+    }
+
+    .table-container.table-loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 400px;
     }
 
     /* Filters */
+    .filters-wrapper {
+      position: relative;
+      margin-bottom: 24px;
+      min-height: 100px;
+    }
+
     .filters-container {
       display: flex;
       flex-wrap: wrap;
       gap: 20px;
-      align-items: flex-end;
-      justify-content: space-between;
-      margin-bottom: 24px;
+      align-items: flex-start;
       padding: 20px;
       background: var(--bg-card);
       border: 1px solid var(--border-color);
       border-radius: 12px;
+      min-height: 100px;
+      box-sizing: border-box;
+    }
+
+    .filters-container.hidden {
+      visibility: hidden;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
     }
 
     .filter-section {
@@ -1104,6 +1272,7 @@ export class TransactionsComponent implements OnInit {
   transactions: Transaction[] = [];
   stats: TransactionStats | null = null;
   loading = true;
+  initialLoading = true;
 
   // PNL data
   pnlSummary: PnlSummaryResponse | null = null;
@@ -1135,6 +1304,7 @@ export class TransactionsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.initialLoading = true;
     this.loadStats();
     this.loadTransactions();
     this.loadPnlSummary();
@@ -1171,14 +1341,44 @@ export class TransactionsComponent implements OnInit {
   }
 
   loadStats(): void {
-    this.transactionsService.getStats().subscribe({
+    // Build filter for stats
+    const statsFilter: {
+      exchange?: string;
+      startDate?: string;
+      endDate?: string;
+      types?: string[];
+      assets?: string[];
+    } = {};
+
+    if (this.selectedExchanges.size === 1) {
+      statsFilter.exchange = Array.from(this.selectedExchanges)[0];
+    }
+    if (this.startDate) {
+      statsFilter.startDate = this.formatDateForApi(this.startDate);
+    }
+    if (this.endDate) {
+      statsFilter.endDate = this.formatDateForApi(this.endDate);
+    }
+    if (this.selectedTypes.size > 0) {
+      statsFilter.types = Array.from(this.selectedTypes);
+    }
+    if (this.selectedAssets.size > 0) {
+      statsFilter.assets = Array.from(this.selectedAssets);
+    }
+
+    this.transactionsService.getStats(statsFilter).subscribe({
       next: (stats) => {
         this.stats = stats;
-        this.buildExchangeStats();
-        this.buildAssetList();
+        // Only build filter lists on initial load
+        if (this.initialLoading) {
+          this.buildExchangeStats();
+          this.buildAssetList();
+          this.initialLoading = false;
+        }
       },
       error: (err) => {
         console.error('Error loading stats:', err);
+        this.initialLoading = false;
       }
     });
   }
@@ -1257,6 +1457,7 @@ export class TransactionsComponent implements OnInit {
       delete this.filter.exchange;
     }
 
+    this.loadStats();
     this.loadTransactions();
   }
 
@@ -1268,6 +1469,7 @@ export class TransactionsComponent implements OnInit {
     this.selectedAssets.clear();
     this.selectedExchanges.clear();
     this.currentPage = 1;
+    this.loadStats();
     this.loadTransactions();
   }
 

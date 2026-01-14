@@ -10,7 +10,6 @@ import {
   PnlSummaryResponse,
   AssetPnl,
 } from '../../../core/services/pnl.service';
-import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo-loader.component';
 
 @Component({
   selector: 'app-pnl-summary',
@@ -23,7 +22,6 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
     MatIconModule,
     MatTableModule,
     MatTooltipModule,
-    LogoLoaderComponent,
   ],
   template: `
     <div class="pnl-section">
@@ -32,8 +30,41 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
       </div>
 
       @if (loading()) {
-        <div class="loading-container">
-          <app-logo-loader [size]="56" [showText]="false"></app-logo-loader>
+        <!-- Skeleton P&L Cards -->
+        <div class="pnl-cards">
+          <div class="pnl-card total skeleton-card">
+            <div class="pnl-card-header">
+              <span class="skeleton-text skeleton-pulse" style="width: 70px; height: 13px;"></span>
+              <div class="skeleton-icon-sm skeleton-pulse"></div>
+            </div>
+            <span class="skeleton-text skeleton-pulse" style="width: 140px; height: 28px;"></span>
+          </div>
+          <div class="pnl-card skeleton-card">
+            <div class="pnl-card-header">
+              <span class="skeleton-text skeleton-pulse" style="width: 70px; height: 13px;"></span>
+              <div class="skeleton-icon-sm skeleton-pulse"></div>
+            </div>
+            <span class="skeleton-text skeleton-pulse" style="width: 120px; height: 24px; margin-bottom: 4px;"></span>
+            <span class="skeleton-text skeleton-pulse" style="width: 100px; height: 12px;"></span>
+          </div>
+          <div class="pnl-card skeleton-card">
+            <div class="pnl-card-header">
+              <span class="skeleton-text skeleton-pulse" style="width: 80px; height: 13px;"></span>
+              <div class="skeleton-icon-sm skeleton-pulse"></div>
+            </div>
+            <span class="skeleton-text skeleton-pulse" style="width: 110px; height: 24px; margin-bottom: 4px;"></span>
+            <span class="skeleton-text skeleton-pulse" style="width: 110px; height: 12px;"></span>
+          </div>
+        </div>
+
+        <!-- Skeleton Period Breakdown -->
+        <div class="period-breakdown">
+          @for (i of [1, 2, 3, 4]; track i) {
+            <div class="period-item">
+              <span class="skeleton-text skeleton-pulse" style="width: 70px; height: 12px; margin-bottom: 4px;"></span>
+              <span class="skeleton-text skeleton-pulse" style="width: 80px; height: 14px;"></span>
+            </div>
+          }
         </div>
       } @else if (error()) {
         <div class="error-container">
@@ -168,10 +199,36 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
       color: var(--text-primary);
     }
 
-    .loading-container {
-      display: flex;
-      justify-content: center;
-      padding: 48px;
+    /* Skeleton Styles */
+    .skeleton-pulse {
+      background: linear-gradient(
+        90deg,
+        var(--bg-tertiary) 0%,
+        var(--bg-elevated) 50%,
+        var(--bg-tertiary) 100%
+      );
+      background-size: 200% 100%;
+      animation: skeleton-shimmer 1.5s infinite;
+    }
+
+    @keyframes skeleton-shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .skeleton-text {
+      display: block;
+      border-radius: 4px;
+    }
+
+    .skeleton-icon-sm {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+    }
+
+    .skeleton-card {
+      pointer-events: none;
     }
 
     .error-container {
