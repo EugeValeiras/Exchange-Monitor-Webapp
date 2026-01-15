@@ -326,6 +326,7 @@ export class LayoutComponent {
     { label: 'Precios', icon: 'show_chart', route: '/prices' },
     { label: 'Balances', icon: 'account_balance_wallet', route: '/balances' },
     { label: 'Transacciones', icon: 'swap_horiz', route: '/transactions' },
+    { label: 'Historial P&L', icon: 'analytics', route: '/pnl-history' },
     { label: 'Exchanges', icon: 'currency_exchange', route: '/exchanges' },
     {
       label: 'Configuración',
@@ -366,6 +367,7 @@ export class LayoutComponent {
       '/prices': 'Precios en Tiempo Real',
       '/balances': 'Balances',
       '/transactions': 'Transacciones',
+      '/pnl-history': 'Historial P&L',
       '/exchanges': 'Exchanges',
       '/settings': 'Configuración',
       '/settings/symbols': 'Pares de Precios',

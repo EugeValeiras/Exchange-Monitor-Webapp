@@ -69,15 +69,6 @@ interface ExchangeStat {
             <mat-datepicker-toggle matIconSuffix [for]="rangePicker"></mat-datepicker-toggle>
             <mat-date-range-picker #rangePicker></mat-date-range-picker>
           </mat-form-field>
-          <button
-            mat-stroked-button
-            class="recalculate-btn"
-            (click)="recalculatePnl()"
-            [disabled]="recalculating"
-            matTooltip="Recalcular P&L desde el historial de transacciones (FIFO)">
-            <mat-icon [class.spinning]="recalculating">{{ recalculating ? 'sync' : 'refresh' }}</mat-icon>
-            {{ recalculating ? 'Recalculando...' : 'Recalcular P&L' }}
-          </button>
         </div>
       </div>
 
@@ -417,7 +408,6 @@ export class TransactionsComponent implements OnInit {
   // PNL data
   pnlSummary: PnlSummaryResponse | null = null;
   pnlLoading = true;
-  recalculating = false;
 
   displayedColumns = ['timestamp', 'exchange', 'type', 'asset', 'amount', 'price', 'fee'];
 
@@ -462,22 +452,6 @@ export class TransactionsComponent implements OnInit {
       error: (err) => {
         console.error('Error loading PNL summary:', err);
         this.pnlLoading = false;
-      }
-    });
-  }
-
-  recalculatePnl(): void {
-    this.recalculating = true;
-    this.pnlService.recalculate().subscribe({
-      next: (result) => {
-        console.log('PNL recalculation complete:', result.message);
-        this.recalculating = false;
-        // Reload PNL summary after recalculation
-        this.loadPnlSummary();
-      },
-      error: (err) => {
-        console.error('Error recalculating PNL:', err);
-        this.recalculating = false;
       }
     });
   }

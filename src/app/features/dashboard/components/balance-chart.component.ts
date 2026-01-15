@@ -81,7 +81,9 @@ const ASSET_COLORS = [
             </div>
           </div>
         } @else {
-          <mat-card-title>Balance History</mat-card-title>
+          @if (!supportsMultiAsset()) {
+            <mat-card-title>Balance History</mat-card-title>
+          }
           <div class="header-actions">
             <mat-button-toggle-group
               [value]="selectedTimeframe()"
@@ -108,9 +110,10 @@ const ASSET_COLORS = [
         </div>
       } @else if (supportsMultiAsset()) {
         <div class="asset-filter-section">
-          <div class="asset-chips-container">
+          <span class="filter-label">Balance History</span>
+          <div class="asset-chips-wrapper">
             <mat-chip-listbox multiple (change)="onAssetFilterChange($event)" class="asset-chips">
-              @for (asset of availableAssets(); track asset) {
+              @for (asset of visibleAssets(); track asset) {
                 <mat-chip-option
                   [value]="asset"
                   [selected]="selectedAssets().has(asset)"
@@ -120,9 +123,20 @@ const ASSET_COLORS = [
                     <img [src]="getAssetLogo(asset)" [alt]="asset" class="asset-chip-logo" (error)="onAssetLogoError($event, asset)">
                   </span>
                   {{ asset }}
+                  <span class="asset-value">{{ getAssetValue(asset) }}</span>
                 </mat-chip-option>
               }
             </mat-chip-listbox>
+            @if (hiddenAssetsCount() > 0) {
+              <button class="show-more-btn" (click)="toggleSmallAssets()">
+                @if (showSmallAssets()) {
+                  <mat-icon>expand_less</mat-icon>
+                  Menos
+                } @else {
+                  +{{ hiddenAssetsCount() }}
+                }
+              </button>
+            }
           </div>
         </div>
       }
@@ -281,12 +295,43 @@ const ASSET_COLORS = [
     }
 
     .asset-filter-section {
+      display: flex;
+      align-items: center;
+      gap: 16px;
       padding: 0 16px 12px 16px;
+    }
+
+    .filter-label {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+      flex-shrink: 0;
     }
 
     .asset-chips-container {
       overflow-x: auto;
-      padding-bottom: 4px;
+      flex: 1;
+
+      &::-webkit-scrollbar {
+        height: 4px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: var(--bg-tertiary);
+        border-radius: 2px;
+      }
+    }
+
+    .asset-chips-wrapper {
+      display: flex;
+      align-items: center;
+      flex: 1;
+      overflow-x: auto;
 
       &::-webkit-scrollbar {
         height: 4px;
@@ -306,6 +351,13 @@ const ASSET_COLORS = [
       display: flex;
       flex-wrap: nowrap;
       gap: 6px;
+      align-items: center;
+
+      ::ng-deep .mdc-evolution-chip-set__chips {
+        display: flex;
+        align-items: center;
+        flex-wrap: nowrap;
+      }
     }
 
     .asset-chip {
@@ -354,6 +406,46 @@ const ASSET_COLORS = [
       justify-content: center;
       font-weight: 600;
       font-size: 9px;
+    }
+
+    .asset-value {
+      font-size: 11px;
+      color: var(--brand-accent);
+      font-weight: 600;
+      margin-left: 4px;
+      opacity: 0.9;
+    }
+
+    .show-more-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      height: 32px;
+      padding: 0 12px;
+      margin-left: 8px;
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      background: var(--bg-tertiary);
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+      vertical-align: middle;
+
+      &:hover {
+        background: var(--bg-elevated);
+        color: var(--text-primary);
+        border-color: var(--brand-accent);
+      }
+
+      mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+      }
     }
 
     ::ng-deep .mat-mdc-chip.mat-mdc-chip-selected {
@@ -504,9 +596,30 @@ export class BalanceChartComponent implements OnInit {
   // Multi-asset state
   selectedAssets = signal<Set<string>>(new Set());
   availableAssets = signal<string[]>([]);
+  assetValues = signal<Map<string, number>>(new Map());
+  showSmallAssets = signal(false);
+  readonly minAssetValue = 5;
+
+  // Visible assets (filtered by min value unless showSmallAssets is true)
+  visibleAssets = computed(() => {
+    const all = this.availableAssets();
+    const values = this.assetValues();
+    if (this.showSmallAssets()) {
+      return all;
+    }
+    return all.filter(asset => (values.get(asset) || 0) >= this.minAssetValue);
+  });
+
+  // Count of hidden small assets
+  hiddenAssetsCount = computed(() => {
+    const all = this.availableAssets();
+    const values = this.assetValues();
+    return all.filter(asset => (values.get(asset) || 0) < this.minAssetValue).length;
+  });
 
   private rawData = signal<ChartDataResponse | null>(null);
   private rawDataByAsset = signal<ChartDataByAssetResponse | null>(null);
+  private originalLabels = signal<string[]>([]);
 
   // Only 24h and 7d support multi-asset view
   supportsMultiAsset = computed(() => {
@@ -557,6 +670,22 @@ export class BalanceChartComponent implements OnInit {
           padding: 12,
           displayColors: hasMultipleAssets,
           callbacks: {
+            title: (tooltipItems) => {
+              if (tooltipItems.length === 0) return '';
+              const index = tooltipItems[0].dataIndex;
+              const labels = this.originalLabels();
+              if (index < labels.length) {
+                const date = new Date(labels[index]);
+                return date.toLocaleString('es-AR', {
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                });
+              }
+              return '';
+            },
             label: (context) => {
               const value = context.parsed.y ?? 0;
               const label = context.dataset.label || '';
@@ -654,6 +783,18 @@ export class BalanceChartComponent implements OnInit {
     return labels[this.selectedTimeframe()];
   }
 
+  getAssetValue(asset: string): string {
+    const value = this.assetValues().get(asset) || 0;
+    if (value >= 1000) {
+      return `$${(value / 1000).toFixed(1)}k`;
+    }
+    return `$${value.toFixed(0)}`;
+  }
+
+  toggleSmallAssets(): void {
+    this.showSmallAssets.set(!this.showSmallAssets());
+  }
+
   private loadChartData(): void {
     this.internalLoading.set(true);
     const timeframe = this.selectedTimeframe();
@@ -665,11 +806,22 @@ export class BalanceChartComponent implements OnInit {
       this.chartService.getChartDataByAsset(timeframe, assetsArray).subscribe({
         next: (data) => {
           this.rawDataByAsset.set(data);
+          this.originalLabels.set(data.labels);
 
           // Only update available assets when no filter is applied
           // This keeps the full list of assets for the filter UI
-          if (selected.size === 0 && data.availableAssets) {
-            this.availableAssets.set(data.availableAssets);
+          if (selected.size === 0 && data.availableAssets && data.assetData) {
+            // Sort assets by their current value (last data point) descending
+            const valuesMap = new Map<string, number>();
+            data.assetData.forEach(ad => {
+              const lastValue = ad.data.length > 0 ? ad.data[ad.data.length - 1] : 0;
+              valuesMap.set(ad.asset, lastValue);
+            });
+            const sortedAssets = [...data.availableAssets].sort((a, b) => {
+              return (valuesMap.get(b) || 0) - (valuesMap.get(a) || 0);
+            });
+            this.availableAssets.set(sortedAssets);
+            this.assetValues.set(valuesMap);
           }
 
           this.changeUsd.set(data.changeUsd);
@@ -697,6 +849,7 @@ export class BalanceChartComponent implements OnInit {
       this.chartService.getChartData(timeframe).subscribe({
         next: (data) => {
           this.rawData.set(data);
+          this.originalLabels.set(data.labels);
           this.changeUsd.set(data.changeUsd);
           this.changePercent.set(data.changePercent);
           this.internalLoading.set(false);

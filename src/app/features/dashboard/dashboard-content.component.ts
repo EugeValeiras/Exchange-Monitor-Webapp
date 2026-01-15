@@ -8,7 +8,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
 import { ConsolidatedBalanceService } from '../../core/services/consolidated-balance.service';
 import { BalanceChartComponent } from './components/balance-chart.component';
-import { PnlSummaryComponent } from './components/pnl-summary.component';
 import { PriceCardsComponent } from './components/price-cards.component';
 import { FlipNumberComponent } from '../../shared/components/flip-number/flip-number.component';
 
@@ -25,7 +24,6 @@ import { FlipNumberComponent } from '../../shared/components/flip-number/flip-nu
     MatProgressSpinnerModule,
     MatTooltipModule,
     BalanceChartComponent,
-    PnlSummaryComponent,
     PriceCardsComponent,
     FlipNumberComponent
   ],
@@ -117,9 +115,6 @@ import { FlipNumberComponent } from '../../shared/components/flip-number/flip-nu
 
         <!-- Price Cards -->
         <app-price-cards></app-price-cards>
-
-        <!-- P&L Summary -->
-        <app-pnl-summary></app-pnl-summary>
       }
     </div>
   `,

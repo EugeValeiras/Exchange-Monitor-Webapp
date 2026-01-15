@@ -39,6 +39,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/transactions/transactions.component').then(m => m.TransactionsComponent)
       },
       {
+        path: 'pnl-history',
+        loadComponent: () => import('./features/pnl-history/pnl-history.component').then(m => m.PnlHistoryComponent)
+      },
+      {
         path: 'exchanges',
         loadComponent: () => import('./features/credentials/credentials.component').then(m => m.CredentialsComponent)
       },
