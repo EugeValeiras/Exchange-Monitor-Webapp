@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule, MatChipListboxChange } from '@angular/material/chips';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartData, ChartOptions, ChartDataset } from 'chart.js';
+import { ConsolidatedBalanceService } from '../../../core/services/consolidated-balance.service';
 import {
   Chart,
   CategoryScale,
@@ -68,21 +69,44 @@ const ASSET_COLORS = [
   template: `
     <mat-card class="chart-card">
       <mat-card-header>
-        <mat-card-title>Balance History</mat-card-title>
-        <div class="header-actions">
-          <mat-button-toggle-group
-            [value]="selectedTimeframe()"
-            (change)="onTimeframeChange($event.value)"
-            class="timeframe-toggle">
-            <mat-button-toggle value="24h">24H</mat-button-toggle>
-            <mat-button-toggle value="7d">7D</mat-button-toggle>
-            <mat-button-toggle value="1m">1M</mat-button-toggle>
-            <mat-button-toggle value="1y">1Y</mat-button-toggle>
-          </mat-button-toggle-group>
-        </div>
+        @if (isInitialLoading()) {
+          <mat-card-title>
+            <span class="skeleton-text skeleton-pulse" style="width: 140px; height: 20px;"></span>
+          </mat-card-title>
+          <div class="header-actions">
+            <div class="timeframe-toggle-skeleton">
+              @for (i of [1, 2, 3, 4]; track i) {
+                <span class="skeleton-toggle skeleton-pulse"></span>
+              }
+            </div>
+          </div>
+        } @else {
+          <mat-card-title>Balance History</mat-card-title>
+          <div class="header-actions">
+            <mat-button-toggle-group
+              [value]="selectedTimeframe()"
+              (change)="onTimeframeChange($event.value)"
+              class="timeframe-toggle">
+              <mat-button-toggle value="24h">24H</mat-button-toggle>
+              <mat-button-toggle value="7d">7D</mat-button-toggle>
+              <mat-button-toggle value="1m">1M</mat-button-toggle>
+              <mat-button-toggle value="1y">1Y</mat-button-toggle>
+            </mat-button-toggle-group>
+          </div>
+        }
       </mat-card-header>
 
-      @if (supportsMultiAsset()) {
+      @if (isInitialLoading()) {
+        <div class="asset-filter-section">
+          <div class="asset-chips-container">
+            <div class="asset-chips-skeleton">
+              @for (i of [1, 2, 3, 4, 5, 6]; track i) {
+                <span class="skeleton-chip skeleton-pulse"></span>
+              }
+            </div>
+          </div>
+        </div>
+      } @else if (supportsMultiAsset()) {
         <div class="asset-filter-section">
           <div class="asset-chips-container">
             <mat-chip-listbox multiple (change)="onAssetFilterChange($event)" class="asset-chips">
@@ -152,6 +176,32 @@ const ASSET_COLORS = [
 
     .header-actions {
       margin-left: auto;
+    }
+
+    .timeframe-toggle-skeleton {
+      display: flex;
+      gap: 4px;
+      background: var(--bg-elevated);
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      padding: 3px;
+    }
+
+    .skeleton-toggle {
+      width: 42px;
+      height: 32px;
+      border-radius: 7px;
+    }
+
+    .asset-chips-skeleton {
+      display: flex;
+      gap: 6px;
+    }
+
+    .skeleton-chip {
+      width: 70px;
+      height: 32px;
+      border-radius: 16px;
     }
 
     .timeframe-toggle {
@@ -310,10 +360,6 @@ const ASSET_COLORS = [
       border: 1px solid var(--chip-color, var(--brand-accent)) !important;
       box-shadow: 0 0 8px color-mix(in srgb, var(--chip-color, var(--brand-accent)) 50%, transparent);
 
-      .mdc-evolution-chip__text-label {
-        color: var(--chip-color, var(--brand-accent)) !important;
-      }
-
       .mdc-evolution-chip__graphic {
         width: 0 !important;
         padding: 0 !important;
@@ -442,10 +488,18 @@ const ASSET_COLORS = [
   ],
 })
 export class BalanceChartComponent implements OnInit {
-  selectedTimeframe = signal<ChartTimeframe>('7d');
-  loading = signal(true);
+  private balanceService = inject(ConsolidatedBalanceService);
+
+  selectedTimeframe = signal<ChartTimeframe>('24h');
+  private internalLoading = signal(true);
   changeUsd = signal(0);
   changePercent = signal(0);
+
+  // Combined loading state for chart area
+  loading = computed(() => this.internalLoading());
+
+  // Initial loading state: show skeletons for header/filters while dashboard is loading
+  isInitialLoading = computed(() => this.balanceService.loading());
 
   // Multi-asset state
   selectedAssets = signal<Set<string>>(new Set());
@@ -601,7 +655,7 @@ export class BalanceChartComponent implements OnInit {
   }
 
   private loadChartData(): void {
-    this.loading.set(true);
+    this.internalLoading.set(true);
     const timeframe = this.selectedTimeframe();
     const selected = this.selectedAssets();
 
@@ -630,12 +684,12 @@ export class BalanceChartComponent implements OnInit {
             timeframe: data.timeframe,
           });
 
-          this.loading.set(false);
+          this.internalLoading.set(false);
         },
         error: (err) => {
           console.error('Error loading chart data by asset:', err);
           this.rawDataByAsset.set(null);
-          this.loading.set(false);
+          this.internalLoading.set(false);
         },
       });
     } else {
@@ -645,12 +699,12 @@ export class BalanceChartComponent implements OnInit {
           this.rawData.set(data);
           this.changeUsd.set(data.changeUsd);
           this.changePercent.set(data.changePercent);
-          this.loading.set(false);
+          this.internalLoading.set(false);
         },
         error: (err) => {
           console.error('Error loading chart data:', err);
           this.rawData.set(null);
-          this.loading.set(false);
+          this.internalLoading.set(false);
         },
       });
     }

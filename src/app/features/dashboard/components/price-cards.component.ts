@@ -1,10 +1,11 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { PriceSocketService } from '../../../core/services/price-socket.service';
 import { SettingsService } from '../../../core/services/settings.service';
+import { ConsolidatedBalanceService } from '../../../core/services/consolidated-balance.service';
 
 @Component({
   selector: 'app-price-cards',
@@ -13,37 +14,58 @@ import { SettingsService } from '../../../core/services/settings.service';
   template: `
     <div class="price-cards-container">
       <div class="section-header">
-        <h3>Precios en Tiempo Real</h3>
-        <a routerLink="/prices" class="view-all">
+        @if (loading()) {
+          <span class="skeleton-text skeleton-pulse" style="width: 180px; height: 20px;"></span>
+        } @else {
+          <h3>Precios en Tiempo Real</h3>
+        }
+        <a routerLink="/prices" class="view-all" [class.hidden]="loading()">
           Ver todos
           <mat-icon>arrow_forward</mat-icon>
         </a>
       </div>
       <div class="price-cards">
-        @for (asset of configuredAssets(); track asset) {
-          <div class="price-card" [routerLink]="'/prices'">
-            <div class="card-header">
-              <img [src]="'/' + asset.toLowerCase() + '.svg'" [alt]="asset" class="crypto-logo" (error)="onLogoError($event, asset)">
-              <div class="crypto-info">
-                <span class="crypto-symbol">{{ asset }}</span>
+        @if (loading()) {
+          @for (i of [1, 2, 3, 4, 5, 6]; track i) {
+            <div class="price-card skeleton-card">
+              <div class="card-header">
+                <div class="skeleton-logo skeleton-pulse"></div>
+                <div class="crypto-info">
+                  <span class="skeleton-text skeleton-pulse" style="width: 50px; height: 16px;"></span>
+                </div>
+              </div>
+              <div class="card-price">
+                <span class="skeleton-text skeleton-pulse" style="width: 100px; height: 24px;"></span>
+                <span class="skeleton-text skeleton-pulse" style="width: 70px; height: 16px; margin-top: 4px;"></span>
               </div>
             </div>
-            <div class="card-price">
-              @if (getPrice(asset); as price) {
-                <span class="price-value">{{ price | currency:'USD':'symbol':'1.2-4' }}</span>
-                @if (getChange24h(asset); as change) {
-                  <span class="price-change" [class.positive]="change >= 0" [class.negative]="change < 0">
-                    <mat-icon>{{ change >= 0 ? 'trending_up' : 'trending_down' }}</mat-icon>
-                    {{ change >= 0 ? '+' : '' }}{{ change | number:'1.2-2' }}%
+          }
+        } @else {
+          @for (asset of configuredAssets(); track asset) {
+            <div class="price-card" [routerLink]="'/prices'">
+              <div class="card-header">
+                <img [src]="'/' + asset.toLowerCase() + '.svg'" [alt]="asset" class="crypto-logo" (error)="onLogoError($event, asset)">
+                <div class="crypto-info">
+                  <span class="crypto-symbol">{{ asset }}</span>
+                </div>
+              </div>
+              <div class="card-price">
+                @if (getPrice(asset); as price) {
+                  <span class="price-value">{{ price | currency:'USD':'symbol':'1.2-4' }}</span>
+                  @if (getChange24h(asset); as change) {
+                    <span class="price-change" [class.positive]="change >= 0" [class.negative]="change < 0">
+                      <mat-icon>{{ change >= 0 ? 'trending_up' : 'trending_down' }}</mat-icon>
+                      {{ change >= 0 ? '+' : '' }}{{ change | number:'1.2-2' }}%
+                    </span>
+                  }
+                } @else {
+                  <span class="price-loading">
+                    <span class="skeleton-pulse"></span>
                   </span>
                 }
-              } @else {
-                <span class="price-loading">
-                  <span class="skeleton-pulse"></span>
-                </span>
-              }
+              </div>
             </div>
-          </div>
+          }
         }
       </div>
     </div>
@@ -199,6 +221,36 @@ import { SettingsService } from '../../../core/services/settings.service';
       100% { background-position: -200% 0; }
     }
 
+    .hidden {
+      visibility: hidden;
+    }
+
+    .skeleton-card {
+      pointer-events: none;
+    }
+
+    .skeleton-logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+    }
+
+    .skeleton-text {
+      display: block;
+      border-radius: 4px;
+    }
+
+    .skeleton-pulse {
+      background: linear-gradient(90deg, var(--bg-tertiary) 0%, var(--bg-elevated) 50%, var(--bg-tertiary) 100%);
+      background-size: 200% 100%;
+      animation: skeleton-shimmer 1.5s infinite;
+    }
+
+    @keyframes skeleton-shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
     @media (max-width: 600px) {
       .price-cards {
         grid-template-columns: repeat(2, 1fr);
@@ -209,6 +261,12 @@ import { SettingsService } from '../../../core/services/settings.service';
 export class PriceCardsComponent implements OnInit {
   // Configured assets from settings (unique, excluding stablecoins)
   configuredAssets = signal<string[]>([]);
+  private internalLoading = signal(true);
+
+  private balanceService = inject(ConsolidatedBalanceService);
+
+  // Combined loading state: show skeleton while either internal or dashboard is loading
+  loading = computed(() => this.internalLoading() || this.balanceService.loading());
 
   constructor(
     private settingsService: SettingsService,
@@ -235,6 +293,10 @@ export class PriceCardsComponent implements OnInit {
 
         this.configuredAssets.set(uniqueAssets);
         this.priceService.subscribe(allSymbols);
+        this.internalLoading.set(false);
+      },
+      error: () => {
+        this.internalLoading.set(false);
       }
     });
   }
