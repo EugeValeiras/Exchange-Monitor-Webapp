@@ -76,10 +76,6 @@ import { FlipNumberComponent } from '../../shared/components/flip-number/flip-nu
                       matTooltipPosition="above">info_outline</mat-icon>
                   </div>
                 }
-                <span class="stat-hint">
-                  {{ balanceService.exchangeCount() }} exchange{{ balanceService.exchangeCount() !== 1 ? 's' : '' }} ·
-                  {{ balanceService.assetCount() }} activo{{ balanceService.assetCount() !== 1 ? 's' : '' }}
-                </span>
               }
             </div>
             <div class="quick-actions">
@@ -271,11 +267,6 @@ import { FlipNumberComponent } from '../../shared/components/flip-number/flip-nu
 
     .stat-change .info-icon:hover {
       color: rgba(255, 255, 255, 0.8);
-    }
-
-    .quick-stat-card .stat-hint {
-      font-size: 13px;
-      color: rgba(255, 255, 255, 0.6);
     }
 
     .quick-actions {
