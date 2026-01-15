@@ -53,6 +53,10 @@ export const routes: Routes = [
           {
             path: 'symbols',
             loadComponent: () => import('./features/settings/settings.component').then(m => m.SettingsComponent)
+          },
+          {
+            path: 'maintenance',
+            loadComponent: () => import('./features/settings/maintenance.component').then(m => m.MaintenanceComponent)
           }
         ]
       }

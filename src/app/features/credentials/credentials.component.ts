@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -11,6 +11,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { CredentialsService, ExchangeCredential, ExchangeType } from '../../core/services/credentials.service';
 import { CredentialDialogComponent } from './credential-dialog.component';
 import { ImportDialogComponent } from './import-dialog.component';
+import { NexoImportDialogComponent } from './nexo-import-dialog.component';
 import { ExchangeLogoComponent } from '../../shared/components/exchange-logo/exchange-logo.component';
 import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-loader.component';
 
@@ -116,14 +117,9 @@ import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-lo
                     <button
                       mat-icon-button
                       class="action-btn import"
-                      (click)="triggerFileInput(credential)"
-                      [disabled]="importingId === credential.id"
+                      (click)="openNexoImportDialog(credential)"
                       matTooltip="Importar CSV">
-                      @if (importingId === credential.id) {
-                        <mat-spinner diameter="20"></mat-spinner>
-                      } @else {
-                        <mat-icon>upload_file</mat-icon>
-                      }
+                      <mat-icon>upload_file</mat-icon>
                     </button>
                   } @else {
                     <button
@@ -181,8 +177,6 @@ import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-lo
             </div>
           }
         </div>
-
-        <input type="file" #fileInput hidden accept=".csv,text/csv,application/csv,text/plain" (change)="onFileSelected($event)">
       }
     </div>
   `,
@@ -496,15 +490,11 @@ import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-lo
   `]
 })
 export class CredentialsComponent implements OnInit {
-  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
-
   credentials: ExchangeCredential[] = [];
   loading = true;
   testingId: string | null = null;
   togglingId: string | null = null;
-  importingId: string | null = null;
   syncingId: string | null = null;
-  private pendingCredentialId: string | null = null;
 
   constructor(
     private credentialsService: CredentialsService,
@@ -632,7 +622,8 @@ export class CredentialsComponent implements OnInit {
 
   openImportDialog(credential: ExchangeCredential): void {
     const dialogRef = this.dialog.open(ImportDialogComponent, {
-      width: '520px',
+      width: '580px',
+      height: '520px',
       data: {
         credentialId: credential.id,
         exchange: credential.exchange
@@ -660,31 +651,18 @@ export class CredentialsComponent implements OnInit {
     });
   }
 
-  triggerFileInput(credential: ExchangeCredential): void {
-    this.pendingCredentialId = credential.id;
-    this.fileInput.nativeElement.click();
-  }
+  openNexoImportDialog(credential: ExchangeCredential): void {
+    const dialogRef = this.dialog.open(NexoImportDialogComponent, {
+      width: '580px',
+      height: '500px',
+      data: {
+        credentialId: credential.id
+      }
+    });
 
-  onFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-
-    if (!file || !this.pendingCredentialId) return;
-
-    this.importingId = this.pendingCredentialId;
-
-    this.credentialsService.importCsv(this.pendingCredentialId, file).subscribe({
-      next: (result) => {
-        this.importingId = null;
-        this.pendingCredentialId = null;
-        input.value = '';
-        this.showSuccess(`Importado: ${result.imported} transacciones (${result.skipped} duplicados)`);
-      },
-      error: (err) => {
-        this.importingId = null;
-        this.pendingCredentialId = null;
-        input.value = '';
-        this.showError(err.error?.message || 'Error al importar CSV');
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && result.imported > 0) {
+        this.showSuccess(`Importación completada: ${result.imported} transacciones`);
       }
     });
   }

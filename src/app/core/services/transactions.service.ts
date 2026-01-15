@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
 
-export type TransactionType = 'deposit' | 'withdrawal' | 'trade' | 'interest';
+export type TransactionType = 'deposit' | 'withdrawal' | 'trade' | 'interest' | 'fee';
 export type ExchangeType = 'binance' | 'kraken' | 'nexo-pro' | 'nexo-manual';
 
 export interface Transaction {
@@ -107,7 +107,8 @@ export class TransactionsService {
       deposit: 'Depósito',
       withdrawal: 'Retiro',
       trade: 'Trade',
-      interest: 'Interés'
+      interest: 'Interés',
+      fee: 'Comisión'
     };
     return labels[type] || type;
   }
@@ -117,7 +118,8 @@ export class TransactionsService {
       deposit: 'arrow_downward',
       withdrawal: 'arrow_upward',
       trade: 'swap_horiz',
-      interest: 'percent'
+      interest: 'percent',
+      fee: 'toll'
     };
     return icons[type] || 'receipt';
   }

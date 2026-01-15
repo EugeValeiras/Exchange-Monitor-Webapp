@@ -184,11 +184,15 @@ type AssetBalance = EnrichedAssetBalance;
                       <span class="exchange-label">{{ exchange.label }}</span>
                     </div>
                   </div>
-                  <div class="exchange-value">
-                    {{ exchange.totalValueUsd | currency:'USD':'symbol':'1.2-2' }}
-                  </div>
-                  <div class="exchange-assets">
-                    {{ exchange.balances.length }} activos
+                  <div class="exchange-bottom">
+                    <div class="exchange-value">
+                      {{ exchange.totalValueUsd | currency:'USD':'symbol':'1.2-2' }}
+                    </div>
+                    @if (getExchangeChange24h(exchange) !== null) {
+                      <div class="exchange-change" [class.positive]="getExchangeChange24h(exchange)! > 0" [class.negative]="getExchangeChange24h(exchange)! < 0">
+                        {{ getExchangeChange24h(exchange)! > 0 ? '+' : '' }}{{ getExchangeChange24h(exchange) | number:'1.2-2' }}%
+                      </div>
+                    }
                   </div>
                 </div>
               }
@@ -218,8 +222,15 @@ type AssetBalance = EnrichedAssetBalance;
                     <span class="top-asset-name">{{ asset.asset }}</span>
                     <span class="top-asset-amount">{{ asset.total | number:'1.4-8' }}</span>
                   </div>
-                  <div class="top-asset-value">
-                    {{ asset.valueUsd | currency:'USD':'symbol':'1.2-2' }}
+                  <div class="top-asset-right">
+                    <div class="top-asset-value">
+                      {{ asset.valueUsd | currency:'USD':'symbol':'1.2-2' }}
+                    </div>
+                    @if (asset.change24h !== undefined && asset.change24h !== null) {
+                      <div class="top-asset-change" [class.positive]="asset.change24h > 0" [class.negative]="asset.change24h < 0">
+                        {{ asset.change24h > 0 ? '+' : '' }}{{ asset.change24h | number:'1.2-2' }}%
+                      </div>
+                    }
                   </div>
                 </div>
               }
@@ -229,23 +240,20 @@ type AssetBalance = EnrichedAssetBalance;
 
         <!-- Assets Table -->
         <div class="section">
-          @if (!loading()) {
-            <div class="section-header">
-              <div class="section-actions">
+          <div class="table-container">
+            @if (!loading()) {
+              <div class="table-toolbar">
                 <mat-slide-toggle
                   [(ngModel)]="showAllAssets"
                   (change)="onShowAllToggle()"
                   class="show-all-toggle">
                   Mostrar todos
                 </mat-slide-toggle>
-                <button mat-icon-button (click)="loadBalances()">
+                <button mat-icon-button (click)="loadBalances()" class="refresh-btn">
                   <mat-icon>refresh</mat-icon>
                 </button>
               </div>
-            </div>
-          }
-
-          <div class="table-container">
+            }
             @if (loading()) {
               <div class="skeleton-table">
                 <div class="skeleton-table-header">
@@ -710,6 +718,23 @@ type AssetBalance = EnrichedAssetBalance;
       overflow: hidden;
     }
 
+    .table-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: var(--bg-elevated);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .table-toolbar .refresh-btn {
+      color: var(--text-secondary);
+    }
+
+    .table-toolbar .refresh-btn:hover {
+      color: var(--text-primary);
+    }
+
     table {
       width: 100%;
     }
@@ -877,16 +902,30 @@ type AssetBalance = EnrichedAssetBalance;
       color: var(--text-secondary);
     }
 
+    .exchange-bottom {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+    }
+
     .exchange-value {
       font-size: 24px;
       font-weight: 600;
       color: var(--text-primary);
-      margin-bottom: 4px;
     }
 
-    .exchange-assets {
-      font-size: 13px;
+    .exchange-change {
+      font-size: 14px;
+      font-weight: 600;
       color: var(--text-tertiary);
+    }
+
+    .exchange-change.positive {
+      color: var(--color-success);
+    }
+
+    .exchange-change.negative {
+      color: var(--color-error);
     }
 
     .top-assets-grid {
@@ -943,10 +982,31 @@ type AssetBalance = EnrichedAssetBalance;
       font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
     }
 
+    .top-asset-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 2px;
+    }
+
     .top-asset-value {
       font-size: 18px;
       font-weight: 600;
       color: var(--text-primary);
+    }
+
+    .top-asset-change {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+    }
+
+    .top-asset-change.positive {
+      color: var(--color-success);
+    }
+
+    .top-asset-change.negative {
+      color: var(--color-error);
     }
 
     /* Skeleton Styles */
@@ -1298,6 +1358,37 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
       'nexo-manual': 'Nexo Manual'
     };
     return displayNames[exchange] || exchange;
+  }
+
+  /**
+   * Calculate weighted 24h change for an exchange based on its asset balances
+   */
+  getExchangeChange24h(exchange: ExchangeBalance): number | null {
+    const balanceData = this.balanceService.balance();
+    if (!balanceData || !exchange.balances || exchange.balances.length === 0) {
+      return null;
+    }
+
+    let totalWeightedChange = 0;
+    let totalValue = 0;
+
+    for (const assetBalance of exchange.balances) {
+      // Find the enriched asset data with change24h
+      const enrichedAsset = balanceData.byAsset.find(a => a.asset === assetBalance.asset);
+      if (enrichedAsset && enrichedAsset.change24h !== undefined && enrichedAsset.change24h !== null) {
+        const assetValue = assetBalance.total * (enrichedAsset.priceUsd || 0);
+        if (assetValue > 0) {
+          totalWeightedChange += enrichedAsset.change24h * assetValue;
+          totalValue += assetValue;
+        }
+      }
+    }
+
+    if (totalValue === 0) {
+      return null;
+    }
+
+    return totalWeightedChange / totalValue;
   }
 
   getAssetLogo(asset: string): string {

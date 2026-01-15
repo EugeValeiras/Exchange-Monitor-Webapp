@@ -336,6 +336,12 @@
     border-right: none;
     padding-right: 0;
   }
+
+  // Remove border-right from section before assets to avoid double border
+  &:has(+ .assets-section) {
+    border-right: none;
+    padding-right: 0;
+  }
 }
 
 .filter-label {
@@ -346,10 +352,21 @@
   letter-spacing: 0.5px;
 }
 
+.type-chips-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 .type-chips, .exchange-chips {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.type-chips-row {
+  display: flex;
+  gap: 8px;
 }
 
 // Type chip styles
@@ -414,6 +431,17 @@
     }
   }
 
+  &.fee {
+    --mdc-chip-elevated-container-color: rgba(168, 85, 247, 0.1) !important;
+    --mdc-chip-label-text-color: #a855f7 !important;
+    --mdc-chip-elevated-selected-container-color: rgba(168, 85, 247, 0.15) !important;
+
+    &.mat-mdc-chip-selected {
+      border-color: #a855f7;
+      box-shadow: 0 0 8px rgba(168, 85, 247, 0.5);
+    }
+  }
+
   mat-icon {
     font-size: 16px !important;
     width: 16px !important;
@@ -434,17 +462,66 @@
 .assets-section {
   flex: 1;
   min-width: 200px;
+  border-right: none;
+  padding-right: 0;
+  padding-left: 20px;
+  border-left: 1px solid var(--border-color);
 }
 
 .asset-chips-container {
   max-width: 100%;
-  overflow-x: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+
+  ::ng-deep .mat-mdc-chip-listbox {
+    display: contents;
+  }
+
+  ::ng-deep .mdc-evolution-chip-set {
+    display: contents;
+  }
+
+  ::ng-deep .mdc-evolution-chip-set__chips {
+    display: contents;
+  }
+
+  ::ng-deep .mat-mdc-chip-set {
+    display: contents;
+  }
 }
 
 .asset-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  display: contents;
+}
+
+.show-more-assets {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border: 1px dashed var(--border-color);
+  border-radius: 16px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+
+  &:hover {
+    border-color: var(--text-tertiary);
+    color: var(--text-primary);
+    background: var(--bg-elevated);
+  }
 }
 
 // Asset chip styles
@@ -681,6 +758,11 @@
   &.interest {
     background: rgba(59, 130, 246, 0.15);
     color: #3b82f6;
+  }
+
+  &.fee {
+    background: rgba(168, 85, 247, 0.15);
+    color: #a855f7;
   }
 }
 

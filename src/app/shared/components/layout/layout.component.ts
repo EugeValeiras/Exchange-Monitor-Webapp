@@ -331,7 +331,8 @@ export class LayoutComponent {
       label: 'Configuración',
       icon: 'settings',
       children: [
-        { label: 'Pares de Precios', route: '/settings/symbols' }
+        { label: 'Pares de Precios', route: '/settings/symbols' },
+        { label: 'Mantenimiento', route: '/settings/maintenance' }
       ]
     }
   ];
@@ -367,7 +368,8 @@ export class LayoutComponent {
       '/transactions': 'Transacciones',
       '/exchanges': 'Exchanges',
       '/settings': 'Configuración',
-      '/settings/symbols': 'Pares de Precios'
+      '/settings/symbols': 'Pares de Precios',
+      '/settings/maintenance': 'Mantenimiento'
     };
     return titles[path] || 'Exchange Monitor';
   }

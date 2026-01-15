@@ -151,53 +151,6 @@ interface ExchangeStat {
             </div>
           </div>
 
-          <div class="stat-card" [class.positive]="pnlSummary && pnlSummary.totalRealizedPnl >= 0" [class.negative]="pnlSummary && pnlSummary.totalRealizedPnl < 0">
-            <div class="stat-icon realized" [class.skeleton-icon]="loading">
-              @if (loading) {
-                <div class="skeleton-pulse icon-pulse"></div>
-              } @else {
-                <mat-icon>check_circle</mat-icon>
-              }
-            </div>
-            <div class="stat-info">
-              @if (loading || pnlLoading) {
-                <span class="skeleton-value skeleton-pulse"></span>
-                <span class="skeleton-label skeleton-pulse"></span>
-              } @else if (pnlSummary) {
-                <span class="stat-value" [class.positive]="pnlSummary.totalRealizedPnl >= 0" [class.negative]="pnlSummary.totalRealizedPnl < 0">
-                  {{ pnlSummary.totalRealizedPnl >= 0 ? '+' : '' }}{{ pnlSummary.totalRealizedPnl | currency:'USD':'symbol':'1.2-2' }}
-                </span>
-                <span class="stat-label">P&L Realizado</span>
-              } @else {
-                <span class="stat-value">$0.00</span>
-                <span class="stat-label">P&L Realizado</span>
-              }
-            </div>
-          </div>
-
-          <div class="stat-card" [class.positive]="pnlSummary && pnlSummary.totalUnrealizedPnl >= 0" [class.negative]="pnlSummary && pnlSummary.totalUnrealizedPnl < 0">
-            <div class="stat-icon unrealized" [class.skeleton-icon]="loading">
-              @if (loading) {
-                <div class="skeleton-pulse icon-pulse"></div>
-              } @else {
-                <mat-icon>schedule</mat-icon>
-              }
-            </div>
-            <div class="stat-info">
-              @if (loading || pnlLoading) {
-                <span class="skeleton-value skeleton-pulse"></span>
-                <span class="skeleton-label skeleton-pulse"></span>
-              } @else if (pnlSummary) {
-                <span class="stat-value" [class.positive]="pnlSummary.totalUnrealizedPnl >= 0" [class.negative]="pnlSummary.totalUnrealizedPnl < 0">
-                  {{ pnlSummary.totalUnrealizedPnl >= 0 ? '+' : '' }}{{ pnlSummary.totalUnrealizedPnl | currency:'USD':'symbol':'1.2-2' }}
-                </span>
-                <span class="stat-label">P&L No Realizado</span>
-              } @else {
-                <span class="stat-value">$0.00</span>
-                <span class="stat-label">P&L No Realizado</span>
-              }
-            </div>
-          </div>
         }
       </div>
 
@@ -234,24 +187,32 @@ interface ExchangeStat {
         <div class="filters-container filters-real" [class.hidden]="initialLoading">
           <div class="filter-section">
             <span class="filter-label">Tipo</span>
-            <mat-chip-listbox multiple (change)="onTypeFilterChange($event)" class="type-chips">
-              <mat-chip-option value="deposit" [selected]="selectedTypes.has('deposit')" class="type-chip deposit">
-                <mat-icon>arrow_downward</mat-icon>
-                Depósito
-              </mat-chip-option>
-              <mat-chip-option value="withdrawal" [selected]="selectedTypes.has('withdrawal')" class="type-chip withdrawal">
-                <mat-icon>arrow_upward</mat-icon>
-                Retiro
-              </mat-chip-option>
-              <mat-chip-option value="trade" [selected]="selectedTypes.has('trade')" class="type-chip trade">
-                <mat-icon>swap_horiz</mat-icon>
-                Trade
-              </mat-chip-option>
-              <mat-chip-option value="interest" [selected]="selectedTypes.has('interest')" class="type-chip interest">
-                <mat-icon>percent</mat-icon>
-                Interés
-              </mat-chip-option>
-            </mat-chip-listbox>
+            <div class="type-chips-container">
+              <mat-chip-listbox multiple (change)="onTypeFilterChange($event)" class="type-chips type-chips-row">
+                <mat-chip-option value="deposit" [selected]="selectedTypes.has('deposit')" class="type-chip deposit">
+                  <mat-icon>arrow_downward</mat-icon>
+                  Depósito
+                </mat-chip-option>
+                <mat-chip-option value="withdrawal" [selected]="selectedTypes.has('withdrawal')" class="type-chip withdrawal">
+                  <mat-icon>arrow_upward</mat-icon>
+                  Retiro
+                </mat-chip-option>
+                <mat-chip-option value="trade" [selected]="selectedTypes.has('trade')" class="type-chip trade">
+                  <mat-icon>swap_horiz</mat-icon>
+                  Trade
+                </mat-chip-option>
+              </mat-chip-listbox>
+              <mat-chip-listbox multiple (change)="onTypeFilterChange($event)" class="type-chips type-chips-row">
+                <mat-chip-option value="interest" [selected]="selectedTypes.has('interest')" class="type-chip interest">
+                  <mat-icon>percent</mat-icon>
+                  Interés
+                </mat-chip-option>
+                <mat-chip-option value="fee" [selected]="selectedTypes.has('fee')" class="type-chip fee">
+                  <mat-icon>toll</mat-icon>
+                  Comisión
+                </mat-chip-option>
+              </mat-chip-listbox>
+            </div>
           </div>
 
           @if (exchangeStats.length > 0) {
@@ -271,9 +232,9 @@ interface ExchangeStat {
 
           <div class="filter-section assets-section">
             <span class="filter-label">Assets</span>
-            <div class="asset-chips-container">
+            <div class="asset-chips-container" [class.expanded]="assetsExpanded">
               <mat-chip-listbox multiple (change)="onAssetFilterChange($event)" class="asset-chips">
-                @for (asset of assetList; track asset.name) {
+                @for (asset of visibleAssets; track asset.name) {
                   <mat-chip-option [value]="asset.name" [selected]="selectedAssets.has(asset.name)" class="asset-chip">
                     <img [src]="getAssetLogo(asset.name)" [alt]="asset.name" class="asset-chip-logo" (error)="onAssetLogoError($event, asset.name)">
                     {{ asset.name }}
@@ -281,6 +242,17 @@ interface ExchangeStat {
                   </mat-chip-option>
                 }
               </mat-chip-listbox>
+              @if (hiddenAssetsCount > 0) {
+                <button class="show-more-assets" (click)="toggleAssetsExpanded()">
+                  @if (assetsExpanded) {
+                    <mat-icon>expand_less</mat-icon>
+                    Menos
+                  } @else {
+                    <mat-icon>expand_more</mat-icon>
+                    +{{ hiddenAssetsCount }}
+                  }
+                </button>
+              }
             </div>
           </div>
         </div>
@@ -374,9 +346,9 @@ interface ExchangeStat {
             <ng-container matColumnDef="amount">
               <th mat-header-cell *matHeaderCellDef>Cantidad</th>
               <td mat-cell *matCellDef="let tx">
-                <div class="amount-cell" [class.buy]="tx.side === 'buy' || tx.type === 'deposit' || tx.type === 'interest'" [class.sell]="tx.side === 'sell' || tx.type === 'withdrawal'">
+                <div class="amount-cell" [class.buy]="tx.side === 'buy' || tx.type === 'deposit' || tx.type === 'interest'" [class.sell]="tx.side === 'sell' || tx.type === 'withdrawal' || tx.type === 'fee'">
                   <span class="amount">
-                    {{ tx.side === 'sell' || tx.type === 'withdrawal' ? '-' : '+' }}{{ tx.amount | number:'1.2-8' }}
+                    {{ tx.side === 'sell' || tx.type === 'withdrawal' || tx.type === 'fee' ? '-' : '+' }}{{ tx.amount | number:'1.2-8' }}
                   </span>
                   <span class="asset">{{ tx.asset }}</span>
                 </div>
@@ -461,6 +433,8 @@ export class TransactionsComponent implements OnInit {
   selectedTypes = new Set<string>();
   selectedAssets = new Set<string>();
   assetList: { name: string; count: number }[] = [];
+  assetsExpanded = false;
+  readonly maxVisibleAssets = 9;
 
   // Exchange filtering
   selectedExchanges = new Set<string>();
@@ -663,6 +637,21 @@ export class TransactionsComponent implements OnInit {
       event.value.forEach(asset => this.selectedAssets.add(asset));
     }
     this.applyFilters();
+  }
+
+  get visibleAssets(): { name: string; count: number }[] {
+    if (this.assetsExpanded) {
+      return this.assetList;
+    }
+    return this.assetList.slice(0, this.maxVisibleAssets);
+  }
+
+  get hiddenAssetsCount(): number {
+    return Math.max(0, this.assetList.length - this.maxVisibleAssets);
+  }
+
+  toggleAssetsExpanded(): void {
+    this.assetsExpanded = !this.assetsExpanded;
   }
 
   onExchangeFilterChange(event: { value: string[] }): void {

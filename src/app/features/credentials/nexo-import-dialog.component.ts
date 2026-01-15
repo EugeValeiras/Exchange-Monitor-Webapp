@@ -1,68 +1,41 @@
 import { Component, Inject, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatSelectModule } from '@angular/material/select';
-import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../environments/environment';
-import * as XLSX from 'xlsx';
+import { CredentialsService } from '../../core/services/credentials.service';
 
-export interface ImportDialogData {
+export interface NexoImportDialogData {
   credentialId: string;
-  exchange: string;
 }
 
 interface ImportResult {
   imported: number;
   skipped: number;
-  errors: number;
+  errors?: number;
 }
 
-type ImportType = 'deposits' | 'withdrawals' | 'transactions';
-
 @Component({
-  selector: 'app-import-dialog',
+  selector: 'app-nexo-import-dialog',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
     MatDialogModule,
     MatButtonModule,
     MatIconModule,
-    MatSelectModule,
-    MatFormFieldModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
   ],
   template: `
     <div class="import-dialog">
-      <h2 mat-dialog-title>Importar datos de Binance</h2>
+      <h2 mat-dialog-title>Importar datos de Nexo</h2>
 
       <mat-dialog-content>
-        <div class="form-section">
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Tipo de archivo</mat-label>
-            <mat-select [(value)]="selectedType">
-              <mat-option value="deposits">
-                <mat-icon>arrow_downward</mat-icon>
-                Deposit History (Historial de depósitos)
-              </mat-option>
-              <mat-option value="withdrawals">
-                <mat-icon>arrow_upward</mat-icon>
-                Withdraw History (Historial de retiros)
-              </mat-option>
-              <mat-option value="transactions">
-                <mat-icon>swap_horiz</mat-icon>
-                Transaction History (Intereses, trades, etc.)
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-        </div>
+        <p class="instructions">
+          Exporta tu historial de transacciones desde Nexo en formato CSV y súbelo aquí.
+        </p>
 
         <div
           class="drop-zone"
@@ -99,25 +72,25 @@ type ImportType = 'deposits' | 'withdrawals' | 'transactions';
             <mat-icon class="upload-icon">cloud_upload</mat-icon>
             <p class="drop-text">Arrastra el archivo aquí</p>
             <p class="drop-hint">o haz click para seleccionar</p>
-            <p class="file-types">Solo archivos .xlsx</p>
+            <p class="file-types">Solo archivos .csv</p>
           }
 
           <input
             #fileInput
             type="file"
             hidden
-            accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            accept=".csv,text/csv"
             (change)="onFileSelected($event)">
         </div>
 
         @if (result) {
-          <div class="result-container" [class.success]="result.errors === 0" [class.warning]="result.errors > 0">
-            <mat-icon>{{ result.errors === 0 ? 'check_circle' : 'warning' }}</mat-icon>
+          <div class="result-container" [class.success]="!result.errors || result.errors === 0" [class.warning]="result.errors && result.errors > 0">
+            <mat-icon>{{ !result.errors || result.errors === 0 ? 'check_circle' : 'warning' }}</mat-icon>
             <div class="result-text">
               <span class="result-title">Importación completada</span>
               <span class="result-details">
                 {{ result.imported }} importados, {{ result.skipped }} omitidos
-                @if (result.errors > 0) {
+                @if (result.errors && result.errors > 0) {
                   , {{ result.errors }} errores
                 }
               </span>
@@ -162,20 +135,10 @@ type ImportType = 'deposits' | 'withdrawals' | 'transactions';
       max-height: none !important;
     }
 
-    .form-section {
-      margin-bottom: 20px;
-    }
-
-    .full-width {
-      width: 100%;
-    }
-
-    ::ng-deep .mat-mdc-option mat-icon {
-      margin-right: 8px;
-      font-size: 20px;
-      width: 20px;
-      height: 20px;
-      vertical-align: middle;
+    .instructions {
+      color: var(--text-secondary);
+      font-size: 14px;
+      margin: 0 0 20px 0;
     }
 
     .drop-zone {
@@ -401,10 +364,9 @@ type ImportType = 'deposits' | 'withdrawals' | 'transactions';
     }
   `]
 })
-export class ImportDialogComponent {
+export class NexoImportDialogComponent {
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
-  selectedType: ImportType = 'deposits';
   selectedFile: File | null = null;
   isDragOver = false;
   uploading = false;
@@ -414,9 +376,9 @@ export class ImportDialogComponent {
   error: string | null = null;
 
   constructor(
-    private dialogRef: MatDialogRef<ImportDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: ImportDialogData,
-    private http: HttpClient
+    private dialogRef: MatDialogRef<NexoImportDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: NexoImportDialogData,
+    private credentialsService: CredentialsService
   ) {}
 
   onDragOver(event: DragEvent): void {
@@ -454,8 +416,8 @@ export class ImportDialogComponent {
   }
 
   private handleFile(file: File): void {
-    if (!file.name.endsWith('.xlsx')) {
-      this.error = 'Solo se aceptan archivos Excel (.xlsx)';
+    if (!file.name.endsWith('.csv')) {
+      this.error = 'Solo se aceptan archivos CSV (.csv)';
       return;
     }
 
@@ -465,17 +427,14 @@ export class ImportDialogComponent {
     this.recordCount = null;
     this.parsingFile = true;
 
-    // Parse Excel file to count records
+    // Parse CSV file to count records
     const reader = new FileReader();
     reader.onload = (e: ProgressEvent<FileReader>) => {
       try {
-        const data = e.target?.result;
-        const workbook = XLSX.read(data, { type: 'binary' });
-        const firstSheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[firstSheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-        // Subtract 1 for header row, and filter out empty rows
-        this.recordCount = Math.max(0, jsonData.filter((row: unknown) => Array.isArray(row) && row.length > 0).length - 1);
+        const text = e.target?.result as string;
+        const lines = text.split('\n').filter(line => line.trim().length > 0);
+        // Subtract 1 for header row
+        this.recordCount = Math.max(0, lines.length - 1);
         this.parsingFile = false;
       } catch {
         this.parsingFile = false;
@@ -486,7 +445,7 @@ export class ImportDialogComponent {
       this.parsingFile = false;
       this.recordCount = null;
     };
-    reader.readAsBinaryString(file);
+    reader.readAsText(file);
   }
 
   removeFile(event: Event): void {
@@ -518,16 +477,16 @@ export class ImportDialogComponent {
     this.error = null;
     this.result = null;
 
-    const formData = new FormData();
-    formData.append('file', this.selectedFile);
-
-    const endpoint = `${environment.apiUrl}/imports/binance-${this.selectedType}/${this.data.credentialId}`;
-
-    this.http.post<ImportResult>(endpoint, formData).subscribe({
+    this.credentialsService.importCsv(this.data.credentialId, this.selectedFile).subscribe({
       next: (result) => {
         this.uploading = false;
         this.result = result;
         this.selectedFile = null;
+        this.recordCount = null;
+        // Reset file input
+        if (this.fileInput?.nativeElement) {
+          this.fileInput.nativeElement.value = '';
+        }
       },
       error: (err) => {
         this.uploading = false;

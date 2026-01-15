@@ -1,0 +1,121 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-label="ARS coin">
+  <defs>
+    <!-- Soft drop shadow -->
+    <filter id="fShadow" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB">
+      <feOffset dy="3"/>
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0
+                                                     0 0 0 0 0
+                                                     0 0 0 0 0
+                                                     0 0 0 .28 0" result="shadow"/>
+      <feMerge>
+        <feMergeNode in="shadow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Inner shadow for depth (subtle) -->
+    <filter id="fInner" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB">
+      <feOffset dx="0" dy="1"/>
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feComposite in="blur" in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1" result="inner"/>
+      <feColorMatrix in="inner" type="matrix" values="0 0 0 0 0
+                                                     0 0 0 0 0
+                                                     0 0 0 0 0
+                                                     0 0 0 .16 0"/>
+      <feComposite in2="SourceGraphic" operator="over"/>
+    </filter>
+
+    <!-- Celeste gradients -->
+    <linearGradient id="gCeleste" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="var(--ar-celeste, #74ACDF)"/>
+      <stop offset="100%" stop-color="var(--ar-celeste-deep, #4F8FCB)"/>
+    </linearGradient>
+
+    <!-- Clip for the circle -->
+    <clipPath id="clipCoin">
+      <circle cx="64" cy="64" r="54"/>
+    </clipPath>
+
+    <!-- Gloss highlight overlay -->
+    <linearGradient id="gHighlight" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.42"/>
+      <stop offset="60%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Sun of May (stylized): a central disk + alternating rays -->
+    <radialGradient id="gSun" cx="40%" cy="35%" r="70%">
+      <stop offset="0%" stop-color="#FFF3B0"/>
+      <stop offset="55%" stop-color="var(--ar-sun, #F6B40E)"/>
+      <stop offset="100%" stop-color="#C98500"/>
+    </radialGradient>
+
+    <!-- Ray shapes (centered at 0,0 pointing up) -->
+    <path id="rayLong" d="M0,-22 L3,-12 L0,-8 L-3,-12 Z"/>
+    <path id="rayShort" d="M0,-19 L2.4,-12.2 L0,-9.5 L-2.4,-12.2 Z"/>
+  </defs>
+
+  <!-- Coin face -->
+  <g filter="url(#fShadow)" clip-path="url(#clipCoin)">
+    <!-- Background base (white) -->
+    <rect x="10" y="10" width="108" height="108" fill="#FFFFFF" filter="url(#fInner)"/>
+
+    <!-- Three horizontal bands -->
+    <!-- Total height: 108, each band: 36 -->
+    <rect x="10" y="10" width="108" height="36" fill="url(#gCeleste)" filter="url(#fInner)"/>
+    <rect x="10" y="82" width="108" height="36" fill="url(#gCeleste)" filter="url(#fInner)"/>
+
+    <!-- Sun of May (center) -->
+    <g transform="translate(64 64)" filter="url(#fInner)">
+      <!-- Rays (16 long + 16 short alternating = 32 total like many stylized depictions) -->
+      <g fill="url(#gSun)" opacity="0.98">
+        <!-- 16 long rays -->
+        <use href="#rayLong" transform="rotate(0)"/>
+        <use href="#rayLong" transform="rotate(22.5)"/>
+        <use href="#rayLong" transform="rotate(45)"/>
+        <use href="#rayLong" transform="rotate(67.5)"/>
+        <use href="#rayLong" transform="rotate(90)"/>
+        <use href="#rayLong" transform="rotate(112.5)"/>
+        <use href="#rayLong" transform="rotate(135)"/>
+        <use href="#rayLong" transform="rotate(157.5)"/>
+        <use href="#rayLong" transform="rotate(180)"/>
+        <use href="#rayLong" transform="rotate(202.5)"/>
+        <use href="#rayLong" transform="rotate(225)"/>
+        <use href="#rayLong" transform="rotate(247.5)"/>
+        <use href="#rayLong" transform="rotate(270)"/>
+        <use href="#rayLong" transform="rotate(292.5)"/>
+        <use href="#rayLong" transform="rotate(315)"/>
+        <use href="#rayLong" transform="rotate(337.5)"/>
+
+        <!-- 16 short rays offset -->
+        <use href="#rayShort" transform="rotate(11.25)"/>
+        <use href="#rayShort" transform="rotate(33.75)"/>
+        <use href="#rayShort" transform="rotate(56.25)"/>
+        <use href="#rayShort" transform="rotate(78.75)"/>
+        <use href="#rayShort" transform="rotate(101.25)"/>
+        <use href="#rayShort" transform="rotate(123.75)"/>
+        <use href="#rayShort" transform="rotate(146.25)"/>
+        <use href="#rayShort" transform="rotate(168.75)"/>
+        <use href="#rayShort" transform="rotate(191.25)"/>
+        <use href="#rayShort" transform="rotate(213.75)"/>
+        <use href="#rayShort" transform="rotate(236.25)"/>
+        <use href="#rayShort" transform="rotate(258.75)"/>
+        <use href="#rayShort" transform="rotate(281.25)"/>
+        <use href="#rayShort" transform="rotate(303.75)"/>
+        <use href="#rayShort" transform="rotate(326.25)"/>
+        <use href="#rayShort" transform="rotate(348.75)"/>
+      </g>
+
+      <!-- Central disk -->
+      <circle r="11" fill="url(#gSun)"/>
+      <circle r="11" fill="none" stroke="rgba(0,0,0,0.18)" stroke-width="0.8"/>
+    </g>
+
+    <!-- Gloss highlight -->
+    <path d="M18 55c12-22 40-34 68-29 12 2 22 7 30 15-9-4-19-6-30-6-26 0-48 12-62 30-3 4-5 8-6 12-2-7-2-14 0-22z" fill="url(#gHighlight)" opacity="0.50"/>
+  </g>
+
+  <!-- Subtle outline (no rim) -->
+  <circle cx="64" cy="64" r="54" fill="none" stroke="var(--outline, rgba(0,0,0,0.18))" stroke-width="2"/>
+  <circle cx="64" cy="64" r="53" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="1"/>
+</svg>
