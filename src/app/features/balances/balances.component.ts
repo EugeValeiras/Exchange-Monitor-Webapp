@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal, ViewChild, AfterViewInit, effect, DestroyRef, inject, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, ViewChild, AfterViewInit, effect, DestroyRef, inject, computed, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, CurrencyPipe, DecimalPipe } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -12,6 +12,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { Subject, interval, Subscription } from 'rxjs';
+import { throttle } from 'rxjs/operators';
 import { ConsolidatedBalanceService, EnrichedAssetBalance } from '../../core/services/consolidated-balance.service';
 import { PriceSocketService } from '../../core/services/price-socket.service';
 import { SettingsService } from '../../core/services/settings.service';
@@ -28,6 +30,7 @@ type AssetBalance = EnrichedAssetBalance;
 @Component({
   selector: 'app-balances',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     CurrencyPipe,
@@ -300,7 +303,7 @@ type AssetBalance = EnrichedAssetBalance;
                 }
               </div>
             } @else {
-              <table mat-table [dataSource]="dataSource" matSort>
+              <table mat-table [dataSource]="dataSource" matSort [trackBy]="trackByAsset">
                 <ng-container matColumnDef="asset">
                   <th mat-header-cell *matHeaderCellDef mat-sort-header>Activo</th>
                   <td mat-cell *matCellDef="let row">
@@ -1146,6 +1149,7 @@ type AssetBalance = EnrichedAssetBalance;
 export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild(MatSort) sort!: MatSort;
   private destroyRef = inject(DestroyRef);
+  private cdr = inject(ChangeDetectorRef);
 
   // Local state for filtering
   displayedColumns = ['asset', 'exchanges', 'price', 'change24h', 'total', 'value'];
@@ -1163,6 +1167,10 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly filteredChange24h = this._filteredChange24h.asReadonly();
   readonly filteredChangeUsd24h = this._filteredChangeUsd24h.asReadonly();
 
+  // Throttle updates to reduce re-renders
+  private updateSubject = new Subject<void>();
+  private updateSubscription: Subscription | null = null;
+
   constructor(
     public balanceService: ConsolidatedBalanceService,
     public priceSocket: PriceSocketService,
@@ -1173,13 +1181,26 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
       return data.asset.toLowerCase().includes(filter);
     };
 
+    // Throttle balance updates to max 1 per 100ms
+    this.updateSubscription = this.updateSubject.pipe(
+      throttle(() => interval(100), { leading: true, trailing: true })
+    ).subscribe(() => {
+      this.applyFilters();
+      this.cdr.markForCheck();
+    });
+
     // React to balance changes from centralized service
     effect(() => {
       const balance = this.balanceService.balance();
       if (balance) {
-        this.applyFilters();
+        this.updateSubject.next();
       }
     });
+  }
+
+  // TrackBy function for MatTable - prevents full re-render
+  trackByAsset(index: number, row: EnrichedAssetBalance): string {
+    return row.asset;
   }
 
   ngOnInit() {
@@ -1226,6 +1247,8 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy() {
     // Don't disconnect - service is shared
+    this.updateSubscription?.unsubscribe();
+    this.updateSubject.complete();
   }
 
   loading = computed(() => this.balanceService.loading());

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, computed, effect, ViewChild, AfterViewInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, computed, effect, ViewChild, AfterViewInit, inject, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, CurrencyPipe, DecimalPipe } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -11,6 +11,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatChipsModule } from '@angular/material/chips';
 import { RouterLink } from '@angular/router';
+import { Subject, interval, Subscription } from 'rxjs';
+import { throttle } from 'rxjs/operators';
 import { PriceSocketService, PriceUpdate, ExchangePrice } from '../../core/services/price-socket.service';
 import { SettingsService } from '../../core/services/settings.service';
 import { ExchangeLogoComponent } from '../../shared/components/exchange-logo/exchange-logo.component';
@@ -46,6 +48,7 @@ interface QuoteStat {
 @Component({
   selector: 'app-prices',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     CurrencyPipe,
@@ -164,7 +167,7 @@ interface QuoteStat {
           </div>
         } @else {
           <div class="table-container">
-            <table mat-table [dataSource]="dataSource" matSort>
+            <table mat-table [dataSource]="dataSource" matSort [trackBy]="trackByRow">
               <!-- Asset Column -->
               <ng-container matColumnDef="asset">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header>Activo</th>
@@ -625,6 +628,7 @@ export class PricesComponent implements OnInit, OnDestroy, AfterViewInit {
 
   priceSocket = inject(PriceSocketService);
   private settingsService = inject(SettingsService);
+  private cdr = inject(ChangeDetectorRef);
 
   displayedColumns = ['asset', 'price', 'change24h', 'range24h', 'source', 'lastUpdated'];
   dataSource = new MatTableDataSource<PriceRow>([]);
@@ -648,11 +652,33 @@ export class PricesComponent implements OnInit, OnDestroy, AfterViewInit {
 
   pricesCount = computed(() => this.priceSocket.prices().size);
 
+  // Throttle updates to reduce re-renders
+  private updateSubject = new Subject<Map<string, PriceUpdate>>();
+  private pendingPrices: Map<string, PriceUpdate> | null = null;
+  private updateSubscription: Subscription | null = null;
+
   constructor() {
+    // Throttle price updates to max 1 per 100ms (still real-time, but batches rapid bursts)
+    this.updateSubscription = this.updateSubject.pipe(
+      throttle(() => interval(100), { leading: true, trailing: true })
+    ).subscribe(prices => {
+      this.updatePricesData(prices);
+      this.cdr.markForCheck();
+    });
+
+    // Listen to price signal changes and queue updates
     effect(() => {
       const prices = this.priceSocket.prices();
-      this.updatePricesData(prices);
+      if (prices.size > 0) {
+        this.pendingPrices = prices;
+        this.updateSubject.next(prices);
+      }
     });
+  }
+
+  // TrackBy function for MatTable - prevents full re-render
+  trackByRow(index: number, row: PriceRow): string {
+    return `${row.symbol}:${row.source}`;
   }
 
   ngOnInit(): void {
@@ -666,6 +692,8 @@ export class PricesComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngOnDestroy(): void {
     // Don't disconnect - shared service
+    this.updateSubscription?.unsubscribe();
+    this.updateSubject.complete();
   }
 
   private loadConfiguredSymbols(): void {
