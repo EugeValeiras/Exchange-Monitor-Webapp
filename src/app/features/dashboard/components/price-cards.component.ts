@@ -1,23 +1,25 @@
-import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { Component, OnInit, signal, computed, inject, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { PriceSocketService } from '../../../core/services/price-socket.service';
 import { SettingsService } from '../../../core/services/settings.service';
+import { FavoritesService } from '../../../core/services/favorites.service';
 import { ConsolidatedBalanceService } from '../../../core/services/consolidated-balance.service';
+import { FavoriteButtonComponent } from '../../../shared/components/favorite-button/favorite-button.component';
 
 @Component({
   selector: 'app-price-cards',
   standalone: true,
-  imports: [CommonModule, RouterLink, MatIconModule, MatTooltipModule],
+  imports: [CommonModule, RouterLink, MatIconModule, MatTooltipModule, FavoriteButtonComponent],
   template: `
     <div class="price-cards-container">
       <div class="section-header">
         @if (loading()) {
           <span class="skeleton-text skeleton-pulse" style="width: 180px; height: 20px;"></span>
         } @else {
-          <h3>Precios en Tiempo Real</h3>
+          <h3>Mercados Favoritos</h3>
         }
         <a routerLink="/prices" class="view-all" [class.hidden]="loading()">
           Ver todos
@@ -40,9 +42,16 @@ import { ConsolidatedBalanceService } from '../../../core/services/consolidated-
               </div>
             </div>
           }
+        } @else if (favoriteAssets().length === 0) {
+          <div class="empty-favorites">
+            <mat-icon>star_border</mat-icon>
+            <p>No tenés mercados favoritos</p>
+            <span>Marcá activos como favoritos en la página de <a routerLink="/balances">Balances</a></span>
+          </div>
         } @else {
-          @for (asset of configuredAssets(); track asset) {
-            <div class="price-card" [routerLink]="'/prices'">
+          @for (asset of favoriteAssets(); track asset) {
+            <div class="price-card">
+              <app-favorite-button [asset]="asset" class="card-favorite-btn"></app-favorite-button>
               <div class="card-header">
                 <img [src]="'/' + asset.toLowerCase() + '.svg'" [alt]="asset" class="crypto-logo" (error)="onLogoError($event, asset)">
                 <div class="crypto-info">
@@ -115,12 +124,54 @@ import { ConsolidatedBalanceService } from '../../../core/services/consolidated-
       gap: 16px;
     }
 
+    .empty-favorites {
+      grid-column: 1 / -1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      background: var(--bg-card);
+      border: 1px dashed var(--border-color);
+      border-radius: 12px;
+      text-align: center;
+
+      mat-icon {
+        font-size: 48px;
+        width: 48px;
+        height: 48px;
+        color: var(--text-tertiary);
+        margin-bottom: 12px;
+      }
+
+      p {
+        margin: 0 0 8px 0;
+        font-size: 16px;
+        font-weight: 500;
+        color: var(--text-primary);
+      }
+
+      span {
+        font-size: 14px;
+        color: var(--text-secondary);
+
+        a {
+          color: var(--brand-primary);
+          text-decoration: none;
+
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+      }
+    }
+
     .price-card {
+      position: relative;
       background: var(--bg-card);
       border: 1px solid var(--border-color);
       border-radius: 12px;
       padding: 16px;
-      cursor: pointer;
       transition: all 0.2s ease;
 
       &:hover {
@@ -128,6 +179,12 @@ import { ConsolidatedBalanceService } from '../../../core/services/consolidated-
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       }
+    }
+
+    .card-favorite-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
     }
 
     .card-header {
@@ -259,46 +316,45 @@ import { ConsolidatedBalanceService } from '../../../core/services/consolidated-
   `]
 })
 export class PriceCardsComponent implements OnInit {
-  // Configured assets from settings (unique, excluding stablecoins)
-  configuredAssets = signal<string[]>([]);
   private internalLoading = signal(true);
 
   private balanceService = inject(ConsolidatedBalanceService);
+  private favoritesService = inject(FavoritesService);
+  private priceService = inject(PriceSocketService);
+  private settingsService = inject(SettingsService);
+
+  // Use favorites from the service
+  favoriteAssets = this.favoritesService.favorites;
 
   // Combined loading state: show skeleton while either internal or dashboard is loading
   loading = computed(() => this.internalLoading() || this.balanceService.loading());
 
-  constructor(
-    private settingsService: SettingsService,
-    private priceService: PriceSocketService
-  ) {}
-
-  ngOnInit(): void {
-    this.loadConfiguredSymbols();
-  }
-
-  private loadConfiguredSymbols(): void {
-    this.settingsService.loadAllSymbols().subscribe({
-      next: (response) => {
-        const allSymbols: string[] = [];
-        Object.values(response.symbolsByExchange || {}).forEach(symbols => {
-          allSymbols.push(...symbols);
-        });
-
-        // Extract unique assets and filter out stablecoins
-        const stablecoins = ['USDT', 'USDC', 'BUSD', 'DAI', 'TUSD', 'USD', 'ARS'];
-        const uniqueAssets = [...new Set(allSymbols.map(s => s.split('/')[0]))]
-          .filter(asset => !stablecoins.includes(asset.toUpperCase()))
-          .sort();
-
-        this.configuredAssets.set(uniqueAssets);
-        this.priceService.subscribe(allSymbols);
-        this.internalLoading.set(false);
-      },
-      error: () => {
-        this.internalLoading.set(false);
+  constructor() {
+    // Subscribe to price updates when favorites change
+    effect(() => {
+      const favorites = this.favoritesService.favorites();
+      if (favorites.length > 0) {
+        // Subscribe to prices for favorite assets
+        const symbols = favorites.flatMap(asset => [`${asset}/USDT`, `${asset}/USD`]);
+        this.priceService.subscribe(symbols);
       }
     });
+  }
+
+  ngOnInit(): void {
+    this.loadFavorites();
+  }
+
+  private loadFavorites(): void {
+    // Load favorites if not already loaded
+    if (!this.favoritesService.loaded()) {
+      this.favoritesService.loadFavorites().subscribe({
+        next: () => this.internalLoading.set(false),
+        error: () => this.internalLoading.set(false)
+      });
+    } else {
+      this.internalLoading.set(false);
+    }
   }
 
   getPrice(asset: string): number | undefined {
