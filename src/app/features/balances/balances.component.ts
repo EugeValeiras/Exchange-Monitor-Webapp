@@ -127,13 +127,13 @@ type AssetBalance = EnrichedAssetBalance;
                 <span class="stat-value">
                   <app-flip-number [value]="getTotalValueUsd()" format="currency" [decimals]="2" size="large"></app-flip-number>
                 </span>
-                @if (balanceService.change24h() !== null) {
-                  <div class="stat-change" [class.positive]="balanceService.change24h()! >= 0" [class.negative]="balanceService.change24h()! < 0">
+                @if (getChange24h() !== null) {
+                  <div class="stat-change" [class.positive]="getChange24h()! >= 0" [class.negative]="getChange24h()! < 0">
                     <span class="change-value">
-                      {{ balanceService.changeUsd24h()! >= 0 ? '+' : '' }}{{ balanceService.changeUsd24h() | currency:'USD':'symbol':'1.2-2' }}
+                      {{ getChangeUsd24h()! >= 0 ? '+' : '' }}{{ getChangeUsd24h() | currency:'USD':'symbol':'1.2-2' }}
                     </span>
                     <span class="change-percent">
-                      ({{ balanceService.change24h()! >= 0 ? '+' : '' }}{{ balanceService.change24h() | number:'1.2-2' }}%)
+                      ({{ getChange24h()! >= 0 ? '+' : '' }}{{ getChange24h() | number:'1.2-2' }}%)
                     </span>
                     <span class="change-label">24h</span>
                     <mat-icon
@@ -1137,7 +1137,11 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // Computed filtered data
   private _filteredTotalValueUsd = signal(0);
+  private _filteredChange24h = signal<number | null>(null);
+  private _filteredChangeUsd24h = signal<number | null>(null);
   readonly filteredTotalValueUsd = this._filteredTotalValueUsd.asReadonly();
+  readonly filteredChange24h = this._filteredChange24h.asReadonly();
+  readonly filteredChangeUsd24h = this._filteredChangeUsd24h.asReadonly();
 
   constructor(
     public balanceService: ConsolidatedBalanceService,
@@ -1269,6 +1273,8 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
       this._filteredTotalValueUsd.set(
         sortedAssets.reduce((sum, asset) => sum + (asset.valueUsd || 0), 0)
       );
+      // Calculate 24h change for filtered assets
+      this.calculateFiltered24hChange(sortedAssets);
     } else {
       // Filter to INCLUDE only selected exchanges
       const filteredAssets: EnrichedAssetBalance[] = [];
@@ -1300,7 +1306,45 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
       this._filteredTotalValueUsd.set(
         filteredAssets.reduce((sum, asset) => sum + (asset.valueUsd || 0), 0)
       );
+      // Calculate 24h change for filtered assets
+      this.calculateFiltered24hChange(filteredAssets);
     }
+  }
+
+  /**
+   * Calculate 24h change for filtered assets
+   */
+  private calculateFiltered24hChange(assets: EnrichedAssetBalance[]): void {
+    let totalCurrentValue = 0;
+    let totalPreviousValue = 0;
+
+    for (const asset of assets) {
+      const currentValue = asset.valueUsd || 0;
+      const change = asset.change24h;
+
+      if (currentValue > 0 && change !== undefined && change !== null) {
+        // Calculate what the value was 24h ago
+        const previousValue = currentValue / (1 + change / 100);
+        totalCurrentValue += currentValue;
+        totalPreviousValue += previousValue;
+      } else if (currentValue > 0) {
+        // No change data, assume 0% change
+        totalCurrentValue += currentValue;
+        totalPreviousValue += currentValue;
+      }
+    }
+
+    if (totalPreviousValue === 0) {
+      this._filteredChange24h.set(null);
+      this._filteredChangeUsd24h.set(null);
+      return;
+    }
+
+    const overallChange = ((totalCurrentValue - totalPreviousValue) / totalPreviousValue) * 100;
+    const changeUsd = totalCurrentValue - totalPreviousValue;
+
+    this._filteredChange24h.set(overallChange);
+    this._filteredChangeUsd24h.set(changeUsd);
   }
 
   // Computed total value (filtered or unfiltered)
@@ -1309,6 +1353,22 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
       return this.filteredTotalValueUsd();
     }
     return this.balanceService.totalValueUsd();
+  }
+
+  // Computed 24h change (filtered or unfiltered)
+  getChange24h(): number | null {
+    if (this.hasExchangeFilter() || (!this.showAllAssets && this.configuredAssets.size > 0)) {
+      return this.filteredChange24h();
+    }
+    return this.balanceService.change24h();
+  }
+
+  // Computed 24h change in USD (filtered or unfiltered)
+  getChangeUsd24h(): number | null {
+    if (this.hasExchangeFilter() || (!this.showAllAssets && this.configuredAssets.size > 0)) {
+      return this.filteredChangeUsd24h();
+    }
+    return this.balanceService.changeUsd24h();
   }
 
   getExchangeTooltip(row: AssetBalance, exchange: string): string {
