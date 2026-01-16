@@ -17,7 +17,7 @@ import { CommonModule } from '@angular/common';
         <img [src]="'/nexo-pro.svg'" [width]="size" [height]="size" alt="Nexo Pro" class="exchange-img" />
       }
       @case ('nexo-manual') {
-        <img [src]="'/nexo-manual.svg'" [width]="size" [height]="size" alt="Nexo Manual" class="exchange-img" />
+        <img [src]="'/nexo-manual.svg'" [width]="size" [height]="size" alt="Nexo" class="exchange-img" />
       }
       @default {
         <div class="fallback-icon" [style.width.px]="size" [style.height.px]="size">

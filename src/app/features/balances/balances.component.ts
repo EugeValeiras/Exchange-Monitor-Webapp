@@ -1471,7 +1471,7 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
       'binance': 'Binance',
       'kraken': 'Kraken',
       'nexo-pro': 'Nexo Pro',
-      'nexo-manual': 'Nexo Manual'
+      'nexo-manual': 'Nexo'
     };
     return displayNames[exchange] || exchange;
   }

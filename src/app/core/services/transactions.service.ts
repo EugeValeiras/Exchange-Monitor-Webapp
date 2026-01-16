@@ -129,7 +129,7 @@ export class TransactionsService {
       binance: 'Binance',
       kraken: 'Kraken',
       'nexo-pro': 'Nexo Pro',
-      'nexo-manual': 'Nexo Manual'
+      'nexo-manual': 'Nexo'
     };
     return labels[exchange] || exchange;
   }

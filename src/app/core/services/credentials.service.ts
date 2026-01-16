@@ -154,7 +154,7 @@ export class CredentialsService {
       [ExchangeType.BINANCE]: 'Binance',
       [ExchangeType.KRAKEN]: 'Kraken',
       [ExchangeType.NEXO_PRO]: 'Nexo Pro',
-      [ExchangeType.NEXO_MANUAL]: 'Nexo Manual'
+      [ExchangeType.NEXO_MANUAL]: 'Nexo'
     };
     return labels[exchange] || exchange;
   }

@@ -97,7 +97,7 @@ export interface CredentialDialogData {
         @if (isNexoManual && !isEditing) {
           <div class="nexo-manual-info">
             <mat-icon>info</mat-icon>
-            <span>Nexo Manual no requiere credenciales API. Después de crear la cuenta, podrás importar tus transacciones desde un archivo CSV.</span>
+            <span>Nexo no requiere credenciales API. Después de crear la cuenta, podrás importar tus transacciones desde un archivo CSV.</span>
           </div>
         }
 
@@ -207,7 +207,7 @@ export class CredentialDialogComponent {
     { value: ExchangeType.BINANCE, label: 'Binance' },
     { value: ExchangeType.KRAKEN, label: 'Kraken' },
     { value: ExchangeType.NEXO_PRO, label: 'Nexo Pro' },
-    { value: ExchangeType.NEXO_MANUAL, label: 'Nexo Manual (CSV)' }
+    { value: ExchangeType.NEXO_MANUAL, label: 'Nexo (CSV)' }
   ];
 
   constructor(
