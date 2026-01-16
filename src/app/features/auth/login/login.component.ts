@@ -69,7 +69,7 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
 
           <button mat-raised-button color="primary" type="submit" class="submit-btn" [disabled]="loading || loginForm.invalid">
             @if (loading) {
-              <mat-spinner diameter="20"></mat-spinner>
+              <mat-spinner diameter="20" class="button-spinner"></mat-spinner>
             } @else {
               Iniciar sesión
             }
@@ -176,6 +176,18 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
       font-size: 16px;
       font-weight: 500;
       margin-top: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .submit-btn .button-spinner {
+      display: inline-block;
+    }
+
+    ::ng-deep .submit-btn .button-spinner circle {
+      stroke: currentColor !important;
     }
 
     .auth-footer {

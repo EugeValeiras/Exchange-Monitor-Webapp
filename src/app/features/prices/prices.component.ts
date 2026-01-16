@@ -16,6 +16,7 @@ import { throttle } from 'rxjs/operators';
 import { PriceSocketService, PriceUpdate, ExchangePrice } from '../../core/services/price-socket.service';
 import { SettingsService } from '../../core/services/settings.service';
 import { ExchangeLogoComponent } from '../../shared/components/exchange-logo/exchange-logo.component';
+import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-loader.component';
 
 interface PriceRow {
   symbol: string;
@@ -64,7 +65,8 @@ interface QuoteStat {
     MatInputModule,
     MatTooltipModule,
     MatChipsModule,
-    ExchangeLogoComponent
+    ExchangeLogoComponent,
+    LogoLoaderComponent
   ],
   template: `
     <div class="prices-content">
@@ -157,7 +159,11 @@ interface QuoteStat {
 
       <!-- Prices Table -->
       <div class="section">
-        @if (pricesCount() === 0) {
+        @if (isInitialLoading) {
+          <div class="loading-state">
+            <app-logo-loader [size]="80" text="Cargando precios..." [showText]="true"></app-logo-loader>
+          </div>
+        } @else if (pricesCount() === 0) {
           <div class="empty-state">
             <mat-icon>show_chart</mat-icon>
             <p>No hay pares de precios configurados</p>
@@ -472,6 +478,16 @@ interface QuoteStat {
       color: var(--text-tertiary);
     }
 
+    .loading-state {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
     .empty-state {
       background: var(--bg-card);
       border: 1px solid var(--border-color);
@@ -652,6 +668,9 @@ export class PricesComponent implements OnInit, OnDestroy, AfterViewInit {
 
   pricesCount = computed(() => this.priceSocket.prices().size);
 
+  // Loading state
+  isInitialLoading = true;
+
   // Throttle updates to reduce re-renders
   private updateSubject = new Subject<Map<string, PriceUpdate>>();
   private pendingPrices: Map<string, PriceUpdate> | null = null;
@@ -663,6 +682,10 @@ export class PricesComponent implements OnInit, OnDestroy, AfterViewInit {
       throttle(() => interval(100), { leading: true, trailing: true })
     ).subscribe(prices => {
       this.updatePricesData(prices);
+      // Stop showing loading once we have data
+      if (this.isInitialLoading && prices.size > 0) {
+        this.isInitialLoading = false;
+      }
       this.cdr.markForCheck();
     });
 

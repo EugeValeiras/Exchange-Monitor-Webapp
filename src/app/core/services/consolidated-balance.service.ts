@@ -128,6 +128,28 @@ export class ConsolidatedBalanceService implements OnDestroy {
         this._rawBalance.set(updatedBalance);
         this._isSyncing.set(false);
       });
+
+    // Listen to auth changes and reset when user logs out
+    effect(() => {
+      const user = this.authService.user();
+      if (!user && this._initialized()) {
+        console.log('[ConsolidatedBalanceService] User logged out, resetting state');
+        this.reset();
+      }
+    });
+  }
+
+  /**
+   * Reset service state (called on logout)
+   */
+  private reset(): void {
+    this._rawBalance.set(null);
+    this._loading.set(true);
+    this._error.set('');
+    this._isSyncing.set(false);
+    this._initialized.set(false);
+    this.balanceSocket.disconnect();
+    this.priceSocket.disconnect();
   }
 
   /**
