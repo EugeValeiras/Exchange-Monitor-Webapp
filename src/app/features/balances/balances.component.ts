@@ -15,10 +15,12 @@ import { RouterLink } from '@angular/router';
 import { ConsolidatedBalanceService, EnrichedAssetBalance } from '../../core/services/consolidated-balance.service';
 import { PriceSocketService } from '../../core/services/price-socket.service';
 import { SettingsService } from '../../core/services/settings.service';
+import { FavoritesService } from '../../core/services/favorites.service';
 import { ExchangeBalance } from '../../core/services/balance-socket.service';
 import { ExchangeLogoComponent } from '../../shared/components/exchange-logo/exchange-logo.component';
 import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-loader.component';
 import { FlipNumberComponent } from '../../shared/components/flip-number/flip-number.component';
+import { FavoriteButtonComponent } from '../../shared/components/favorite-button/favorite-button.component';
 
 // Type alias for template compatibility
 type AssetBalance = EnrichedAssetBalance;
@@ -44,7 +46,8 @@ type AssetBalance = EnrichedAssetBalance;
     MatSlideToggleModule,
     ExchangeLogoComponent,
     LogoLoaderComponent,
-    FlipNumberComponent
+    FlipNumberComponent,
+    FavoriteButtonComponent
   ],
   template: `
     <div class="balances-content">
@@ -243,12 +246,20 @@ type AssetBalance = EnrichedAssetBalance;
           <div class="table-container">
             @if (!loading()) {
               <div class="table-toolbar">
-                <mat-slide-toggle
-                  [(ngModel)]="showAllAssets"
-                  (change)="onShowAllToggle()"
-                  class="show-all-toggle">
-                  Mostrar todos
-                </mat-slide-toggle>
+                <div class="toolbar-toggles">
+                  <mat-slide-toggle
+                    [(ngModel)]="showOnlyFavorites"
+                    (change)="onFavoritesToggle()"
+                    class="favorites-toggle">
+                    Solo favoritos
+                  </mat-slide-toggle>
+                  <mat-slide-toggle
+                    [(ngModel)]="showAllAssets"
+                    (change)="onShowAllToggle()"
+                    class="show-all-toggle">
+                    Mostrar todos
+                  </mat-slide-toggle>
+                </div>
                 <button mat-icon-button (click)="loadBalances()" class="refresh-btn">
                   <mat-icon>refresh</mat-icon>
                 </button>
@@ -294,6 +305,7 @@ type AssetBalance = EnrichedAssetBalance;
                   <th mat-header-cell *matHeaderCellDef mat-sort-header>Activo</th>
                   <td mat-cell *matCellDef="let row">
                     <div class="asset-cell">
+                      <app-favorite-button [asset]="row.asset"></app-favorite-button>
                       <img [src]="getAssetLogo(row.asset)" [alt]="row.asset" class="asset-logo" (error)="onLogoError($event, row.asset)">
                       <span class="asset-name">{{ row.asset }}</span>
                     </div>
@@ -676,7 +688,14 @@ type AssetBalance = EnrichedAssetBalance;
       gap: 16px;
     }
 
-    .show-all-toggle {
+    .toolbar-toggles {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .show-all-toggle,
+    .favorites-toggle {
       font-size: 13px;
       color: var(--text-secondary);
     }
@@ -1133,6 +1152,7 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
   dataSource = new MatTableDataSource<EnrichedAssetBalance>([]);
   selectedExchanges = new Set<string>();
   showAllAssets = false;
+  showOnlyFavorites = false;
   configuredAssets = new Set<string>();
 
   // Computed filtered data
@@ -1146,7 +1166,8 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     public balanceService: ConsolidatedBalanceService,
     public priceSocket: PriceSocketService,
-    private settingsService: SettingsService
+    private settingsService: SettingsService,
+    public favoritesService: FavoritesService
   ) {
     this.dataSource.filterPredicate = (data: EnrichedAssetBalance, filter: string) => {
       return data.asset.toLowerCase().includes(filter);
@@ -1164,6 +1185,7 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit() {
     this.balanceService.initialize();
     this.loadConfiguredAssets();
+    this.favoritesService.loadFavorites().subscribe();
   }
 
   private loadConfiguredAssets(): void {
@@ -1185,6 +1207,10 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onShowAllToggle(): void {
+    this.applyFilters();
+  }
+
+  onFavoritesToggle(): void {
     this.applyFilters();
   }
 
@@ -1261,6 +1287,13 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!this.showAllAssets && this.configuredAssets.size > 0) {
       assetsToProcess = assetsToProcess.filter(asset =>
         this.configuredAssets.has(asset.asset)
+      );
+    }
+
+    // Filter by favorites
+    if (this.showOnlyFavorites) {
+      assetsToProcess = assetsToProcess.filter(asset =>
+        this.favoritesService.isFavorite(asset.asset)
       );
     }
 

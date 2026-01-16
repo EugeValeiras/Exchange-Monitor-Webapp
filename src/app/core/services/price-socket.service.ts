@@ -1,4 +1,4 @@
-import { Injectable, OnDestroy, signal, computed } from '@angular/core';
+import { Injectable, OnDestroy, signal, computed, Signal, WritableSignal } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
 import { environment } from '../../../environments/environment';
 import { AuthService } from './auth.service';
