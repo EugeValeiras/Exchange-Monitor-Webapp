@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
@@ -8,7 +8,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatDividerModule } from '@angular/material/divider';
 import { AuthService } from '../../../core/services/auth.service';
+import { PasskeyService } from '../../../core/services/passkey.service';
 import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo-loader.component';
 
 @Component({
@@ -24,6 +26,7 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
+    MatDividerModule,
     LogoLoaderComponent
   ],
   template: `
@@ -67,13 +70,33 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
             </div>
           }
 
-          <button mat-raised-button color="primary" type="submit" class="submit-btn" [disabled]="loading || loginForm.invalid">
+          <button mat-raised-button color="primary" type="submit" class="submit-btn" [disabled]="loading || passkeyLoading || loginForm.invalid">
             @if (loading) {
               <mat-spinner diameter="20" class="button-spinner"></mat-spinner>
             } @else {
-              Iniciar sesión
+              Iniciar sesion
             }
           </button>
+
+          @if (passkeyService.isSupported()) {
+            <div class="divider-container">
+              <div class="divider-line"></div>
+              <span class="divider-text">o</span>
+              <div class="divider-line"></div>
+            </div>
+
+            <button type="button" class="passkey-btn"
+                    [disabled]="loading || passkeyLoading"
+                    (click)="onPasskeyLogin()">
+              @if (passkeyLoading) {
+                <mat-spinner diameter="20"></mat-spinner>
+                <span>Autenticando...</span>
+              } @else {
+                <mat-icon>fingerprint</mat-icon>
+                <span>Iniciar con Passkey</span>
+              }
+            </button>
+          }
         </form>
 
         <div class="auth-footer">
@@ -190,6 +213,60 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
       stroke: currentColor !important;
     }
 
+    .divider-container {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin: 20px 0;
+    }
+
+    .divider-line {
+      flex: 1;
+      height: 1px;
+      background: var(--border-color);
+    }
+
+    .divider-text {
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    .passkey-btn {
+      height: 48px;
+      font-size: 16px;
+      font-weight: 500;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: transparent;
+      border: 1px solid var(--brand-accent);
+      border-radius: 4px;
+      color: var(--brand-accent);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .passkey-btn:hover:not(:disabled) {
+      background: rgba(0, 184, 212, 0.1);
+    }
+
+    .passkey-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .passkey-btn mat-icon {
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+    }
+
+    ::ng-deep .passkey-btn .button-spinner circle {
+      stroke: var(--brand-accent) !important;
+    }
+
     .auth-footer {
       text-align: center;
       margin-top: 24px;
@@ -263,7 +340,10 @@ export class LoginComponent {
   loginForm: FormGroup;
   hidePassword = true;
   loading = false;
+  passkeyLoading = false;
   error = '';
+
+  passkeyService = inject(PasskeyService);
 
   constructor(
     private fb: FormBuilder,
@@ -288,7 +368,32 @@ export class LoginComponent {
       },
       error: (err) => {
         this.loading = false;
-        this.error = err.error?.message || 'Error al iniciar sesión';
+        this.error = err.error?.message || 'Error al iniciar sesion';
+      }
+    });
+  }
+
+  onPasskeyLogin(): void {
+    this.passkeyLoading = true;
+    this.error = '';
+
+    // Use discoverable credentials - no email required
+    this.passkeyService.authenticateWithPasskey().subscribe({
+      next: (tokenResponse) => {
+        this.authService.loginWithToken(tokenResponse).subscribe({
+          next: () => {
+            this.passkeyLoading = false;
+            this.router.navigate(['/dashboard']);
+          },
+          error: (err) => {
+            this.passkeyLoading = false;
+            this.error = err.error?.message || 'Error al cargar usuario';
+          }
+        });
+      },
+      error: (err) => {
+        this.passkeyLoading = false;
+        this.error = this.passkeyService.error() || err.message || 'Error de autenticacion';
       }
     });
   }

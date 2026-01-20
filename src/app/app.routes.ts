@@ -61,6 +61,10 @@ export const routes: Routes = [
           {
             path: 'maintenance',
             loadComponent: () => import('./features/settings/maintenance.component').then(m => m.MaintenanceComponent)
+          },
+          {
+            path: 'passkeys',
+            loadComponent: () => import('./features/settings/passkey-settings.component').then(m => m.PasskeySettingsComponent)
           }
         ]
       }

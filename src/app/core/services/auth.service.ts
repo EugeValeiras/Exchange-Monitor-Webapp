@@ -92,4 +92,9 @@ export class AuthService {
       })
     );
   }
+
+  loginWithToken(tokenResponse: TokenResponse): Observable<User> {
+    this.saveToken(tokenResponse.accessToken);
+    return this.loadCurrentUser();
+  }
 }

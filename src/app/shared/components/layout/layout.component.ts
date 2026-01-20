@@ -329,10 +329,11 @@ export class LayoutComponent {
     { label: 'Historial P&L', icon: 'analytics', route: '/pnl-history' },
     { label: 'Exchanges', icon: 'currency_exchange', route: '/exchanges' },
     {
-      label: 'Configuración',
+      label: 'Configuracion',
       icon: 'settings',
       children: [
         { label: 'Pares de Precios', route: '/settings/symbols' },
+        { label: 'Passkeys', route: '/settings/passkeys' },
         { label: 'Mantenimiento', route: '/settings/maintenance' }
       ]
     }
@@ -369,8 +370,9 @@ export class LayoutComponent {
       '/transactions': 'Transacciones',
       '/pnl-history': 'Historial P&L',
       '/exchanges': 'Exchanges',
-      '/settings': 'Configuración',
+      '/settings': 'Configuracion',
       '/settings/symbols': 'Pares de Precios',
+      '/settings/passkeys': 'Passkeys',
       '/settings/maintenance': 'Mantenimiento'
     };
     return titles[path] || 'Exchange Monitor';
