@@ -17,6 +17,9 @@ import { PriceSocketService, PriceUpdate, ExchangePrice } from '../../core/servi
 import { SettingsService } from '../../core/services/settings.service';
 import { ExchangeLogoComponent } from '../../shared/components/exchange-logo/exchange-logo.component';
 import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-loader.component';
+import { SymbolSelectorDialogComponent } from '../../shared/components/symbol-selector-dialog/symbol-selector-dialog.component';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatRippleModule } from '@angular/material/core';
 
 interface PriceRow {
   symbol: string;
@@ -65,8 +68,10 @@ interface QuoteStat {
     MatInputModule,
     MatTooltipModule,
     MatChipsModule,
+    MatDialogModule,
+    MatRippleModule,
     ExchangeLogoComponent,
-    LogoLoaderComponent
+    LogoLoaderComponent,
   ],
   template: `
     <div class="prices-content">
@@ -100,6 +105,34 @@ interface QuoteStat {
       <!-- Filters -->
       @if (pricesCount() > 0) {
         <div class="filters-container">
+          <!-- Symbol Selector -->
+          <div class="filter-section">
+            <span class="filter-label">Simbolo</span>
+            <button
+              class="symbol-selector-btn"
+              matRipple
+              (click)="openSymbolSelector()">
+              @if (selectedSymbol) {
+                <div class="symbol-btn-content">
+                  <img
+                    [src]="getAssetLogo(getSymbolBase(selectedSymbol))"
+                    [alt]="selectedSymbol"
+                    class="symbol-btn-logo"
+                    (error)="onChipLogoError($event, getSymbolBase(selectedSymbol))">
+                  <span class="symbol-btn-name">{{ selectedSymbol }}</span>
+                </div>
+              } @else {
+                <div class="symbol-btn-content">
+                  <mat-icon>search</mat-icon>
+                  <span class="symbol-btn-placeholder">Buscar simbolo...</span>
+                </div>
+              }
+              <mat-icon class="symbol-btn-arrow">{{ selectedSymbol ? 'close' : 'expand_more' }}</mat-icon>
+            </button>
+          </div>
+
+          <div class="filter-divider"></div>
+
           <!-- Exchange Filter -->
           <div class="filter-section">
             <span class="filter-label">Exchange</span>
@@ -436,6 +469,63 @@ interface QuoteStat {
       margin-top: auto;
     }
 
+    /* Symbol Selector Button */
+    .symbol-selector-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-width: 200px;
+      padding: 10px 14px;
+      background: var(--bg-tertiary);
+      border: 2px solid transparent;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        border-color: var(--brand-accent);
+        background: var(--bg-elevated);
+      }
+    }
+
+    .symbol-btn-content {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .symbol-btn-logo {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+    }
+
+    .symbol-btn-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .symbol-btn-placeholder {
+      font-size: 14px;
+      color: var(--text-tertiary);
+    }
+
+    .symbol-btn-arrow {
+      color: var(--text-tertiary);
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+
+    .symbol-btn-content mat-icon {
+      color: var(--text-tertiary);
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+
     .section {
       margin-bottom: 32px;
     }
@@ -645,6 +735,7 @@ export class PricesComponent implements OnInit, OnDestroy, AfterViewInit {
   priceSocket = inject(PriceSocketService);
   private settingsService = inject(SettingsService);
   private cdr = inject(ChangeDetectorRef);
+  private dialog = inject(MatDialog);
 
   displayedColumns = ['asset', 'price', 'change24h', 'range24h', 'source', 'lastUpdated'];
   dataSource = new MatTableDataSource<PriceRow>([]);
@@ -656,6 +747,7 @@ export class PricesComponent implements OnInit, OnDestroy, AfterViewInit {
   allPrices: PriceRow[] = [];
 
   // Filter state
+  selectedSymbol: string | null = null;
   selectedExchanges = new Set<string>();
   selectedAssets = new Set<string>();
   selectedQuotes = new Set<string>();
@@ -836,6 +928,11 @@ export class PricesComponent implements OnInit, OnDestroy, AfterViewInit {
   applyFilters(): void {
     let filtered = [...this.allPrices];
 
+    // Filter by symbol (exact match)
+    if (this.selectedSymbol) {
+      filtered = filtered.filter(p => p.symbol === this.selectedSymbol);
+    }
+
     // Filter by exchange
     if (this.selectedExchanges.size > 0) {
       filtered = filtered.filter(p => this.selectedExchanges.has(p.source));
@@ -894,10 +991,36 @@ export class PricesComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   hasActiveFilters(): boolean {
-    return this.selectedExchanges.size > 0 || this.selectedAssets.size > 0 || this.selectedQuotes.size > 0;
+    return this.selectedSymbol !== null || this.selectedExchanges.size > 0 || this.selectedAssets.size > 0 || this.selectedQuotes.size > 0;
+  }
+
+  openSymbolSelector(): void {
+    // If symbol is already selected, clear it
+    if (this.selectedSymbol) {
+      this.selectedSymbol = null;
+      this.applyFilters();
+      return;
+    }
+
+    const dialogRef = this.dialog.open(SymbolSelectorDialogComponent, {
+      panelClass: 'symbol-selector-dialog',
+      autoFocus: false,
+    });
+
+    dialogRef.afterClosed().subscribe((symbol: string | undefined) => {
+      if (symbol) {
+        this.selectedSymbol = symbol;
+        this.applyFilters();
+      }
+    });
+  }
+
+  getSymbolBase(symbol: string): string {
+    return symbol?.split('/')[0] || '';
   }
 
   clearFilters(): void {
+    this.selectedSymbol = null;
     this.selectedExchanges.clear();
     this.selectedAssets.clear();
     this.selectedQuotes.clear();

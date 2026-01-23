@@ -43,6 +43,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/pnl-history/pnl-history.component').then(m => m.PnlHistoryComponent)
       },
       {
+        path: 'price-history',
+        loadComponent: () => import('./features/price-history/price-history.component').then(m => m.PriceHistoryComponent)
+      },
+      {
         path: 'exchanges',
         loadComponent: () => import('./features/credentials/credentials.component').then(m => m.CredentialsComponent)
       },

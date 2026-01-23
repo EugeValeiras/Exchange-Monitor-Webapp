@@ -322,6 +322,17 @@ select:-webkit-autofill:active {
   color: var(--text-primary) !important;
 }
 
+// Symbol selector dialog
+.symbol-selector-dialog {
+  .mat-mdc-dialog-container {
+    padding: 0;
+  }
+
+  .mat-mdc-dialog-surface {
+    overflow: hidden;
+  }
+}
+
 // Snackbar
 .mat-mdc-snack-bar-container {
   --mdc-snackbar-container-color: var(--bg-tertiary);

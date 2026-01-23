@@ -324,6 +324,7 @@ export class LayoutComponent {
   navItems: NavItem[] = [
     { label: 'Dashboard', icon: 'space_dashboard', route: '/dashboard' },
     { label: 'Precios', icon: 'show_chart', route: '/prices' },
+    { label: 'Historico Precios', icon: 'timeline', route: '/price-history' },
     { label: 'Balances', icon: 'account_balance_wallet', route: '/balances' },
     { label: 'Transacciones', icon: 'swap_horiz', route: '/transactions' },
     { label: 'Historial P&L', icon: 'analytics', route: '/pnl-history' },
@@ -366,6 +367,7 @@ export class LayoutComponent {
     const titles: Record<string, string> = {
       '/dashboard': 'Dashboard',
       '/prices': 'Precios en Tiempo Real',
+      '/price-history': 'Historico de Precios',
       '/balances': 'Balances',
       '/transactions': 'Transacciones',
       '/pnl-history': 'Historial P&L',
