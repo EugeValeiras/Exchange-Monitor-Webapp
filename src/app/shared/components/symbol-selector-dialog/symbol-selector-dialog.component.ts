@@ -12,6 +12,7 @@ import { PriceSocketService } from '../../../core/services/price-socket.service'
 
 interface SymbolOption {
   symbol: string;
+  displaySymbol: string;
   base: string;
   quote: string;
   price?: number;
@@ -72,13 +73,20 @@ interface SymbolOption {
               (click)="selectSymbol(option.symbol)"
               [class.has-price]="option.price">
               <div class="symbol-info">
-                <img
-                  [src]="getAssetLogo(option.base)"
-                  [alt]="option.base"
-                  class="symbol-logo"
-                  (error)="onLogoError($event, option.base)">
+                <div class="pair-logos">
+                  <img
+                    [src]="getAssetLogo(option.base)"
+                    [alt]="option.base"
+                    class="pair-logo primary"
+                    (error)="onLogoError($event, option.base)">
+                  <img
+                    [src]="getAssetLogo(option.quote)"
+                    [alt]="option.quote"
+                    class="pair-logo secondary"
+                    (error)="onLogoError($event, option.quote)">
+                </div>
                 <div class="symbol-details">
-                  <span class="symbol-name">{{ option.symbol }}</span>
+                  <span class="symbol-name">{{ option.displaySymbol }}</span>
                   <span class="symbol-base">{{ option.base }}</span>
                 </div>
               </div>
@@ -178,17 +186,41 @@ interface SymbolOption {
       gap: 14px;
     }
 
-    .symbol-logo {
-      width: 40px;
-      height: 40px;
+    .pair-logos {
+      position: relative;
+      width: 44px;
+      height: 44px;
+      flex-shrink: 0;
+    }
+
+    .pair-logo {
       border-radius: 50%;
+      object-fit: contain;
+      position: absolute;
       background: var(--bg-tertiary);
-      object-fit: cover;
+    }
+
+    .pair-logo.primary {
+      width: 36px;
+      height: 36px;
+      left: 0;
+      top: 0;
+      z-index: 1;
+    }
+
+    .pair-logo.secondary {
+      width: 20px;
+      height: 20px;
+      right: 0;
+      bottom: 0;
+      z-index: 2;
+      border: 2px solid var(--bg-card);
+      background: var(--bg-card);
     }
 
     .symbol-fallback {
-      width: 40px;
-      height: 40px;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
       background: var(--bg-tertiary);
       display: flex;
@@ -308,7 +340,7 @@ export class SymbolSelectorDialogComponent implements OnInit, OnDestroy {
     }
 
     return symbols.filter(s =>
-      s.symbol.toLowerCase().includes(query) ||
+      s.displaySymbol.toLowerCase().includes(query) ||
       s.base.toLowerCase().includes(query)
     );
   });
@@ -341,11 +373,14 @@ export class SymbolSelectorDialogComponent implements OnInit, OnDestroy {
     const prices = this.priceSocketService.prices();
 
     const options: SymbolOption[] = Array.from(combined).map(symbol => {
-      const [base, quote] = symbol.split('/');
+      // Clean up futures symbols: MON/USDT:USDT -> MON/USDT
+      const displaySymbol = symbol.replace(/:USDT$/, '');
+      const [base, quote] = displaySymbol.split('/');
       const priceData = prices.get(symbol);
 
       return {
         symbol,
+        displaySymbol,
         base,
         quote,
         price: priceData?.price,
@@ -357,7 +392,7 @@ export class SymbolSelectorDialogComponent implements OnInit, OnDestroy {
     options.sort((a, b) => {
       if (a.price && !b.price) return -1;
       if (!a.price && b.price) return 1;
-      return a.symbol.localeCompare(b.symbol);
+      return a.displaySymbol.localeCompare(b.displaySymbol);
     });
 
     this.allSymbols.set(options);

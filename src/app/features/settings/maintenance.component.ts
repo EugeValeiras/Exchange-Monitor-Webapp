@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ChartService } from '../../core/services/chart.service';
+import { PriceHistoryService } from '../price-history/price-history.service';
 
 @Component({
   selector: 'app-maintenance',
@@ -48,6 +49,34 @@ import { ChartService } from '../../core/services/chart.service';
             }
             <mat-icon>refresh</mat-icon>
             Recalcular historial
+          </button>
+        </mat-card-actions>
+      </mat-card>
+
+      <!-- Initialize Price History Card -->
+      <mat-card class="maintenance-card">
+        <mat-card-header>
+          <mat-icon mat-card-avatar class="card-icon">show_chart</mat-icon>
+          <mat-card-title>Historial de Precios</mat-card-title>
+          <mat-card-subtitle>Descarga el historial de precios de los simbolos configurados</mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-card-content>
+          <div class="info-box">
+            <mat-icon class="info-icon">info</mat-icon>
+            <p>Esta accion descarga hasta 180 dias de historial de precios desde Binance y Kraken
+               para todos los simbolos configurados. Este historial se usa para calcular el P&L
+               historico sin depender de llamadas a APIs externas.</p>
+          </div>
+        </mat-card-content>
+
+        <mat-card-actions align="end">
+          <button mat-raised-button color="primary" (click)="initializePriceHistory()" [disabled]="initializingPrices">
+            @if (initializingPrices) {
+              <mat-spinner diameter="20" class="button-spinner"></mat-spinner>
+            }
+            <mat-icon>cloud_download</mat-icon>
+            Descargar historial (180 dias)
           </button>
         </mat-card-actions>
       </mat-card>
@@ -148,9 +177,11 @@ import { ChartService } from '../../core/services/chart.service';
 })
 export class MaintenanceComponent {
   rebuildingHistory = false;
+  initializingPrices = false;
 
   constructor(
     private chartService: ChartService,
+    private priceHistoryService: PriceHistoryService,
     private snackBar: MatSnackBar
   ) {}
 
@@ -165,6 +196,23 @@ export class MaintenanceComponent {
         console.error('Error rebuilding history:', err);
         this.rebuildingHistory = false;
         this.showError('Error al recalcular el historial');
+      }
+    });
+  }
+
+  initializePriceHistory(): void {
+    this.initializingPrices = true;
+    this.priceHistoryService.initializeHistory(180).subscribe({
+      next: (response) => {
+        this.initializingPrices = false;
+        const message = `Precios descargados: ${response.totalInserted} registros insertados, ${response.totalSkipped} omitidos` +
+          (response.errors > 0 ? `, ${response.errors} errores` : '');
+        this.showSuccess(message);
+      },
+      error: (err) => {
+        console.error('Error initializing price history:', err);
+        this.initializingPrices = false;
+        this.showError('Error al descargar el historial de precios');
       }
     });
   }

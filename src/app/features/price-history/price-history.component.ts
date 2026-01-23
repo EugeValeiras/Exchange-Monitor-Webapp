@@ -1,6 +1,7 @@
-import { Component, OnInit, OnDestroy, signal, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, inject, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
@@ -61,11 +62,11 @@ interface TimeframeOption {
             <div class="symbol-btn-content">
               <img
                 [src]="getAssetLogo(selectedSymbol())"
-                [alt]="selectedSymbol()"
+                [alt]="getDisplaySymbol()"
                 class="symbol-btn-logo"
                 (error)="onLogoError($event)">
               <div class="symbol-btn-info">
-                <span class="symbol-btn-name">{{ selectedSymbol() }}</span>
+                <span class="symbol-btn-name">{{ getDisplaySymbol() }}</span>
                 @if (currentPrice()) {
                   <span class="symbol-btn-price">
                     {{ formatPrice(currentPrice()!) }}
@@ -122,8 +123,8 @@ interface TimeframeOption {
         <mat-card-header>
           <mat-card-title>
             <div class="chart-title">
-              <img [src]="getAssetLogo(selectedSymbol())" [alt]="selectedSymbol()" class="title-logo" (error)="onLogoError($event)">
-              {{ selectedSymbol() }}
+              <img [src]="getAssetLogo(selectedSymbol())" [alt]="getDisplaySymbol()" class="title-logo" (error)="onLogoError($event)">
+              {{ getDisplaySymbol() }}
               <span class="timeframe-badge">{{ getTimeframeLabel() }}</span>
               @if (selectedExchange()) {
                 <span class="exchange-badge">{{ selectedExchange() }}</span>
@@ -453,6 +454,8 @@ export class PriceHistoryComponent implements OnInit, OnDestroy {
   private dialog = inject(MatDialog);
   private settingsService = inject(SettingsService);
   private priceSocketService = inject(PriceSocketService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   selectedSymbol = signal('BTC/USDT');
   selectedTimeframe = signal<Timeframe>('24h');
@@ -461,6 +464,23 @@ export class PriceHistoryComponent implements OnInit, OnDestroy {
   currentChange = signal<number | undefined>(undefined);
 
   private priceUpdateInterval: ReturnType<typeof setInterval> | null = null;
+  private skipNextUrlUpdate = false;
+
+  constructor() {
+    // Update URL when filters change
+    effect(() => {
+      const symbol = this.selectedSymbol();
+      const timeframe = this.selectedTimeframe();
+      const exchange = this.selectedExchange();
+
+      if (this.skipNextUrlUpdate) {
+        this.skipNextUrlUpdate = false;
+        return;
+      }
+
+      this.updateQueryParams();
+    });
+  }
 
   timeframes: TimeframeOption[] = [
     { value: '1h', label: '1H' },
@@ -469,15 +489,63 @@ export class PriceHistoryComponent implements OnInit, OnDestroy {
     { value: '24h', label: '24H' },
     { value: '7d', label: '7D' },
     { value: '30d', label: '30D' },
+    { value: '90d', label: '90D' },
+    { value: '180d', label: '180D' },
   ];
 
   ngOnInit(): void {
     this.settingsService.loadAllSymbols().subscribe();
     this.priceSocketService.connect();
+
+    // Read initial state from query params
+    this.loadFromQueryParams();
+
     this.updateCurrentPrice();
 
     // Update price every second
     this.priceUpdateInterval = setInterval(() => this.updateCurrentPrice(), 1000);
+  }
+
+  private loadFromQueryParams(): void {
+    const params = this.route.snapshot.queryParams;
+
+    this.skipNextUrlUpdate = true;
+
+    if (params['symbol']) {
+      this.selectedSymbol.set(params['symbol']);
+    }
+    if (params['timeframe'] && this.isValidTimeframe(params['timeframe'])) {
+      this.selectedTimeframe.set(params['timeframe'] as Timeframe);
+    }
+    if (params['exchange']) {
+      this.selectedExchange.set(params['exchange']);
+    }
+  }
+
+  private isValidTimeframe(value: string): boolean {
+    return this.timeframes.some(tf => tf.value === value);
+  }
+
+  private updateQueryParams(): void {
+    const queryParams: Record<string, string | undefined> = {
+      symbol: this.selectedSymbol(),
+      timeframe: this.selectedTimeframe(),
+      exchange: this.selectedExchange() || undefined,
+    };
+
+    // Remove undefined values
+    Object.keys(queryParams).forEach(key => {
+      if (queryParams[key] === undefined) {
+        delete queryParams[key];
+      }
+    });
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams,
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
   }
 
   ngOnDestroy(): void {
@@ -519,9 +587,15 @@ export class PriceHistoryComponent implements OnInit, OnDestroy {
     return tf ? tf.label : '';
   }
 
+  getDisplaySymbol(): string {
+    return this.selectedSymbol().replace(/:USDT$/, '');
+  }
+
   getAssetLogo(symbol: string): string {
     if (!symbol) return '';
-    const base = symbol.split('/')[0]?.toLowerCase() || '';
+    // Clean futures symbol suffix before extracting base
+    const cleanSymbol = symbol.replace(/:USDT$/, '');
+    const base = cleanSymbol.split('/')[0]?.toLowerCase() || '';
     return `/${base}.svg`;
   }
 

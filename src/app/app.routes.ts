@@ -51,6 +51,20 @@ export const routes: Routes = [
         loadComponent: () => import('./features/credentials/credentials.component').then(m => m.CredentialsComponent)
       },
       {
+        path: 'security',
+        children: [
+          {
+            path: '',
+            redirectTo: 'passkeys',
+            pathMatch: 'full'
+          },
+          {
+            path: 'passkeys',
+            loadComponent: () => import('./features/settings/passkey-settings.component').then(m => m.PasskeySettingsComponent)
+          }
+        ]
+      },
+      {
         path: 'settings',
         children: [
           {
@@ -65,10 +79,6 @@ export const routes: Routes = [
           {
             path: 'maintenance',
             loadComponent: () => import('./features/settings/maintenance.component').then(m => m.MaintenanceComponent)
-          },
-          {
-            path: 'passkeys',
-            loadComponent: () => import('./features/settings/passkey-settings.component').then(m => m.PasskeySettingsComponent)
           }
         ]
       }

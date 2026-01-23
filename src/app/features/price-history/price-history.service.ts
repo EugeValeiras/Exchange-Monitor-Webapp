@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from '../../core/services/api.service';
 
-export type Timeframe = '1h' | '6h' | '12h' | '24h' | '7d' | '30d';
+export type Timeframe = '1h' | '6h' | '12h' | '24h' | '7d' | '30d' | '90d' | '180d';
 
 export interface PriceHistoryItem {
   symbol: string;
@@ -41,6 +41,23 @@ export interface PriceHistoryStats {
   newestRecord: Date | null;
 }
 
+export interface InitializationResult {
+  exchange: string;
+  symbol: string;
+  inserted: number;
+  skipped: number;
+  error?: string;
+}
+
+export interface InitializationSummary {
+  totalSymbols: number;
+  totalInserted: number;
+  totalSkipped: number;
+  errors: number;
+  results: InitializationResult[];
+  duration: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class PriceHistoryService {
   private api = inject(ApiService);
@@ -76,5 +93,9 @@ export class PriceHistoryService {
 
   getStats(): Observable<PriceHistoryStats> {
     return this.api.get<PriceHistoryStats>('/prices/history/stats');
+  }
+
+  initializeHistory(days: number = 180): Observable<InitializationSummary> {
+    return this.api.post<InitializationSummary>(`/prices/history/initialize?days=${days}`, {});
   }
 }

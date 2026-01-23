@@ -10,6 +10,9 @@ import { CommonModule } from '@angular/common';
       @case ('binance') {
         <img [src]="'/binance.svg'" [width]="size" [height]="size" alt="Binance" class="exchange-img" />
       }
+      @case ('binance-futures') {
+        <img [src]="'/binance.svg'" [width]="size" [height]="size" alt="Binance Futures" class="exchange-img futures" />
+      }
       @case ('kraken') {
         <img [src]="'/kraken.svg'" [width]="size" [height]="size" alt="Kraken" class="exchange-img" />
       }

@@ -10,7 +10,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatChipsModule } from '@angular/material/chips';
-import { RouterLink } from '@angular/router';
+import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { Subject, interval, Subscription } from 'rxjs';
 import { throttle } from 'rxjs/operators';
 import { PriceSocketService, PriceUpdate, ExchangePrice } from '../../core/services/price-socket.service';
@@ -116,10 +116,10 @@ interface QuoteStat {
                 <div class="symbol-btn-content">
                   <img
                     [src]="getAssetLogo(getSymbolBase(selectedSymbol))"
-                    [alt]="selectedSymbol"
+                    [alt]="getDisplaySymbol(selectedSymbol)"
                     class="symbol-btn-logo"
                     (error)="onChipLogoError($event, getSymbolBase(selectedSymbol))">
-                  <span class="symbol-btn-name">{{ selectedSymbol }}</span>
+                  <span class="symbol-btn-name">{{ getDisplaySymbol(selectedSymbol) }}</span>
                 </div>
               } @else {
                 <div class="symbol-btn-content">
@@ -267,7 +267,7 @@ interface QuoteStat {
               <ng-container matColumnDef="source">
                 <th mat-header-cell *matHeaderCellDef>Fuente</th>
                 <td mat-cell *matCellDef="let row">
-                  <img [src]="'/' + row.source + '.svg'" [alt]="row.source" class="source-logo" [matTooltip]="row.source | titlecase">
+                  <app-exchange-logo [exchange]="row.source" [size]="24" [matTooltip]="getExchangeLabel(row.source)"></app-exchange-logo>
                 </td>
               </ng-container>
 
@@ -736,6 +736,8 @@ export class PricesComponent implements OnInit, OnDestroy, AfterViewInit {
   private settingsService = inject(SettingsService);
   private cdr = inject(ChangeDetectorRef);
   private dialog = inject(MatDialog);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   displayedColumns = ['asset', 'price', 'change24h', 'range24h', 'source', 'lastUpdated'];
   dataSource = new MatTableDataSource<PriceRow>([]);
@@ -799,6 +801,43 @@ export class PricesComponent implements OnInit, OnDestroy, AfterViewInit {
   ngOnInit(): void {
     this.priceSocket.connect();
     this.loadConfiguredSymbols();
+    this.loadFromQueryParams();
+  }
+
+  private loadFromQueryParams(): void {
+    const params = this.route.snapshot.queryParams;
+
+    if (params['symbol']) {
+      this.selectedSymbol = params['symbol'];
+    }
+    if (params['exchanges']) {
+      const exchanges = params['exchanges'].split(',');
+      exchanges.forEach((ex: string) => this.selectedExchanges.add(ex));
+    }
+    if (params['assets']) {
+      const assets = params['assets'].split(',');
+      assets.forEach((asset: string) => this.selectedAssets.add(asset));
+    }
+    if (params['quotes']) {
+      const quotes = params['quotes'].split(',');
+      quotes.forEach((quote: string) => this.selectedQuotes.add(quote));
+    }
+  }
+
+  private updateQueryParams(): void {
+    const queryParams: Record<string, string | null> = {
+      symbol: this.selectedSymbol,
+      exchanges: this.selectedExchanges.size > 0 ? Array.from(this.selectedExchanges).join(',') : null,
+      assets: this.selectedAssets.size > 0 ? Array.from(this.selectedAssets).join(',') : null,
+      quotes: this.selectedQuotes.size > 0 ? Array.from(this.selectedQuotes).join(',') : null,
+    };
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams,
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
   }
 
   ngAfterViewInit(): void {
@@ -827,7 +866,9 @@ export class PricesComponent implements OnInit, OnDestroy, AfterViewInit {
     // Merge new prices into existing map (don't remove old ones)
     // Use symbol:exchange as key to show separate rows per exchange
     prices.forEach((price, symbol) => {
-      const [asset, quote] = symbol.split('/');
+      // Clean up futures symbols: MON/USDT:USDT -> MON/USDT
+      const cleanSymbol = symbol.replace(/:USDT$/, '');
+      const [asset, quote] = cleanSymbol.split('/');
 
       // If we have multiple exchange prices, expand them into separate rows
       if (price.prices && price.prices.length > 0) {
@@ -836,7 +877,7 @@ export class PricesComponent implements OnInit, OnDestroy, AfterViewInit {
           const existingRow = this.pricesMap.get(key);
 
           const newRow: PriceRow = {
-            symbol,
+            symbol: cleanSymbol,
             asset,
             quote,
             price: exchangePrice.price,
@@ -856,7 +897,7 @@ export class PricesComponent implements OnInit, OnDestroy, AfterViewInit {
         const existingRow = this.pricesMap.get(key);
 
         const newRow: PriceRow = {
-          symbol,
+          symbol: cleanSymbol,
           asset,
           quote,
           price: price.price,
@@ -917,9 +958,10 @@ export class PricesComponent implements OnInit, OnDestroy, AfterViewInit {
       .sort((a, b) => a.name.localeCompare(b.name));
   }
 
-  private getExchangeLabel(exchange: string): string {
+  getExchangeLabel(exchange: string): string {
     const labels: Record<string, string> = {
       'binance': 'Binance',
+      'binance-futures': 'Binance Futures',
       'kraken': 'Kraken'
     };
     return labels[exchange] || exchange;
@@ -972,6 +1014,7 @@ export class PricesComponent implements OnInit, OnDestroy, AfterViewInit {
       event.value.forEach(exchange => this.selectedExchanges.add(exchange));
     }
     this.applyFilters();
+    this.updateQueryParams();
   }
 
   onAssetFilterChange(event: { value: string[] }): void {
@@ -980,6 +1023,7 @@ export class PricesComponent implements OnInit, OnDestroy, AfterViewInit {
       event.value.forEach(asset => this.selectedAssets.add(asset));
     }
     this.applyFilters();
+    this.updateQueryParams();
   }
 
   onQuoteFilterChange(event: { value: string[] }): void {
@@ -988,6 +1032,7 @@ export class PricesComponent implements OnInit, OnDestroy, AfterViewInit {
       event.value.forEach(quote => this.selectedQuotes.add(quote));
     }
     this.applyFilters();
+    this.updateQueryParams();
   }
 
   hasActiveFilters(): boolean {
@@ -999,6 +1044,7 @@ export class PricesComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.selectedSymbol) {
       this.selectedSymbol = null;
       this.applyFilters();
+      this.updateQueryParams();
       return;
     }
 
@@ -1011,12 +1057,20 @@ export class PricesComponent implements OnInit, OnDestroy, AfterViewInit {
       if (symbol) {
         this.selectedSymbol = symbol;
         this.applyFilters();
+        this.updateQueryParams();
       }
     });
   }
 
   getSymbolBase(symbol: string): string {
-    return symbol?.split('/')[0] || '';
+    // Clean futures symbol suffix before extracting base
+    const cleanSymbol = symbol?.replace(/:USDT$/, '') || '';
+    return cleanSymbol.split('/')[0] || '';
+  }
+
+  getDisplaySymbol(symbol: string | null): string {
+    if (!symbol) return '';
+    return symbol.replace(/:USDT$/, '');
   }
 
   clearFilters(): void {
@@ -1025,6 +1079,7 @@ export class PricesComponent implements OnInit, OnDestroy, AfterViewInit {
     this.selectedAssets.clear();
     this.selectedQuotes.clear();
     this.applyFilters();
+    this.updateQueryParams();
   }
 
   getAssetLogo(asset: string): string {
