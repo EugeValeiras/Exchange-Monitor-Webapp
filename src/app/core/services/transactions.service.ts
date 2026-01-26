@@ -127,10 +127,33 @@ export class TransactionsService {
   getExchangeLabel(exchange: string): string {
     const labels: Record<string, string> = {
       binance: 'Binance',
+      'binance-futures': 'Binance Futures',
       kraken: 'Kraken',
       'nexo-pro': 'Nexo Pro',
       'nexo-manual': 'Nexo'
     };
     return labels[exchange] || exchange;
+  }
+
+  exportToExcel(filter: TransactionFilter = {}): void {
+    const params = new URLSearchParams();
+
+    if (filter.exchange) params.set('exchange', filter.exchange);
+    if (filter.types && filter.types.length > 0) {
+      params.set('types', filter.types.join(','));
+    }
+    if (filter.assets && filter.assets.length > 0) {
+      params.set('assets', filter.assets.join(','));
+    }
+    if (filter.startDate) params.set('startDate', filter.startDate);
+    if (filter.endDate) params.set('endDate', filter.endDate);
+
+    const queryString = params.toString();
+    const url = queryString
+      ? `/transactions/export?${queryString}`
+      : '/transactions/export';
+
+    // Download file via the API service
+    this.api.downloadFile(url, `transacciones_${new Date().toISOString().split('T')[0]}.xlsx`);
   }
 }

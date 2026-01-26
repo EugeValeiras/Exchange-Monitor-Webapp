@@ -61,6 +61,10 @@ interface ExchangeStat {
           <p>Historial de todas tus operaciones en exchanges</p>
         </div>
         <div class="header-actions">
+          <button mat-stroked-button class="export-btn" (click)="exportTransactions()" [disabled]="loading">
+            <mat-icon>download</mat-icon>
+            Exportar
+          </button>
           <mat-form-field appearance="outline" class="date-range-field">
             <mat-date-range-input [rangePicker]="rangePicker">
               <input matStartDate [(ngModel)]="startDate" placeholder="Desde" (dateChange)="onDateChange()">
@@ -338,11 +342,38 @@ interface ExchangeStat {
               <th mat-header-cell *matHeaderCellDef>Cantidad</th>
               <td mat-cell *matCellDef="let tx">
                 <div class="amount-cell" [class.buy]="tx.side === 'buy' || tx.type === 'deposit' || tx.type === 'interest'" [class.sell]="tx.side === 'sell' || tx.type === 'withdrawal' || tx.type === 'fee'">
+                  <img
+                    [src]="getAssetLogo(tx.asset)"
+                    [alt]="tx.asset"
+                    class="amount-asset-logo"
+                    [matTooltip]="tx.asset"
+                    (error)="onAssetLogoError($event, tx.asset)">
                   <span class="amount">
                     {{ tx.side === 'sell' || tx.type === 'withdrawal' || tx.type === 'fee' ? '-' : '+' }}{{ tx.amount | number:'1.2-8' }}
                   </span>
-                  <span class="asset">{{ tx.asset }}</span>
                 </div>
+              </td>
+            </ng-container>
+
+            <!-- Received Column (for trades) -->
+            <ng-container matColumnDef="received">
+              <th mat-header-cell *matHeaderCellDef>Recibido</th>
+              <td mat-cell *matCellDef="let tx">
+                @if (tx.type === 'trade' && tx.price && tx.priceAsset) {
+                  <div class="amount-cell" [class.buy]="tx.side === 'sell'" [class.sell]="tx.side === 'buy'">
+                    <img
+                      [src]="getAssetLogo(tx.priceAsset)"
+                      [alt]="tx.priceAsset"
+                      class="amount-asset-logo"
+                      [matTooltip]="tx.priceAsset"
+                      (error)="onAssetLogoError($event, tx.priceAsset)">
+                    <span class="amount">
+                      {{ tx.side === 'sell' ? '+' : '-' }}{{ (tx.amount * tx.price) | number:'1.2-8' }}
+                    </span>
+                  </div>
+                } @else {
+                  <span class="no-received">-</span>
+                }
               </td>
             </ng-container>
 
@@ -409,7 +440,7 @@ export class TransactionsComponent implements OnInit {
   pnlSummary: PnlSummaryResponse | null = null;
   pnlLoading = true;
 
-  displayedColumns = ['timestamp', 'exchange', 'type', 'asset', 'amount', 'price', 'fee'];
+  displayedColumns = ['timestamp', 'exchange', 'type', 'asset', 'amount', 'received', 'price', 'fee'];
 
   // Pagination
   totalItems = 0;
@@ -705,5 +736,27 @@ export class TransactionsComponent implements OnInit {
       fallback.textContent = asset.substring(0, 2).toUpperCase();
       parent.insertBefore(fallback, img);
     }
+  }
+
+  exportTransactions(): void {
+    const exportFilter: TransactionFilter = {};
+
+    if (this.selectedTypes.size > 0) {
+      exportFilter.types = Array.from(this.selectedTypes) as TransactionType[];
+    }
+    if (this.selectedAssets.size > 0) {
+      exportFilter.assets = Array.from(this.selectedAssets);
+    }
+    if (this.selectedExchanges.size === 1) {
+      exportFilter.exchange = Array.from(this.selectedExchanges)[0] as ExchangeType;
+    }
+    if (this.startDate) {
+      exportFilter.startDate = this.formatDateForApi(this.startDate);
+    }
+    if (this.endDate) {
+      exportFilter.endDate = this.formatDateForApi(this.endDate);
+    }
+
+    this.transactionsService.exportToExcel(exportFilter);
   }
 }

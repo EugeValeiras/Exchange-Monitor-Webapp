@@ -44,4 +44,20 @@ export class ApiService {
   getBlob(endpoint: string): Observable<Blob> {
     return this.http.get(`${this.baseUrl}${endpoint}`, { responseType: 'blob' });
   }
+
+  downloadFile(endpoint: string, filename: string): void {
+    this.http.get(`${this.baseUrl}${endpoint}`, { responseType: 'blob' }).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        link.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: (err) => {
+        console.error('Error downloading file:', err);
+      }
+    });
+  }
 }

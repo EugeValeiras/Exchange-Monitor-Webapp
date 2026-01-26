@@ -255,16 +255,18 @@ export class ConsolidatedBalanceService implements OnDestroy {
     change24h?: number;
   } | undefined {
     // Try to get price from the map directly first
+    // Try spot USDT, then spot USD, then futures USDT:USDT
     const usdtPair = `${asset.asset}/USDT`;
     const usdPair = `${asset.asset}/USD`;
+    const futuresPair = `${asset.asset}/USDT:USDT`;
 
-    const priceData = pricesMap.get(usdtPair) || pricesMap.get(usdPair);
+    const priceData = pricesMap.get(usdtPair) || pricesMap.get(usdPair) || pricesMap.get(futuresPair);
 
     if (!priceData) {
       return undefined;
     }
 
-    const pair = pricesMap.has(usdtPair) ? usdtPair : usdPair;
+    const pair = pricesMap.has(usdtPair) ? usdtPair : (pricesMap.has(usdPair) ? usdPair : futuresPair);
     const assetExchanges = asset.exchanges || [];
 
     // If we have exchange breakdown in the price data

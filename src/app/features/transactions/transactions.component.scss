@@ -17,6 +17,29 @@
   gap: 12px;
   flex-wrap: wrap;
 
+  .export-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+    border-color: var(--border-color);
+
+    &:hover:not(:disabled) {
+      color: var(--color-success);
+      border-color: var(--color-success);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+    }
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+  }
+
   .date-range-field {
     min-width: 220px;
 
@@ -840,6 +863,10 @@
 }
 
 .amount-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
   .amount {
     font-weight: 600;
     font-family: 'SF Mono', monospace;
@@ -851,8 +878,20 @@
     margin-left: 4px;
   }
 
+  .amount-asset-logo {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+
   &.buy .amount { color: var(--color-success); }
   &.sell .amount { color: var(--color-error); }
+}
+
+.no-received {
+  color: var(--text-tertiary);
 }
 
 .price-cell {

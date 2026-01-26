@@ -341,7 +341,7 @@ type AssetBalance = EnrichedAssetBalance;
                       @if (row.pricesByExchange && row.pricesByExchange.length > 0) {
                         <div class="price-sources">
                           @for (ep of row.pricesByExchange; track ep.exchange) {
-                            <img [src]="'/' + ep.exchange + '.svg'" [alt]="ep.exchange" class="price-source-logo" [matTooltip]="ep.exchange + ': ' + (ep.price | currency:'USD':'symbol':'1.2-4')" matTooltipPosition="above">
+                            <img [src]="getExchangeLogo(ep.exchange)" [alt]="ep.exchange" class="price-source-logo" [matTooltip]="getExchangeDisplayName(ep.exchange) + ': ' + (ep.price | currency:'USD':'symbol':'1.2-4')" matTooltipPosition="above">
                           }
                         </div>
                       }
@@ -1469,11 +1469,21 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
   getExchangeDisplayName(exchange: string): string {
     const displayNames: Record<string, string> = {
       'binance': 'Binance',
+      'binance-futures': 'Binance Futures',
       'kraken': 'Kraken',
       'nexo-pro': 'Nexo Pro',
       'nexo-manual': 'Nexo'
     };
     return displayNames[exchange] || exchange;
+  }
+
+  getExchangeLogo(exchange: string): string {
+    // Normalize exchange names to their logo files
+    const logoMap: Record<string, string> = {
+      'binance-futures': 'binance',
+    };
+    const normalized = logoMap[exchange] || exchange;
+    return `/${normalized}.svg`;
   }
 
   /**
