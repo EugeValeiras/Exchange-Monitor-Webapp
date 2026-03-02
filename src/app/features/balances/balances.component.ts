@@ -10,6 +10,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Subject, interval, Subscription } from 'rxjs';
@@ -23,6 +24,7 @@ import { ExchangeLogoComponent } from '../../shared/components/exchange-logo/exc
 import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-loader.component';
 import { FlipNumberComponent } from '../../shared/components/flip-number/flip-number.component';
 import { FavoriteButtonComponent } from '../../shared/components/favorite-button/favorite-button.component';
+import { CostBasisDialogComponent, CostBasisDialogData } from './cost-basis-dialog.component';
 
 // Type alias for template compatibility
 type AssetBalance = EnrichedAssetBalance;
@@ -47,6 +49,7 @@ type AssetBalance = EnrichedAssetBalance;
     MatInputModule,
     MatTooltipModule,
     MatSlideToggleModule,
+    MatDialogModule,
     ExchangeLogoComponent,
     LogoLoaderComponent,
     FlipNumberComponent,
@@ -277,6 +280,8 @@ type AssetBalance = EnrichedAssetBalance;
                   <span class="skeleton-text skeleton-pulse" style="width: 40px;"></span>
                   <span class="skeleton-text skeleton-pulse" style="width: 70px;"></span>
                   <span class="skeleton-text skeleton-pulse" style="width: 70px;"></span>
+                  <span class="skeleton-text skeleton-pulse" style="width: 70px;"></span>
+                  <span class="skeleton-text skeleton-pulse" style="width: 60px;"></span>
                 </div>
                 @for (i of [1, 2, 3, 4, 5, 6]; track i) {
                   <div class="skeleton-table-row">
@@ -298,6 +303,12 @@ type AssetBalance = EnrichedAssetBalance;
                     </div>
                     <div class="skeleton-cell">
                       <span class="skeleton-text skeleton-pulse" style="width: 70px;"></span>
+                    </div>
+                    <div class="skeleton-cell">
+                      <span class="skeleton-text skeleton-pulse" style="width: 70px;"></span>
+                    </div>
+                    <div class="skeleton-cell">
+                      <span class="skeleton-text skeleton-pulse" style="width: 60px;"></span>
                     </div>
                   </div>
                 }
@@ -370,10 +381,40 @@ type AssetBalance = EnrichedAssetBalance;
                   </td>
                 </ng-container>
 
+                <!-- Avg Cost Column -->
+                <ng-container matColumnDef="avgCost">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header="avgCostPerUnit">Costo Prom.</th>
+                  <td mat-cell *matCellDef="let row">
+                    @if (row.hasCostBasis) {
+                      <span class="avg-cost-cell">
+                        {{ row.avgCostPerUnit | currency:'USD':'symbol':'1.2-4' }}
+                        <mat-icon class="cost-detail-btn" (click)="openCostBasisDialog(row)" matTooltip="Ver detalle de costo base" matTooltipPosition="above">info_outline</mat-icon>
+                      </span>
+                    } @else {
+                      <span class="avg-cost-cell neutral" matTooltip="Sin datos de costo base" matTooltipPosition="above">--</span>
+                    }
+                  </td>
+                </ng-container>
+
                 <ng-container matColumnDef="value">
                   <th mat-header-cell *matHeaderCellDef mat-sort-header="valueUsd">Valor USD</th>
                   <td mat-cell *matCellDef="let row">
                     <span class="value-cell">{{ row.valueUsd | currency:'USD':'symbol':'1.2-2' }}</span>
+                  </td>
+                </ng-container>
+
+                <!-- P&L Column -->
+                <ng-container matColumnDef="pnl">
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header="unrealizedPnl">P&L</th>
+                  <td mat-cell *matCellDef="let row">
+                    @if (row.hasCostBasis) {
+                      <div class="pnl-cell" [class.positive]="row.unrealizedPnl >= 0" [class.negative]="row.unrealizedPnl < 0">
+                        <span class="pnl-value">{{ row.unrealizedPnl >= 0 ? '+' : '' }}{{ row.unrealizedPnl | currency:'USD':'symbol':'1.2-2' }}</span>
+                        <span class="pnl-percent">{{ row.unrealizedPnlPercent >= 0 ? '+' : '' }}{{ row.unrealizedPnlPercent | number:'1.2-2' }}%</span>
+                      </div>
+                    } @else {
+                      <span class="pnl-cell neutral" matTooltip="Sin datos de costo base" matTooltipPosition="above">--</span>
+                    }
                   </td>
                 </ng-container>
 
@@ -867,6 +908,67 @@ type AssetBalance = EnrichedAssetBalance;
       color: var(--text-primary);
     }
 
+    .avg-cost-cell {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .avg-cost-cell.neutral {
+      color: var(--text-tertiary);
+    }
+
+    .cost-detail-btn {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      opacity: 0.4;
+      color: var(--text-secondary);
+      transition: opacity 0.15s ease;
+    }
+
+    .cost-detail-btn:hover {
+      opacity: 1;
+      color: var(--brand-primary);
+    }
+
+    .pnl-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .pnl-cell.neutral {
+      color: var(--text-tertiary);
+    }
+
+    .pnl-cell.positive .pnl-value {
+      color: var(--color-success);
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .pnl-cell.negative .pnl-value {
+      color: var(--color-error);
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .pnl-cell.positive .pnl-percent {
+      color: var(--color-success);
+      font-size: 11px;
+      opacity: 0.8;
+    }
+
+    .pnl-cell.negative .pnl-percent {
+      color: var(--color-error);
+      font-size: 11px;
+      opacity: 0.8;
+    }
+
     .exchanges-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -1112,7 +1214,7 @@ type AssetBalance = EnrichedAssetBalance;
 
     .skeleton-table-header {
       display: grid;
-      grid-template-columns: 1.5fr 1fr 1fr 0.8fr 1.2fr 1fr;
+      grid-template-columns: 1.5fr 1fr 1fr 0.8fr 1.2fr 1fr 1fr 1fr;
       gap: 16px;
       padding: 16px;
       background: var(--bg-elevated);
@@ -1125,7 +1227,7 @@ type AssetBalance = EnrichedAssetBalance;
 
     .skeleton-table-row {
       display: grid;
-      grid-template-columns: 1.5fr 1fr 1fr 0.8fr 1.2fr 1fr;
+      grid-template-columns: 1.5fr 1fr 1fr 0.8fr 1.2fr 1fr 1fr 1fr;
       gap: 16px;
       padding: 16px;
       border-bottom: 1px solid var(--border-color);
@@ -1152,7 +1254,7 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
 
   // Local state for filtering
-  displayedColumns = ['asset', 'exchanges', 'price', 'change24h', 'total', 'value'];
+  displayedColumns = ['asset', 'exchanges', 'price', 'change24h', 'total', 'avgCost', 'value', 'pnl'];
   dataSource = new MatTableDataSource<EnrichedAssetBalance>([]);
   selectedExchanges = new Set<string>();
   showAllAssets = false;
@@ -1175,7 +1277,8 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
     public balanceService: ConsolidatedBalanceService,
     public priceSocket: PriceSocketService,
     private settingsService: SettingsService,
-    public favoritesService: FavoritesService
+    public favoritesService: FavoritesService,
+    private dialog: MatDialog,
   ) {
     this.dataSource.filterPredicate = (data: EnrichedAssetBalance, filter: string) => {
       return data.asset.toLowerCase().includes(filter);
@@ -1515,6 +1618,21 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     return totalWeightedChange / totalValue;
+  }
+
+  openCostBasisDialog(row: EnrichedAssetBalance): void {
+    this.dialog.open(CostBasisDialogComponent, {
+      width: '780px',
+      maxHeight: '80vh',
+      data: {
+        asset: row.asset,
+        avgCostPerUnit: row.avgCostPerUnit || 0,
+        currentPrice: row.priceUsd || 0,
+        unrealizedPnl: row.unrealizedPnl || 0,
+        unrealizedPnlPercent: row.unrealizedPnlPercent || 0,
+        totalCostBasis: row.totalCostBasis || 0,
+      } as CostBasisDialogData,
+    });
   }
 
   getAssetLogo(asset: string): string {

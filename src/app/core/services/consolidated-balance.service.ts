@@ -4,12 +4,18 @@ import { ApiService } from './api.service';
 import { AuthService } from './auth.service';
 import { BalanceSocketService, ConsolidatedBalance, AssetBalance, ExchangeBalance } from './balance-socket.service';
 import { PriceSocketService } from './price-socket.service';
+import { PnlService, UnrealizedPnlPosition } from './pnl.service';
 
 export interface EnrichedAssetBalance extends AssetBalance {
   pricePair?: string;
   pricesByExchange?: { exchange: string; price: number; pair: string; change24h?: number }[];
   isAveragePrice?: boolean;
   change24h?: number;
+  avgCostPerUnit?: number;
+  totalCostBasis?: number;
+  unrealizedPnl?: number;
+  unrealizedPnlPercent?: number;
+  hasCostBasis?: boolean;
 }
 
 export interface EnrichedConsolidatedBalance {
@@ -33,6 +39,7 @@ export class ConsolidatedBalanceService implements OnDestroy {
   private _error = signal('');
   private _isSyncing = signal(false);
   private _initialized = signal(false);
+  private _pnlData = signal<Map<string, UnrealizedPnlPosition>>(new Map());
 
   // Public readonly signals
   readonly loading = this._loading.asReadonly();
@@ -49,13 +56,18 @@ export class ConsolidatedBalanceService implements OnDestroy {
 
     // Pass prices explicitly to ensure Angular detects the dependency
     const enrichedAssets = this.enrichAssetsWithPrices(raw.byAsset, pricesMap);
-    const totalValueUsd = enrichedAssets.reduce((sum, a) => sum + (a.valueUsd || 0), 0);
+
+    // Enrich with PnL data (reactive dependency on _pnlData)
+    const pnlMap = this._pnlData();
+    const enrichedWithPnl = this.enrichAssetsWithPnl(enrichedAssets, pnlMap);
+
+    const totalValueUsd = enrichedWithPnl.reduce((sum, a) => sum + (a.valueUsd || 0), 0);
 
     // Also update exchange totals based on new prices
-    const enrichedExchanges = this.recalculateExchangeTotals(raw.byExchange, enrichedAssets);
+    const enrichedExchanges = this.recalculateExchangeTotals(raw.byExchange, enrichedWithPnl);
 
     return {
-      byAsset: enrichedAssets,
+      byAsset: enrichedWithPnl,
       byExchange: enrichedExchanges,
       totalValueUsd,
       lastUpdated: raw.lastUpdated,
@@ -118,7 +130,8 @@ export class ConsolidatedBalanceService implements OnDestroy {
     private api: ApiService,
     private authService: AuthService,
     private balanceSocket: BalanceSocketService,
-    private priceSocket: PriceSocketService
+    private priceSocket: PriceSocketService,
+    private pnlService: PnlService
   ) {
     // Listen to balance socket updates
     this.balanceSocket.balanceUpdated$
@@ -127,6 +140,7 @@ export class ConsolidatedBalanceService implements OnDestroy {
         console.log('[ConsolidatedBalanceService] Balance updated from socket');
         this._rawBalance.set(updatedBalance);
         this._isSyncing.set(false);
+        this.loadPnlData();
       });
 
     // Listen to auth changes and reset when user logs out
@@ -148,6 +162,7 @@ export class ConsolidatedBalanceService implements OnDestroy {
     this._error.set('');
     this._isSyncing.set(false);
     this._initialized.set(false);
+    this._pnlData.set(new Map());
     this.balanceSocket.disconnect();
     this.priceSocket.disconnect();
   }
@@ -198,12 +213,66 @@ export class ConsolidatedBalanceService implements OnDestroy {
 
         // Subscribe to price updates for all assets
         this.subscribeToAssetPrices(data.byAsset);
+
+        // Load PnL data
+        this.loadPnlData();
       },
       error: (err) => {
         console.error('[ConsolidatedBalanceService] Error loading balance:', err);
         this._error.set(err.error?.message || 'Error al cargar balances');
         this._loading.set(false);
       },
+    });
+  }
+
+  /**
+   * Load unrealized PnL data from API
+   */
+  private loadPnlData(): void {
+    this.pnlService.getUnrealizedPnl().subscribe({
+      next: (response) => {
+        const map = new Map<string, UnrealizedPnlPosition>();
+        for (const position of response.positions) {
+          map.set(position.asset, position);
+        }
+        this._pnlData.set(map);
+      },
+      error: (err) => {
+        console.error('[ConsolidatedBalanceService] Error loading PnL data:', err);
+      },
+    });
+  }
+
+  /**
+   * Enrich assets with PnL cost basis and unrealized P&L
+   */
+  private enrichAssetsWithPnl(
+    assets: EnrichedAssetBalance[],
+    pnlMap: Map<string, UnrealizedPnlPosition>
+  ): EnrichedAssetBalance[] {
+    if (pnlMap.size === 0) return assets;
+
+    return assets.map((asset) => {
+      const position = pnlMap.get(asset.asset);
+      if (!position || position.costBasis === 0) {
+        return { ...asset, hasCostBasis: false };
+      }
+
+      const avgCostPerUnit = position.costBasis / position.amount;
+      const totalCostBasis = position.costBasis;
+      // Use PnL tracked amount (not balance total) to avoid mismatch from deposits/withdrawals
+      const currentValue = position.amount * (asset.priceUsd || 0);
+      const unrealizedPnl = currentValue - totalCostBasis;
+      const unrealizedPnlPercent = totalCostBasis > 0 ? (unrealizedPnl / totalCostBasis) * 100 : 0;
+
+      return {
+        ...asset,
+        avgCostPerUnit,
+        totalCostBasis,
+        unrealizedPnl,
+        unrealizedPnlPercent,
+        hasCostBasis: true,
+      };
     });
   }
 
