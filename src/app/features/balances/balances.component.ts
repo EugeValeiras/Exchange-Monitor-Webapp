@@ -1254,7 +1254,7 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
 
   // Local state for filtering
-  displayedColumns = ['asset', 'exchanges', 'price', 'change24h', 'total', 'avgCost', 'value', 'pnl'];
+  displayedColumns = ['asset', 'total', 'exchanges', 'price', 'avgCost', 'pnl', 'change24h'];
   dataSource = new MatTableDataSource<EnrichedAssetBalance>([]);
   selectedExchanges = new Set<string>();
   showAllAssets = false;
