@@ -19,6 +19,7 @@ import { ConsolidatedBalanceService, EnrichedAssetBalance } from '../../core/ser
 import { PriceSocketService } from '../../core/services/price-socket.service';
 import { SettingsService } from '../../core/services/settings.service';
 import { FavoritesService } from '../../core/services/favorites.service';
+import { TransactionsService } from '../../core/services/transactions.service';
 import { ExchangeBalance } from '../../core/services/balance-socket.service';
 import { ExchangeLogoComponent } from '../../shared/components/exchange-logo/exchange-logo.component';
 import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-loader.component';
@@ -155,6 +156,29 @@ type AssetBalance = EnrichedAssetBalance;
                   {{ balanceService.exchangeCount() }} exchange{{ balanceService.exchangeCount() !== 1 ? 's' : '' }} ·
                   {{ dataSource.data.length }} activo{{ dataSource.data.length !== 1 ? 's' : '' }}
                 </span>
+              }
+            </div>
+          </div>
+
+          <!-- Interest Earned Card -->
+          <div class="stat-card interest">
+            <div class="stat-content">
+              <div class="stat-header">
+                @if (loading()) {
+                  <span class="skeleton-text skeleton-pulse" style="width: 120px; height: 14px;"></span>
+                } @else {
+                  <span class="stat-label">Intereses Ganados</span>
+                }
+                <mat-icon>percent</mat-icon>
+              </div>
+              @if (loading() || interestLoading()) {
+                <span class="skeleton-text skeleton-pulse stat-value-skeleton"></span>
+                <span class="skeleton-text skeleton-pulse" style="width: 140px; height: 13px;"></span>
+              } @else {
+                <span class="stat-value">
+                  <app-flip-number [value]="totalInterestUsd()" format="currency" [decimals]="2" size="large"></app-flip-number>
+                </span>
+                <span class="stat-hint">Total acumulado de intereses</span>
               }
             </div>
           </div>
@@ -616,6 +640,19 @@ type AssetBalance = EnrichedAssetBalance;
 
     .stat-card.primary .stat-header mat-icon {
       color: var(--brand-accent);
+    }
+
+    .stat-card.interest {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+    }
+
+    .stat-card.interest .stat-header mat-icon {
+      color: var(--color-success);
+    }
+
+    .stat-card.interest .stat-value {
+      color: var(--color-success);
     }
 
     .icon-orange {
@@ -1273,11 +1310,15 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
   private updateSubject = new Subject<void>();
   private updateSubscription: Subscription | null = null;
 
+  totalInterestUsd = signal(0);
+  interestLoading = signal(true);
+
   constructor(
     public balanceService: ConsolidatedBalanceService,
     public priceSocket: PriceSocketService,
     private settingsService: SettingsService,
     public favoritesService: FavoritesService,
+    private transactionsService: TransactionsService,
     private dialog: MatDialog,
   ) {
     this.dataSource.filterPredicate = (data: EnrichedAssetBalance, filter: string) => {
@@ -1310,6 +1351,20 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
     this.balanceService.initialize();
     this.loadConfiguredAssets();
     this.favoritesService.loadFavorites().subscribe();
+    this.loadInterestStats();
+  }
+
+  private loadInterestStats(): void {
+    this.interestLoading.set(true);
+    this.transactionsService.getStats().subscribe({
+      next: (stats) => {
+        this.totalInterestUsd.set(stats.totalInterestUsd);
+        this.interestLoading.set(false);
+      },
+      error: () => {
+        this.interestLoading.set(false);
+      },
+    });
   }
 
   private loadConfiguredAssets(): void {
