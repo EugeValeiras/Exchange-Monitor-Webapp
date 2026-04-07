@@ -9,6 +9,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Subject } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
 import { ApiService } from '../../core/services/api.service';
@@ -57,6 +59,8 @@ const COMMON_ASSETS = [
     MatSelectModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
+    MatDialogModule,
+    MatSnackBarModule,
     ExchangeLogoComponent,
   ],
   template: `
@@ -175,6 +179,22 @@ const COMMON_ASSETS = [
                 <div class="diff-row negative">
                   {{ formatAmount(result.netAmount - bestResult()!.netAmount) }} {{ toAsset }} vs mejor
                 </div>
+              }
+
+              @if (!result.route) {
+                <button
+                  mat-raised-button
+                  class="execute-btn"
+                  [class.best]="result.isBest"
+                  [disabled]="executing()"
+                  (click)="confirmExecute(result)">
+                  @if (executing() && executingExchange() === result.exchange) {
+                    <mat-spinner diameter="18"></mat-spinner>
+                  } @else {
+                    <mat-icon>swap_horiz</mat-icon>
+                  }
+                  Ejecutar
+                </button>
               }
             </div>
           }
@@ -383,6 +403,29 @@ const COMMON_ASSETS = [
       color: var(--color-error);
     }
 
+    .execute-btn {
+      margin-top: 20px;
+      width: 100%;
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .execute-btn.best {
+      background: var(--brand-primary);
+      color: #000;
+      border: none;
+    }
+
+    .execute-btn:disabled {
+      opacity: 0.5;
+    }
+
     /* Empty & Error States */
     .empty-state,
     .error-state {
@@ -483,6 +526,9 @@ export class SwapPreviewComponent implements OnInit, OnDestroy {
   results = signal<SwapExchangeResult[]>([]);
   hasSearched = signal(false);
 
+  executing = signal(false);
+  executingExchange = signal('');
+
   bestResult = computed(() => {
     const r = this.results();
     return r.find((x) => x.isBest) || null;
@@ -491,6 +537,7 @@ export class SwapPreviewComponent implements OnInit, OnDestroy {
   constructor(
     private api: ApiService,
     private balanceService: ConsolidatedBalanceService,
+    private snackBar: MatSnackBar,
   ) {}
 
   ngOnInit() {
@@ -559,6 +606,55 @@ export class SwapPreviewComponent implements OnInit, OnDestroy {
         this.error.set(err.error?.message || 'Error al obtener preview');
         this.loading.set(false);
         this.hasSearched.set(true);
+      },
+    });
+  }
+
+  confirmExecute(result: SwapExchangeResult): void {
+    const netFormatted = this.formatAmount(result.netAmount);
+    const confirmed = window.confirm(
+      `¿Ejecutar swap en ${result.exchangeLabel}?\n\n` +
+      `Vender: ${this.amount} ${this.fromAsset}\n` +
+      `Recibir: ~${netFormatted} ${this.toAsset}\n` +
+      `Comisión: ${(result.takerFeeRate * 100).toFixed(2)}%\n\n` +
+      `⚠ Orden a mercado — el precio final puede variar.`
+    );
+    if (confirmed) {
+      this.executeSwap(result);
+    }
+  }
+
+  private executeSwap(result: SwapExchangeResult): void {
+    this.executing.set(true);
+    this.executingExchange.set(result.exchange);
+
+    this.api.post<any>('/prices/swap-execute', {
+      from: this.fromAsset,
+      to: this.toAsset,
+      amount: this.amount,
+      exchange: result.exchange,
+    }).subscribe({
+      next: (res) => {
+        this.executing.set(false);
+        this.executingExchange.set('');
+        const filled = res.filled || res.amount || 0;
+        const price = res.price || 0;
+        this.snackBar.open(
+          `Swap ejecutado en ${result.exchangeLabel} — ${filled} ${res.side === 'sell' ? this.fromAsset : this.toAsset} @ ${this.formatPrice(price)}`,
+          'OK',
+          { duration: 8000 },
+        );
+        // Refresh preview
+        this.fetchPreview();
+      },
+      error: (err) => {
+        this.executing.set(false);
+        this.executingExchange.set('');
+        this.snackBar.open(
+          `Error: ${err.error?.message || 'No se pudo ejecutar el swap'}`,
+          'Cerrar',
+          { duration: 8000 },
+        );
       },
     });
   }
