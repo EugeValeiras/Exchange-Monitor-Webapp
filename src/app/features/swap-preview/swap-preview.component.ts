@@ -175,6 +175,11 @@ const COMMON_ASSETS = [
                 }
               </div>
 
+              @if (result.isBest && secondResult()) {
+                <div class="diff-row positive">
+                  +{{ formatAmount(result.netAmount - secondResult()!.netAmount) }} {{ toAsset }} vs segundo
+                </div>
+              }
               @if (!result.isBest && bestResult()) {
                 <div class="diff-row negative">
                   {{ formatAmount(result.netAmount - bestResult()!.netAmount) }} {{ toAsset }} vs mejor
@@ -398,6 +403,11 @@ const COMMON_ASSETS = [
       text-align: center;
     }
 
+    .diff-row.positive {
+      background: rgba(0, 188, 212, 0.1);
+      color: var(--brand-accent);
+    }
+
     .diff-row.negative {
       background: rgba(246, 70, 93, 0.1);
       color: var(--color-error);
@@ -532,6 +542,11 @@ export class SwapPreviewComponent implements OnInit, OnDestroy {
   bestResult = computed(() => {
     const r = this.results();
     return r.find((x) => x.isBest) || null;
+  });
+
+  secondResult = computed(() => {
+    const r = this.results();
+    return r.length > 1 ? r.find((x) => !x.isBest) || null : null;
   });
 
   constructor(
