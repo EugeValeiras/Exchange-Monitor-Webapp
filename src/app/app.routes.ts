@@ -47,6 +47,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/price-history/price-history.component').then(m => m.PriceHistoryComponent)
       },
       {
+        path: 'swap-preview',
+        loadComponent: () => import('./features/swap-preview/swap-preview.component').then(m => m.SwapPreviewComponent)
+      },
+      {
         path: 'exchanges',
         loadComponent: () => import('./features/credentials/credentials.component').then(m => m.CredentialsComponent)
       },

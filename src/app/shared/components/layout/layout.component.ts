@@ -328,6 +328,7 @@ export class LayoutComponent {
     { label: 'Balances', icon: 'account_balance_wallet', route: '/balances' },
     { label: 'Transacciones', icon: 'swap_horiz', route: '/transactions' },
     { label: 'Historial P&L', icon: 'analytics', route: '/pnl-history' },
+    { label: 'Swap Preview', icon: 'compare_arrows', route: '/swap-preview' },
     { label: 'Exchanges', icon: 'currency_exchange', route: '/exchanges' },
     {
       label: 'Seguridad',
@@ -377,6 +378,7 @@ export class LayoutComponent {
       '/balances': 'Balances',
       '/transactions': 'Transacciones',
       '/pnl-history': 'Historial P&L',
+      '/swap-preview': 'Swap Preview',
       '/exchanges': 'Exchanges',
       '/security': 'Seguridad',
       '/security/passkeys': 'Passkeys',
