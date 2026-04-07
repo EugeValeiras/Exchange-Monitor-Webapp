@@ -287,15 +287,15 @@ const COMMON_ASSETS = [
     }
 
     .result-card.best {
-      border-color: var(--brand-primary);
-      box-shadow: 0 0 20px rgba(240, 185, 11, 0.15);
+      border-color: var(--brand-accent);
+      box-shadow: 0 0 20px rgba(0, 188, 212, 0.15);
     }
 
     .best-badge {
       position: absolute;
       top: -10px;
       right: 16px;
-      background: var(--brand-primary);
+      background: var(--brand-accent);
       color: #000;
       font-size: 11px;
       font-weight: 700;
@@ -341,7 +341,7 @@ const COMMON_ASSETS = [
     }
 
     .result-card.best .net-value {
-      color: var(--brand-primary);
+      color: var(--brand-accent);
     }
 
     .net-asset {
@@ -417,7 +417,7 @@ const COMMON_ASSETS = [
     }
 
     .execute-btn.best {
-      background: var(--brand-primary);
+      background: var(--brand-accent);
       color: #000;
       border: none;
     }
