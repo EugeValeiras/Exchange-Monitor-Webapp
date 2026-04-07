@@ -178,6 +178,14 @@ type AssetBalance = EnrichedAssetBalance;
                 <span class="stat-value">
                   <app-flip-number [value]="totalInterestUsd()" format="currency" [decimals]="2" size="large"></app-flip-number>
                 </span>
+                @if (monthlyInterestUsd() > 0) {
+                  <div class="stat-change positive">
+                    <span class="change-value">
+                      +{{ monthlyInterestUsd() | currency:'USD':'symbol':'1.2-2' }}
+                    </span>
+                    <span class="change-label">este mes</span>
+                  </div>
+                }
                 <span class="stat-hint">Total acumulado de intereses</span>
               }
             </div>
@@ -643,16 +651,47 @@ type AssetBalance = EnrichedAssetBalance;
     }
 
     .stat-card.interest {
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
+      background: linear-gradient(135deg, #0a3d2a 0%, #0d4f35 50%, #064a2d 100%);
+      border: none;
+    }
+
+    .stat-card.interest .stat-label {
+      color: rgba(255, 255, 255, 0.8);
     }
 
     .stat-card.interest .stat-header mat-icon {
-      color: var(--color-success);
+      color: #0ecb81;
     }
 
     .stat-card.interest .stat-value {
-      color: var(--color-success);
+      color: white;
+    }
+
+    .stat-card.interest .stat-hint {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .stat-card.interest .stat-change {
+      background: rgba(14, 203, 129, 0.2);
+    }
+
+    .stat-card.interest .stat-change .change-value {
+      color: #0ecb81;
+    }
+
+    .stat-card.interest .stat-change .change-label {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .stat-card.interest .skeleton-pulse {
+      background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.1) 0%,
+        rgba(255, 255, 255, 0.2) 50%,
+        rgba(255, 255, 255, 0.1) 100%
+      );
+      background-size: 200% 100%;
+      animation: skeleton-shimmer 1.5s infinite;
     }
 
     .icon-orange {
@@ -1311,6 +1350,7 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
   private updateSubscription: Subscription | null = null;
 
   totalInterestUsd = signal(0);
+  monthlyInterestUsd = signal(0);
   interestLoading = signal(true);
 
   constructor(
@@ -1356,6 +1396,8 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private loadInterestStats(): void {
     this.interestLoading.set(true);
+
+    // Total interest
     this.transactionsService.getStats().subscribe({
       next: (stats) => {
         this.totalInterestUsd.set(stats.totalInterestUsd);
@@ -1363,6 +1405,15 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
       },
       error: () => {
         this.interestLoading.set(false);
+      },
+    });
+
+    // Monthly interest
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    this.transactionsService.getStats({ startDate: startOfMonth }).subscribe({
+      next: (stats) => {
+        this.monthlyInterestUsd.set(stats.totalInterestUsd);
       },
     });
   }
