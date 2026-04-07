@@ -15,6 +15,7 @@ import { Subject } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
 import { ApiService } from '../../core/services/api.service';
 import { ConsolidatedBalanceService } from '../../core/services/consolidated-balance.service';
+import { PriceSocketService } from '../../core/services/price-socket.service';
 import { ExchangeLogoComponent } from '../../shared/components/exchange-logo/exchange-logo.component';
 
 interface SwapExchangeResult {
@@ -146,9 +147,14 @@ const COMMON_ASSETS = [
               </div>
 
               <div class="result-net">
-                <span class="net-label">Recibirías</span>
-                <span class="net-value">{{ formatAmount(result.netAmount) }}</span>
-                <span class="net-asset">{{ toAsset }}</span>
+                <div class="net-main">
+                  <span class="net-label">Recibirías</span>
+                  <div class="net-amounts">
+                    <span class="net-value">{{ formatAmount(result.netAmount) }}</span>
+                    <span class="net-asset">{{ toAsset }}</span>
+                  </div>
+                </div>
+                <span class="net-usd">≈ {{ getNetAmountUsd(result) | currency:'USD':'symbol':'1.2-2' }}</span>
               </div>
 
               <div class="result-details">
@@ -347,11 +353,30 @@ const COMMON_ASSETS = [
     .result-net {
       display: flex;
       align-items: baseline;
-      gap: 8px;
+      justify-content: space-between;
       margin-bottom: 20px;
       padding: 16px;
       background: var(--bg-elevated);
       border-radius: 10px;
+    }
+
+    .net-main {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .net-amounts {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .net-usd {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
     }
 
     .net-label {
@@ -573,6 +598,7 @@ export class SwapPreviewComponent implements OnInit, OnDestroy {
   constructor(
     private api: ApiService,
     private balanceService: ConsolidatedBalanceService,
+    private priceSocket: PriceSocketService,
     private snackBar: MatSnackBar,
   ) {}
 
@@ -693,6 +719,17 @@ export class SwapPreviewComponent implements OnInit, OnDestroy {
         );
       },
     });
+  }
+
+  getNetAmountUsd(result: SwapExchangeResult): number {
+    const to = this.toAsset;
+    // If target is already USD/USDT, netAmount IS the USD value
+    if (to === 'USDT' || to === 'USD') {
+      return result.netAmount;
+    }
+    // Otherwise, get the USD price of the target asset
+    const price = this.priceSocket.getPriceByAsset(to);
+    return price ? result.netAmount * price : 0;
   }
 
   getExchangeBalance(exchange: string): number {
