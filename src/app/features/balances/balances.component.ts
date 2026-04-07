@@ -183,7 +183,7 @@ type AssetBalance = EnrichedAssetBalance;
                     <span class="change-value">
                       +{{ monthlyInterestUsd() | currency:'USD':'symbol':'1.2-2' }}
                     </span>
-                    <span class="change-label">este mes</span>
+                    <span class="change-label">últimos 31 días</span>
                   </div>
                 }
                 <span class="stat-hint">Total acumulado de intereses</span>
@@ -1408,10 +1408,10 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
       },
     });
 
-    // Monthly interest
+    // Last 31 days interest
     const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-    this.transactionsService.getStats({ startDate: startOfMonth }).subscribe({
+    const thirtyOneDaysAgo = new Date(now.getTime() - 31 * 24 * 60 * 60 * 1000).toISOString();
+    this.transactionsService.getStats({ startDate: thirtyOneDaysAgo }).subscribe({
       next: (stats) => {
         this.monthlyInterestUsd.set(stats.totalInterestUsd);
       },
