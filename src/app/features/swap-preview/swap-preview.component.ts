@@ -137,7 +137,12 @@ const COMMON_ASSETS = [
               }
               <div class="result-header">
                 <app-exchange-logo [exchange]="result.exchange" [size]="36"></app-exchange-logo>
-                <span class="exchange-name">{{ result.exchangeLabel }}</span>
+                <div class="header-info">
+                  <span class="exchange-name">{{ result.exchangeLabel }}</span>
+                  <span class="exchange-balance" [class.insufficient]="getExchangeBalance(result.exchange) < amount">
+                    Saldo: {{ formatAmount(getExchangeBalance(result.exchange)) }} {{ fromAsset }}
+                  </span>
+                </div>
               </div>
 
               <div class="result-net">
@@ -317,10 +322,26 @@ const COMMON_ASSETS = [
       margin-bottom: 20px;
     }
 
+    .header-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
     .exchange-name {
       font-size: 18px;
       font-weight: 600;
       color: var(--text-primary);
+    }
+
+    .exchange-balance {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+    }
+
+    .exchange-balance.insufficient {
+      color: var(--color-error);
     }
 
     .result-net {
@@ -672,6 +693,17 @@ export class SwapPreviewComponent implements OnInit, OnDestroy {
         );
       },
     });
+  }
+
+  getExchangeBalance(exchange: string): number {
+    const balance = this.balanceService.balance();
+    if (!balance) return 0;
+
+    const asset = balance.byAsset.find((a) => a.asset === this.fromAsset);
+    if (!asset?.exchangeBreakdown) return 0;
+
+    const breakdown = asset.exchangeBreakdown.find((b) => b.exchange === exchange);
+    return breakdown?.total || 0;
   }
 
   formatAmount(value: number): string {
