@@ -12,6 +12,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { Subject } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
 import { ApiService } from '../../core/services/api.service';
+import { ConsolidatedBalanceService } from '../../core/services/consolidated-balance.service';
 import { ExchangeLogoComponent } from '../../shared/components/exchange-logo/exchange-logo.component';
 
 interface SwapExchangeResult {
@@ -472,7 +473,7 @@ export class SwapPreviewComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private searchSubject = new Subject<void>();
 
-  assets = COMMON_ASSETS;
+  assets: string[] = [...COMMON_ASSETS];
   fromAsset = 'BTC';
   toAsset = 'USDT';
   amount = 1;
@@ -487,15 +488,39 @@ export class SwapPreviewComponent implements OnInit, OnDestroy {
     return r.find((x) => x.isBest) || null;
   });
 
-  constructor(private api: ApiService) {}
+  constructor(
+    private api: ApiService,
+    private balanceService: ConsolidatedBalanceService,
+  ) {}
 
   ngOnInit() {
     this.searchSubject
       .pipe(debounceTime(400), takeUntil(this.destroy$))
       .subscribe(() => this.fetchPreview());
 
+    // Load user's balance assets and merge with defaults
+    this.balanceService.initialize();
+    const balance = this.balanceService.balance();
+    if (balance) {
+      this.mergeUserAssets(balance.byAsset.map((a) => a.asset));
+    }
+    // Also react to future balance loads
+    this.api.get<{ byAsset: { asset: string }[] }>('/balances').subscribe({
+      next: (data) => {
+        this.mergeUserAssets(data.byAsset.map((a) => a.asset));
+      },
+    });
+
     // Initial fetch
     this.fetchPreview();
+  }
+
+  private mergeUserAssets(userAssets: string[]): void {
+    const set = new Set(this.assets);
+    for (const asset of userAssets) {
+      set.add(asset);
+    }
+    this.assets = Array.from(set).sort();
   }
 
   ngOnDestroy() {
