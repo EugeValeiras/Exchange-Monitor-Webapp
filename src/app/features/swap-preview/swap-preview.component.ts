@@ -9,6 +9,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Subject } from 'rxjs';
@@ -60,6 +61,7 @@ const COMMON_ASSETS = [
     MatSelectModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
+    MatMenuModule,
     MatDialogModule,
     MatSnackBarModule,
     ExchangeLogoComponent,
@@ -69,43 +71,61 @@ const COMMON_ASSETS = [
       <!-- Input Section -->
       <div class="swap-form-card">
         <div class="swap-form">
-          <mat-form-field appearance="outline" class="asset-field">
-            <mat-label>De</mat-label>
-            <mat-select [(ngModel)]="fromAsset" (selectionChange)="onInputChange()">
-              @for (asset of assets; track asset) {
-                <mat-option [value]="asset">
-                  <div class="option-row">
-                    <img [src]="getAssetLogo(asset)" [alt]="asset" class="option-logo" (error)="onLogoError($event)">
-                    {{ asset }}
-                  </div>
-                </mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
+          <div class="pair-group">
+            <div class="asset-select">
+              <label class="field-label">De</label>
+              <button class="asset-picker" [matMenuTriggerFor]="fromMenu">
+                <img [src]="getAssetLogo(fromAsset)" [alt]="fromAsset" class="picker-logo" (error)="onLogoError($event)">
+                <span class="picker-symbol">{{ fromAsset }}</span>
+                <mat-icon class="picker-arrow">expand_more</mat-icon>
+              </button>
+              <mat-menu #fromMenu="matMenu" class="asset-menu">
+                @for (asset of assets; track asset) {
+                  <button mat-menu-item (click)="fromAsset = asset; onInputChange()">
+                    <div class="option-row">
+                      <img [src]="getAssetLogo(asset)" [alt]="asset" class="option-logo" (error)="onLogoError($event)">
+                      {{ asset }}
+                    </div>
+                  </button>
+                }
+              </mat-menu>
+            </div>
 
-          <button mat-icon-button class="swap-btn" (click)="flipAssets()" matTooltip="Invertir">
-            <mat-icon>swap_horiz</mat-icon>
+            <button class="flip-btn" (click)="flipAssets()" matTooltip="Invertir">
+              <mat-icon>swap_horiz</mat-icon>
+            </button>
+
+            <div class="asset-select">
+              <label class="field-label">A</label>
+              <button class="asset-picker" [matMenuTriggerFor]="toMenu">
+                <img [src]="getAssetLogo(toAsset)" [alt]="toAsset" class="picker-logo" (error)="onLogoError($event)">
+                <span class="picker-symbol">{{ toAsset }}</span>
+                <mat-icon class="picker-arrow">expand_more</mat-icon>
+              </button>
+              <mat-menu #toMenu="matMenu" class="asset-menu">
+                @for (asset of assets; track asset) {
+                  <button mat-menu-item (click)="toAsset = asset; onInputChange()">
+                    <div class="option-row">
+                      <img [src]="getAssetLogo(asset)" [alt]="asset" class="option-logo" (error)="onLogoError($event)">
+                      {{ asset }}
+                    </div>
+                  </button>
+                }
+              </mat-menu>
+            </div>
+          </div>
+
+          <div class="amount-group">
+            <label class="field-label">Cantidad</label>
+            <div class="amount-input-wrap">
+              <input type="number" [(ngModel)]="amount" (ngModelChange)="onInputChange()" min="0" step="any" class="amount-input" placeholder="0.00">
+              <span class="amount-suffix">{{ fromAsset }}</span>
+            </div>
+          </div>
+
+          <button class="refresh-btn" (click)="refresh()" [disabled]="loading()" matTooltip="Actualizar precios">
+            <mat-icon [class.spinning]="loading()">refresh</mat-icon>
           </button>
-
-          <mat-form-field appearance="outline" class="asset-field">
-            <mat-label>A</mat-label>
-            <mat-select [(ngModel)]="toAsset" (selectionChange)="onInputChange()">
-              @for (asset of assets; track asset) {
-                <mat-option [value]="asset">
-                  <div class="option-row">
-                    <img [src]="getAssetLogo(asset)" [alt]="asset" class="option-logo" (error)="onLogoError($event)">
-                    {{ asset }}
-                  </div>
-                </mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline" class="amount-field">
-            <mat-label>Cantidad</mat-label>
-            <input matInput type="number" [(ngModel)]="amount" (ngModelChange)="onInputChange()" min="0" step="any">
-            <span matSuffix class="amount-suffix">{{ fromAsset }}</span>
-          </mat-form-field>
         </div>
       </div>
 
@@ -233,44 +253,187 @@ const COMMON_ASSETS = [
     .swap-form-card {
       background: var(--bg-card);
       border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 24px;
-      margin-bottom: 32px;
+      border-radius: 16px;
+      padding: 20px 24px;
+      margin-bottom: 28px;
     }
 
     .swap-form {
       display: flex;
+      align-items: flex-end;
+      gap: 16px;
+    }
+
+    .field-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-tertiary);
+      margin-bottom: 6px;
+    }
+
+    .pair-group {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+    }
+
+    .asset-select {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .asset-picker {
+      display: flex;
       align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
+      gap: 8px;
+      padding: 8px 12px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      color: var(--text-primary);
+      min-width: 110px;
     }
 
-    .asset-field {
+    .asset-picker:hover {
+      border-color: var(--brand-accent);
+      background: var(--bg-tertiary);
+    }
+
+    .picker-logo {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      object-fit: contain;
+    }
+
+    .picker-symbol {
+      font-size: 15px;
+      font-weight: 700;
       flex: 1;
-      min-width: 140px;
     }
 
-    .amount-field {
-      flex: 1.2;
-      min-width: 160px;
+    .picker-arrow {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      color: var(--text-tertiary);
+    }
+
+    .flip-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid var(--border-color);
+      background: var(--bg-elevated);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+      margin-bottom: 2px;
+    }
+
+    .flip-btn:hover {
+      color: var(--brand-accent);
+      border-color: var(--brand-accent);
+      transform: rotate(180deg);
+    }
+
+    .flip-btn mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+
+    .amount-group {
+      flex: 1;
+      min-width: 150px;
+    }
+
+    .amount-input-wrap {
+      display: flex;
+      align-items: center;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 0 12px;
+      transition: border-color 0.15s ease;
+    }
+
+    .amount-input-wrap:focus-within {
+      border-color: var(--brand-accent);
+    }
+
+    .amount-input {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: var(--text-primary);
+      font-size: 15px;
+      font-weight: 600;
+      font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+      padding: 9px 0;
+      width: 100%;
+    }
+
+    .amount-input::placeholder {
+      color: var(--text-tertiary);
     }
 
     .amount-suffix {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-secondary);
-      padding-right: 4px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-tertiary);
+      padding-left: 8px;
+      white-space: nowrap;
     }
 
-    .swap-btn {
+    .refresh-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-elevated);
       color: var(--text-secondary);
-      transition: all 0.2s ease;
-      margin-top: -16px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+      margin-bottom: 1px;
     }
 
-    .swap-btn:hover {
-      color: var(--brand-primary);
-      transform: rotate(180deg);
+    .refresh-btn:hover:not(:disabled) {
+      color: var(--brand-accent);
+      border-color: var(--brand-accent);
+    }
+
+    .refresh-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .refresh-btn mat-icon {
+      font-size: 22px;
+      width: 22px;
+      height: 22px;
+    }
+
+    .refresh-btn mat-icon.spinning {
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      100% { transform: rotate(360deg); }
     }
 
     .option-row {
@@ -541,21 +704,16 @@ const COMMON_ASSETS = [
     /* Responsive */
     @media (max-width: 600px) {
       .swap-form {
-        flex-direction: column;
+        flex-wrap: wrap;
       }
 
-      .asset-field,
-      .amount-field {
+      .pair-group {
         width: 100%;
+        justify-content: center;
       }
 
-      .swap-btn {
-        transform: rotate(90deg);
-        margin-top: 0;
-      }
-
-      .swap-btn:hover {
-        transform: rotate(270deg);
+      .amount-group {
+        width: 100%;
       }
 
       .results-grid {
@@ -648,6 +806,10 @@ export class SwapPreviewComponent implements OnInit, OnDestroy {
     this.fromAsset = this.toAsset;
     this.toAsset = temp;
     this.onInputChange();
+  }
+
+  refresh() {
+    this.fetchPreview();
   }
 
   private fetchPreview() {
