@@ -1471,7 +1471,9 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
   getSortedExchanges(): ExchangeBalance[] {
     const balance = this.balanceService.balance();
     if (!balance) return [];
-    return [...balance.byExchange].sort((a, b) => b.totalValueUsd - a.totalValueUsd);
+    return [...balance.byExchange]
+      .filter(e => e.totalValueUsd > 0)
+      .sort((a, b) => b.totalValueUsd - a.totalValueUsd);
   }
 
   getTopAssets(): EnrichedAssetBalance[] {
