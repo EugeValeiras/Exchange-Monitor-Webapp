@@ -16,6 +16,9 @@ import { CommonModule } from '@angular/common';
       @case ('kraken') {
         <img [src]="'/kraken.svg'" [width]="size" [height]="size" alt="Kraken" class="exchange-img" />
       }
+      @case ('coinbase') {
+        <img [src]="'/coinbase.svg'" [width]="size" [height]="size" alt="Coinbase" class="exchange-img" />
+      }
       @case ('nexo-pro') {
         <img [src]="'/nexo-pro.svg'" [width]="size" [height]="size" alt="Nexo Pro" class="exchange-img" />
       }

@@ -3,7 +3,7 @@ import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
 
 export type TransactionType = 'deposit' | 'withdrawal' | 'trade' | 'interest' | 'fee';
-export type ExchangeType = 'binance' | 'kraken' | 'nexo-pro' | 'nexo-manual';
+export type ExchangeType = 'binance' | 'kraken' | 'coinbase' | 'nexo-pro' | 'nexo-manual';
 
 export interface Transaction {
   id: string;
@@ -129,6 +129,7 @@ export class TransactionsService {
       binance: 'Binance',
       'binance-futures': 'Binance Futures',
       kraken: 'Kraken',
+      coinbase: 'Coinbase',
       'nexo-pro': 'Nexo Pro',
       'nexo-manual': 'Nexo'
     };

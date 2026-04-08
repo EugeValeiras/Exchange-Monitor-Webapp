@@ -5,6 +5,7 @@ import { ApiService } from './api.service';
 export enum ExchangeType {
   KRAKEN = 'kraken',
   BINANCE = 'binance',
+  COINBASE = 'coinbase',
   NEXO_PRO = 'nexo-pro',
   NEXO_MANUAL = 'nexo-manual'
 }
@@ -143,6 +144,7 @@ export class CredentialsService {
     const icons: Record<ExchangeType, string> = {
       [ExchangeType.BINANCE]: 'currency_bitcoin',
       [ExchangeType.KRAKEN]: 'waves',
+      [ExchangeType.COINBASE]: 'account_balance_wallet',
       [ExchangeType.NEXO_PRO]: 'account_balance',
       [ExchangeType.NEXO_MANUAL]: 'upload_file'
     };
@@ -153,6 +155,7 @@ export class CredentialsService {
     const labels: Record<ExchangeType, string> = {
       [ExchangeType.BINANCE]: 'Binance',
       [ExchangeType.KRAKEN]: 'Kraken',
+      [ExchangeType.COINBASE]: 'Coinbase',
       [ExchangeType.NEXO_PRO]: 'Nexo Pro',
       [ExchangeType.NEXO_MANUAL]: 'Nexo'
     };

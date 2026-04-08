@@ -400,6 +400,7 @@ export class PnlHistoryComponent implements OnInit {
     const labels: Record<string, string> = {
       binance: 'Binance',
       kraken: 'Kraken',
+      coinbase: 'Coinbase',
       nexo: 'Nexo',
       bitso: 'Bitso',
     };

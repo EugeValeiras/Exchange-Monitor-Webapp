@@ -340,6 +340,7 @@ export class RealizedPnlTableComponent implements OnInit, OnChanges {
     const labels: Record<string, string> = {
       binance: 'Binance',
       kraken: 'Kraken',
+      coinbase: 'Coinbase',
       nexo: 'Nexo',
       bitso: 'Bitso',
     };

@@ -206,6 +206,7 @@ export class CredentialDialogComponent {
   exchanges = [
     { value: ExchangeType.BINANCE, label: 'Binance' },
     { value: ExchangeType.KRAKEN, label: 'Kraken' },
+    { value: ExchangeType.COINBASE, label: 'Coinbase' },
     { value: ExchangeType.NEXO_PRO, label: 'Nexo Pro' },
     { value: ExchangeType.NEXO_MANUAL, label: 'Nexo (CSV)' }
   ];

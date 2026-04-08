@@ -463,6 +463,7 @@ export class CostBasisDialogComponent implements OnInit {
       binance: 'Binance',
       'binance-futures': 'Binance Futures',
       kraken: 'Kraken',
+      coinbase: 'Coinbase',
       nexo: 'Nexo',
       'nexo-pro': 'Nexo Pro',
       'nexo-manual': 'Nexo',

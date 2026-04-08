@@ -962,7 +962,8 @@ export class PricesComponent implements OnInit, OnDestroy, AfterViewInit {
     const labels: Record<string, string> = {
       'binance': 'Binance',
       'binance-futures': 'Binance Futures',
-      'kraken': 'Kraken'
+      'kraken': 'Kraken',
+      'coinbase': 'Coinbase'
     };
     return labels[exchange] || exchange;
   }
