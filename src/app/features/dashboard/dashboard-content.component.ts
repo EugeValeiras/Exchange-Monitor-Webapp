@@ -119,6 +119,12 @@ import { FlipNumberComponent } from '../../shared/components/flip-number/flip-nu
       padding: 24px;
     }
 
+    @media (max-width: 900px) {
+      .dashboard-content {
+        padding: 12px;
+      }
+    }
+
     .empty-container {
       display: flex;
       flex-direction: column;
@@ -126,6 +132,12 @@ import { FlipNumberComponent } from '../../shared/components/flip-number/flip-nu
       justify-content: center;
       padding: 80px;
       text-align: center;
+    }
+
+    @media (max-width: 900px) {
+      .empty-container {
+        padding: 32px 16px;
+      }
     }
 
     .empty-icon {
@@ -168,6 +180,19 @@ import { FlipNumberComponent } from '../../shared/components/flip-number/flip-nu
       padding: 24px;
       text-decoration: none;
       transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    @media (max-width: 900px) {
+      .quick-stat-card {
+        padding: 16px;
+        border-radius: 12px;
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .quick-stat-card .stat-value {
+        font-size: 28px !important;
+      }
     }
 
     .quick-stat-card:hover {

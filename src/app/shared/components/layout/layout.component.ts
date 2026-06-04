@@ -26,13 +26,19 @@ interface NavItem {
     MatButtonModule
   ],
   template: `
-    <div class="layout">
-      <aside class="sidebar">
+    <div class="layout" [class.sidebar-open]="sidebarOpen()">
+      @if (sidebarOpen()) {
+        <div class="sidebar-backdrop" (click)="closeSidebar()"></div>
+      }
+      <aside class="sidebar" [class.open]="sidebarOpen()">
         <div class="sidebar-header">
           <div class="logo">
             <img src="assets/logo-icon.svg" alt="Exchange Monitor" class="logo-icon">
             <span class="logo-text">Exchange Monitor</span>
           </div>
+          <button class="sidebar-close" (click)="closeSidebar()" aria-label="Cerrar menú">
+            <mat-icon>close</mat-icon>
+          </button>
         </div>
 
         <nav class="sidebar-nav">
@@ -48,7 +54,7 @@ interface NavItem {
                 @if (expandedItem() === item.label) {
                   <div class="nav-children">
                     @for (child of item.children; track child.route) {
-                      <a class="nav-child" [routerLink]="child.route" routerLinkActive="active">
+                      <a class="nav-child" [routerLink]="child.route" routerLinkActive="active" (click)="closeSidebar()">
                         {{ child.label }}
                       </a>
                     }
@@ -57,7 +63,7 @@ interface NavItem {
               </div>
             } @else {
               <!-- Simple item -->
-              <a class="nav-item" [routerLink]="item.route" routerLinkActive="active" [routerLinkActiveOptions]="{exact: item.route === '/dashboard'}">
+              <a class="nav-item" [routerLink]="item.route" routerLinkActive="active" [routerLinkActiveOptions]="{exact: item.route === '/dashboard'}" (click)="closeSidebar()">
                 <mat-icon class="nav-icon">{{ item.icon }}</mat-icon>
                 <span class="nav-label">{{ item.label }}</span>
               </a>
@@ -75,6 +81,9 @@ interface NavItem {
 
       <main class="main">
         <header class="topbar">
+          <button class="hamburger" (click)="openSidebar()" aria-label="Abrir menú">
+            <mat-icon>menu</mat-icon>
+          </button>
           <h1 class="page-title">{{ getPageTitle() }}</h1>
           <div class="topbar-right">
             <div class="user-info">
@@ -100,6 +109,35 @@ interface NavItem {
       background: var(--bg-primary);
     }
 
+    .sidebar-backdrop {
+      display: none;
+    }
+
+    .hamburger {
+      display: none;
+      background: transparent;
+      border: none;
+      color: var(--text-primary);
+      padding: 8px;
+      margin-right: 4px;
+      cursor: pointer;
+      border-radius: 6px;
+    }
+
+    .hamburger:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .sidebar-close {
+      display: none;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      padding: 8px;
+      cursor: pointer;
+      border-radius: 6px;
+    }
+
     .sidebar {
       width: 240px;
       min-width: 240px;
@@ -112,6 +150,9 @@ interface NavItem {
 
     .sidebar-header {
       padding: 20px 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
 
     .logo {
@@ -296,6 +337,68 @@ interface NavItem {
       justify-content: center;
       font-weight: 600;
       font-size: 13px;
+      flex-shrink: 0;
+    }
+
+    /* ===== Mobile breakpoint ===== */
+    @media (max-width: 900px) {
+      .hamburger {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        height: 100vh;
+        z-index: 1100;
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+        box-shadow: 8px 0 24px rgba(0, 0, 0, 0.4);
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .sidebar-close {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .sidebar-backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1099;
+      }
+
+      .topbar {
+        padding: 0 12px;
+        gap: 8px;
+      }
+
+      .page-title {
+        font-size: 16px;
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .user-info {
+        display: none;
+      }
+
+      .topbar-right {
+        gap: 8px;
+      }
     }
 
     .content {
@@ -320,11 +423,22 @@ interface NavItem {
 })
 export class LayoutComponent {
   expandedItem = signal<string | null>(null);
+  sidebarOpen = signal<boolean>(false);
+
+  openSidebar(): void {
+    this.sidebarOpen.set(true);
+  }
+
+  closeSidebar(): void {
+    this.sidebarOpen.set(false);
+  }
 
   navItems: NavItem[] = [
     { label: 'Dashboard', icon: 'space_dashboard', route: '/dashboard' },
     { label: 'Precios', icon: 'show_chart', route: '/prices' },
+    { label: 'Precios Raw', icon: 'bolt', route: '/raw-prices' },
     { label: 'Historico Precios', icon: 'timeline', route: '/price-history' },
+    { label: 'Analisis de Mercado', icon: 'insights', route: '/market-analysis' },
     { label: 'Balances', icon: 'account_balance_wallet', route: '/balances' },
     { label: 'Transacciones', icon: 'swap_horiz', route: '/transactions' },
     { label: 'Historial P&L', icon: 'analytics', route: '/pnl-history' },
@@ -375,6 +489,8 @@ export class LayoutComponent {
       '/dashboard': 'Dashboard',
       '/prices': 'Precios en Tiempo Real',
       '/price-history': 'Historico de Precios',
+      '/market-analysis': 'Analisis de Mercado',
+      '/market-analysis/agent': 'Agente IA',
       '/balances': 'Balances',
       '/transactions': 'Transacciones',
       '/pnl-history': 'Historial P&L',

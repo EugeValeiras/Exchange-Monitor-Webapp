@@ -185,6 +185,18 @@ import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-lo
       padding: 24px;
     }
 
+    @media (max-width: 900px) {
+      .credentials-container {
+        padding: 12px;
+      }
+
+      .page-header {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 12px;
+      }
+    }
+
     .page-header {
       display: flex;
       justify-content: space-between;

@@ -89,6 +89,12 @@ import { PriceHistoryService } from '../price-history/price-history.service';
       margin: 0 auto;
     }
 
+    @media (max-width: 900px) {
+      .maintenance-page {
+        padding: 12px;
+      }
+    }
+
     .page-header {
       margin-bottom: 24px;
     }

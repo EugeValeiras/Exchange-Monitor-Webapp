@@ -204,6 +204,12 @@ import { ExchangeLogoComponent } from '../../shared/components/exchange-logo/exc
       margin: 0 auto;
     }
 
+    @media (max-width: 900px) {
+      .settings-page {
+        padding: 12px;
+      }
+    }
+
     .page-header {
       margin-bottom: 24px;
     }

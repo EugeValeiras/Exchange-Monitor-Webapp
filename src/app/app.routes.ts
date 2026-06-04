@@ -31,6 +31,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/prices/prices.component').then(m => m.PricesComponent)
       },
       {
+        path: 'raw-prices',
+        loadComponent: () => import('./features/raw-prices/raw-prices.component').then(m => m.RawPricesComponent)
+      },
+      {
         path: 'balances',
         loadComponent: () => import('./features/balances/balances.component').then(m => m.BalancesComponent)
       },
@@ -45,6 +49,14 @@ export const routes: Routes = [
       {
         path: 'price-history',
         loadComponent: () => import('./features/price-history/price-history.component').then(m => m.PriceHistoryComponent)
+      },
+      {
+        path: 'market-analysis',
+        loadComponent: () => import('./features/market-analysis/market-analysis.component').then(m => m.MarketAnalysisComponent)
+      },
+      {
+        path: 'market-analysis/agent',
+        loadComponent: () => import('./features/market-analysis/agent-page.component').then(m => m.AgentPageComponent)
       },
       {
         path: 'swap-preview',

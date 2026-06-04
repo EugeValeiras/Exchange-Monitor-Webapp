@@ -61,14 +61,41 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
             </td>
           </ng-container>
 
-          <!-- Asset Column -->
+          <!-- Asset / Pair Column -->
           <ng-container matColumnDef="asset">
             <th mat-header-cell *matHeaderCellDef>Asset</th>
             <td mat-cell *matCellDef="let row">
-              <div class="asset-cell">
-                <img [src]="getAssetLogo(row.asset)" [alt]="row.asset" class="asset-logo" (error)="onLogoError($event, row.asset)">
-                <span>{{ row.asset }}</span>
-              </div>
+              @if (row.pair && row.priceAsset) {
+                <div class="pair-cell">
+                  <div class="pair-logos">
+                    <img [src]="getAssetLogo(row.asset)" [alt]="row.asset" class="pair-logo pair-logo--top" (error)="onLogoError($event, row.asset)">
+                    <img [src]="getAssetLogo(row.priceAsset)" [alt]="row.priceAsset" class="pair-logo pair-logo--bottom" (error)="onLogoError($event, row.priceAsset)">
+                  </div>
+                  <div class="pair-labels">
+                    <span class="pair-main">{{ row.asset }}</span>
+                    <span class="pair-secondary">{{ row.priceAsset }}</span>
+                  </div>
+                </div>
+              } @else {
+                <div class="asset-cell">
+                  <img [src]="getAssetLogo(row.asset)" [alt]="row.asset" class="asset-logo" (error)="onLogoError($event, row.asset)">
+                  <span>{{ row.asset }}</span>
+                </div>
+              }
+            </td>
+          </ng-container>
+
+          <!-- Info Column -->
+          <ng-container matColumnDef="info">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let row">
+              @if (row.pair && row.priceAsset && row.originalPrice) {
+                <mat-icon
+                  class="info-icon"
+                  [matTooltip]="getTradeDetailTooltip(row)">
+                  info_outline
+                </mat-icon>
+              }
             </td>
           </ng-container>
 
@@ -229,6 +256,68 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
       border-radius: 50%;
     }
 
+    .pair-cell {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .pair-logos {
+      position: relative;
+      width: 32px;
+      height: 36px;
+      flex-shrink: 0;
+    }
+
+    .pair-logo {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      position: absolute;
+      border: 2px solid var(--bg-card);
+    }
+
+    .pair-logo--top {
+      top: 0;
+      left: 0;
+      z-index: 2;
+    }
+
+    .pair-logo--bottom {
+      bottom: 0;
+      left: 10px;
+      z-index: 1;
+    }
+
+    .pair-labels {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.2;
+    }
+
+    .pair-main {
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .pair-secondary {
+      font-size: 11px;
+      color: var(--text-tertiary);
+    }
+
+    .info-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      color: var(--text-tertiary);
+      cursor: help;
+      transition: color 0.2s;
+    }
+
+    .info-icon:hover {
+      color: var(--text-secondary);
+    }
+
     .exchange-cell {
       display: flex;
       align-items: center;
@@ -296,7 +385,7 @@ export class CostBasisTableComponent implements OnInit, OnChanges {
   @Input() assets: string[] = [];
   @Input() exchanges: string[] = [];
 
-  displayedColumns = ['acquiredAt', 'asset', 'exchange', 'source', 'originalAmount', 'remainingAmount', 'costPerUnit', 'totalCost'];
+  displayedColumns = ['acquiredAt', 'asset', 'info', 'exchange', 'source', 'originalAmount', 'remainingAmount', 'costPerUnit', 'totalCost'];
 
   loading = signal(true);
   data = signal<CostBasisLot[]>([]);
@@ -392,6 +481,18 @@ export class CostBasisTableComponent implements OnInit, OnChanges {
       interest: 'Interés',
     };
     return labels[source] || source;
+  }
+
+  getTradeDetailTooltip(row: CostBasisLot): string {
+    const lines = [
+      `Par: ${row.pair}`,
+      `Precio original: ${row.originalPrice?.toFixed(6)} ${row.priceAsset}`,
+      `Precio USD: ${row.costPerUnit?.toFixed(2)} USD`,
+    ];
+    if (row.priceAsset && !['USDT', 'USDC', 'USD', 'BUSD', 'DAI'].includes(row.priceAsset)) {
+      lines.push(`Conversión implícita: ${row.priceAsset} → USD`);
+    }
+    return lines.join('\n');
   }
 
   onLogoError(event: Event, asset: string): void {

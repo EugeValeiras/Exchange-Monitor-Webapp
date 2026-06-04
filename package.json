@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "start": "ng serve --host 0.0.0.0 --port 4200 --disable-host-check",
     "start:production": "ng serve --configuration production",
     "build": "ng build",
     "build:prod": "ng build --configuration production",
@@ -24,6 +24,9 @@
     "@angular/router": "^19.2.0",
     "@simplewebauthn/browser": "^13.2.2",
     "chart.js": "^4.5.1",
+    "chartjs-adapter-date-fns": "^3.0.0",
+    "chartjs-chart-financial": "^0.2.1",
+    "date-fns": "^4.1.0",
     "ng2-charts": "^8.0.0",
     "rxjs": "~7.8.0",
     "socket.io-client": "^4.8.3",

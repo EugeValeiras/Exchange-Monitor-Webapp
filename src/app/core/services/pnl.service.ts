@@ -74,6 +74,9 @@ export interface CostBasisLot {
   remainingAmount: number;
   costPerUnit: number;
   totalCost: number;
+  pair?: string;
+  priceAsset?: string;
+  originalPrice?: number;
 }
 
 export interface PaginatedCostBasisLots {

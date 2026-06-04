@@ -464,6 +464,12 @@ type AssetBalance = EnrichedAssetBalance;
       padding: 24px;
     }
 
+    @media (max-width: 900px) {
+      .balances-content {
+        padding: 12px;
+      }
+    }
+
     .indicators-row {
       display: flex;
       align-items: center;

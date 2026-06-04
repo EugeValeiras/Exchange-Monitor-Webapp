@@ -250,12 +250,25 @@ const COMMON_ASSETS = [
       margin: 0 auto;
     }
 
+    @media (max-width: 900px) {
+      .swap-content {
+        padding: 12px;
+      }
+    }
+
     .swap-form-card {
       background: var(--bg-card);
       border: 1px solid var(--border-color);
       border-radius: 16px;
       padding: 20px 24px;
       margin-bottom: 28px;
+    }
+
+    @media (max-width: 900px) {
+      .swap-form-card {
+        padding: 14px;
+        border-radius: 12px;
+      }
     }
 
     .swap-form {

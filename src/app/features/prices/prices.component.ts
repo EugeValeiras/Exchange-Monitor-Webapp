@@ -392,6 +392,22 @@ interface QuoteStat {
       margin: 0 8px;
     }
 
+    @media (max-width: 900px) {
+      .filters-container {
+        gap: 12px;
+        padding: 12px;
+        flex-direction: column;
+      }
+
+      .filter-divider {
+        display: none;
+      }
+
+      .filter-section {
+        width: 100%;
+      }
+    }
+
     .filter-label {
       font-size: 12px;
       font-weight: 600;
@@ -603,7 +619,33 @@ interface QuoteStat {
       background: var(--bg-card);
       border: 1px solid var(--border-color);
       border-radius: 12px;
-      overflow: hidden;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    @media (max-width: 900px) {
+      .prices-content {
+        padding: 12px;
+      }
+
+      .indicators-row {
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+
+      .loading-state,
+      .empty-state {
+        padding: 32px 16px;
+      }
+
+      .table-container {
+        border-radius: 8px;
+      }
+
+      table {
+        min-width: 700px;
+      }
     }
 
     table {

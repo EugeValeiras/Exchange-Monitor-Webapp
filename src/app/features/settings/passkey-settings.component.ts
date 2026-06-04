@@ -114,6 +114,12 @@ import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.s
       padding: 24px;
     }
 
+    @media (max-width: 900px) {
+      .passkey-container {
+        padding: 12px;
+      }
+    }
+
     /* Info Section */
     .info-section {
       display: flex;

@@ -464,3 +464,78 @@ a {
     color: var(--brand-accent-light);
   }
 }
+
+// ============================================
+// Mobile responsive helpers
+// ============================================
+
+// Wrap any horizontally-overflowing element with .scroll-x to make it scrollable.
+.scroll-x {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+// On mobile, mat-tables get tight padding + scroll automatically when wider than container
+@media (max-width: 900px) {
+  // Reduce table padding so more columns fit
+  .mat-mdc-cell,
+  .mat-mdc-header-cell {
+    padding: 8px 8px !important;
+    font-size: 13px !important;
+  }
+
+  // Cards: full-width, less padding on mobile
+  .mat-mdc-card {
+    border-radius: 8px !important;
+  }
+
+  .mat-mdc-card-content {
+    padding: 12px !important;
+  }
+
+  .mat-mdc-card-header {
+    padding: 12px 12px 0 12px !important;
+  }
+
+  .mat-mdc-card-actions {
+    padding: 8px 12px !important;
+  }
+
+  // Form fields: full-width
+  .mat-mdc-form-field {
+    width: 100% !important;
+  }
+
+  // Dialogs: take more screen on mobile
+  .mat-mdc-dialog-container {
+    .mat-mdc-dialog-surface {
+      max-width: 96vw !important;
+    }
+  }
+
+  // Headings less huge on mobile
+  h1 { font-size: 22px !important; }
+  h2 { font-size: 19px !important; }
+  h3 { font-size: 16px !important; }
+
+  // Tabs: scrollable
+  .mat-mdc-tab-header {
+    overflow-x: auto;
+  }
+
+  // Chip listbox: wraps
+  .mat-mdc-chip-listbox {
+    flex-wrap: wrap !important;
+  }
+}
+
+// Auto-scroll wrapper for any table that's a direct child of a card content
+@media (max-width: 900px) {
+  .mat-mdc-card-content table.mat-mdc-table,
+  .mat-mdc-card-content > table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+  }
+}

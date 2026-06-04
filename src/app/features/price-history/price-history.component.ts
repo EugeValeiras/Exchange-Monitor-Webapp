@@ -149,11 +149,23 @@ interface TimeframeOption {
       margin: 0 auto;
     }
 
+    @media (max-width: 900px) {
+      .price-history-container {
+        padding: 12px;
+      }
+
+      .header-content h1 {
+        font-size: 22px !important;
+      }
+    }
+
     .page-header {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
       margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 12px;
     }
 
     .header-content h1 {
