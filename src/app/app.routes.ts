@@ -55,8 +55,13 @@ export const routes: Routes = [
         loadComponent: () => import('./features/market-analysis/market-analysis.component').then(m => m.MarketAnalysisComponent)
       },
       {
+        path: 'asistente',
+        loadComponent: () => import('./features/asistente/asistente.component').then(m => m.AsistenteComponent)
+      },
+      {
         path: 'market-analysis/agent',
-        loadComponent: () => import('./features/market-analysis/agent-page.component').then(m => m.AgentPageComponent)
+        redirectTo: 'asistente',
+        pathMatch: 'full'
       },
       {
         path: 'swap-preview',
@@ -91,6 +96,10 @@ export const routes: Routes = [
           {
             path: 'symbols',
             loadComponent: () => import('./features/settings/settings.component').then(m => m.SettingsComponent)
+          },
+          {
+            path: 'notifications',
+            loadComponent: () => import('./features/settings/notifications.component').then(m => m.NotificationsSettingsComponent)
           },
           {
             path: 'maintenance',

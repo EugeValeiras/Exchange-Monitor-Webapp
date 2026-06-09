@@ -439,6 +439,7 @@ export class LayoutComponent {
     { label: 'Precios Raw', icon: 'bolt', route: '/raw-prices' },
     { label: 'Historico Precios', icon: 'timeline', route: '/price-history' },
     { label: 'Analisis de Mercado', icon: 'insights', route: '/market-analysis' },
+    { label: 'Asistente', icon: 'smart_toy', route: '/asistente' },
     { label: 'Balances', icon: 'account_balance_wallet', route: '/balances' },
     { label: 'Transacciones', icon: 'swap_horiz', route: '/transactions' },
     { label: 'Historial P&L', icon: 'analytics', route: '/pnl-history' },
@@ -456,6 +457,7 @@ export class LayoutComponent {
       icon: 'settings',
       children: [
         { label: 'Pares de Precios', route: '/settings/symbols' },
+        { label: 'Notificaciones', route: '/settings/notifications' },
         { label: 'Mantenimiento', route: '/settings/maintenance' }
       ]
     }
@@ -490,7 +492,8 @@ export class LayoutComponent {
       '/prices': 'Precios en Tiempo Real',
       '/price-history': 'Historico de Precios',
       '/market-analysis': 'Analisis de Mercado',
-      '/market-analysis/agent': 'Agente IA',
+      '/market-analysis/agent': 'Asistente IA',
+      '/asistente': 'Asistente IA',
       '/balances': 'Balances',
       '/transactions': 'Transacciones',
       '/pnl-history': 'Historial P&L',
@@ -500,6 +503,7 @@ export class LayoutComponent {
       '/security/passkeys': 'Passkeys',
       '/settings': 'Configuracion',
       '/settings/symbols': 'Pares de Precios',
+      '/settings/notifications': 'Notificaciones',
       '/settings/maintenance': 'Mantenimiento'
     };
     return titles[path] || 'Exchange Monitor';

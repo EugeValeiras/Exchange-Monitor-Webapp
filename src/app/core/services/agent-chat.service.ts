@@ -88,6 +88,7 @@ export class AgentChatService {
         body: JSON.stringify({
           message: opts.message,
           sessionId: opts.sessionId,
+          threadId: opts.threadId,
           model: opts.model,
         }),
         signal: opts.signal,
