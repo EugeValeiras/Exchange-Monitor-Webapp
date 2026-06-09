@@ -4,6 +4,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { AuthService } from '../../../core/services/auth.service';
 
 interface NavItem {
@@ -23,10 +24,11 @@ interface NavItem {
     RouterOutlet,
     MatSidenavModule,
     MatIconModule,
-    MatButtonModule
+    MatButtonModule,
+    MatTooltipModule
   ],
   template: `
-    <div class="layout" [class.sidebar-open]="sidebarOpen()">
+    <div class="layout" [class.sidebar-open]="sidebarOpen()" [class.collapsed]="collapsed()">
       @if (sidebarOpen()) {
         <div class="sidebar-backdrop" (click)="closeSidebar()"></div>
       }
@@ -36,6 +38,14 @@ interface NavItem {
             <img src="assets/logo-icon.svg" alt="Exchange Monitor" class="logo-icon">
             <span class="logo-text">Exchange Monitor</span>
           </div>
+          <button
+            class="sidebar-toggle"
+            (click)="toggleCollapse()"
+            [attr.aria-label]="collapsed() ? 'Expandir menú' : 'Colapsar menú'"
+            [matTooltip]="collapsed() ? 'Expandir menú' : ''"
+            matTooltipPosition="right">
+            <mat-icon>{{ collapsed() ? 'chevron_right' : 'chevron_left' }}</mat-icon>
+          </button>
           <button class="sidebar-close" (click)="closeSidebar()" aria-label="Cerrar menú">
             <mat-icon>close</mat-icon>
           </button>
@@ -46,7 +56,8 @@ interface NavItem {
             @if (item.children) {
               <!-- Expandable item -->
               <div class="nav-group" [class.expanded]="expandedItem() === item.label">
-                <button class="nav-item" (click)="toggleExpand(item.label)">
+                <button class="nav-item" (click)="toggleExpand(item.label)"
+                  [matTooltip]="collapsed() ? item.label : ''" matTooltipPosition="right">
                   <mat-icon class="nav-icon">{{ item.icon }}</mat-icon>
                   <span class="nav-label">{{ item.label }}</span>
                   <mat-icon class="expand-icon">{{ expandedItem() === item.label ? 'expand_less' : 'expand_more' }}</mat-icon>
@@ -63,7 +74,8 @@ interface NavItem {
               </div>
             } @else {
               <!-- Simple item -->
-              <a class="nav-item" [routerLink]="item.route" routerLinkActive="active" [routerLinkActiveOptions]="{exact: item.route === '/dashboard'}" (click)="closeSidebar()">
+              <a class="nav-item" [routerLink]="item.route" routerLinkActive="active" [routerLinkActiveOptions]="{exact: item.route === '/dashboard'}" (click)="closeSidebar()"
+                [matTooltip]="collapsed() ? item.label : ''" matTooltipPosition="right">
                 <mat-icon class="nav-icon">{{ item.icon }}</mat-icon>
                 <span class="nav-label">{{ item.label }}</span>
               </a>
@@ -72,7 +84,8 @@ interface NavItem {
         </nav>
 
         <div class="sidebar-footer">
-          <button class="nav-item logout" (click)="logout()">
+          <button class="nav-item logout" (click)="logout()"
+            [matTooltip]="collapsed() ? 'Cerrar sesión' : ''" matTooltipPosition="right">
             <mat-icon class="nav-icon">logout</mat-icon>
             <span class="nav-label">Cerrar sesión</span>
           </button>
@@ -146,6 +159,25 @@ interface NavItem {
       flex-direction: column;
       border-right: 1px solid var(--border-color);
       overflow-x: hidden;
+      transition: width 0.2s ease, min-width 0.2s ease;
+    }
+
+    .sidebar-toggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      padding: 6px;
+      cursor: pointer;
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-toggle:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-primary);
     }
 
     .sidebar-header {
@@ -340,12 +372,50 @@ interface NavItem {
       flex-shrink: 0;
     }
 
+    /* ===== Collapsed rail (desktop only) ===== */
+    @media (min-width: 901px) {
+      .layout.collapsed .sidebar {
+        width: 72px;
+        min-width: 72px;
+      }
+
+      .layout.collapsed .sidebar-header {
+        flex-direction: column;
+        gap: 10px;
+        padding: 18px 8px 24px;
+      }
+
+      .layout.collapsed .logo-text {
+        display: none;
+      }
+
+      .layout.collapsed .sidebar-nav {
+        padding: 0 10px;
+      }
+
+      .layout.collapsed .nav-item {
+        justify-content: center;
+        gap: 0;
+        padding: 12px 0;
+      }
+
+      .layout.collapsed .nav-label,
+      .layout.collapsed .expand-icon,
+      .layout.collapsed .nav-children {
+        display: none;
+      }
+    }
+
     /* ===== Mobile breakpoint ===== */
     @media (max-width: 900px) {
       .hamburger {
         display: inline-flex;
         align-items: center;
         justify-content: center;
+      }
+
+      .sidebar-toggle {
+        display: none;
       }
 
       .sidebar {
@@ -422,8 +492,11 @@ interface NavItem {
   `]
 })
 export class LayoutComponent {
+  private readonly COLLAPSED_KEY = 'sidebar_collapsed';
+
   expandedItem = signal<string | null>(null);
   sidebarOpen = signal<boolean>(false);
+  collapsed = signal<boolean>(localStorage.getItem(this.COLLAPSED_KEY) === '1');
 
   openSidebar(): void {
     this.sidebarOpen.set(true);
@@ -431,6 +504,14 @@ export class LayoutComponent {
 
   closeSidebar(): void {
     this.sidebarOpen.set(false);
+  }
+
+  toggleCollapse(): void {
+    const next = !this.collapsed();
+    this.collapsed.set(next);
+    localStorage.setItem(this.COLLAPSED_KEY, next ? '1' : '0');
+    // Al colapsar, cerramos cualquier grupo expandido para que no quede colgando.
+    if (next) this.expandedItem.set(null);
   }
 
   navItems: NavItem[] = [
@@ -466,6 +547,13 @@ export class LayoutComponent {
   constructor(public authService: AuthService) {}
 
   toggleExpand(label: string): void {
+    // Estando colapsado no hay lugar para los hijos: expandimos el sidebar
+    // primero y dejamos el grupo abierto.
+    if (this.collapsed()) {
+      this.toggleCollapse();
+      this.expandedItem.set(label);
+      return;
+    }
     if (this.expandedItem() === label) {
       this.expandedItem.set(null);
     } else {

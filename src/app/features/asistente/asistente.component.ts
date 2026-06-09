@@ -1,12 +1,14 @@
 import {
-  Component, ElementRef, Injector, OnInit, afterNextRender, computed, effect, inject,
+  Component, ElementRef, Injector, OnInit, TemplateRef, afterNextRender, computed, effect, inject,
   signal, viewChild, ChangeDetectionStrategy,
 } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { AgentModel, ChatService, ImageAttachment } from './chat.service';
 import { ChatMessageComponent } from './chat-message.component';
 import { ThreadSidebarComponent } from './thread-sidebar.component';
-import { ComposerComponent } from './composer.component';
+import { ComposerComponent, CommandEvent } from './composer.component';
 
 interface Suggestion { icon: string; text: string; }
 
@@ -14,7 +16,7 @@ interface Suggestion { icon: string; text: string; }
   selector: 'app-asistente',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MatIconModule, ChatMessageComponent, ThreadSidebarComponent, ComposerComponent],
+  imports: [MatIconModule, MatSnackBarModule, MatDialogModule, ChatMessageComponent, ThreadSidebarComponent, ComposerComponent],
   template: `
     <div class="chat-shell">
       @if (sidebarOpen()) {
@@ -104,12 +106,67 @@ interface Suggestion { icon: string; text: string; }
             <app-composer
               [streaming]="chat.streaming()"
               (send)="onSend($event)"
+              (command)="onCommand($event)"
               (stop)="chat.stop()"
             />
           </div>
         </div>
       </div>
     </div>
+
+    <ng-template #usageDialog>
+      <div class="usage-dialog">
+        <div class="usage-head">
+          <mat-icon aria-hidden="true">monitoring</mat-icon>
+          <h3>Uso de Claude</h3>
+        </div>
+        <p class="usage-model">Modelo actual: <strong>{{ chat.model() }}</strong></p>
+
+        @if (hasUsage()) {
+          <table class="usage-table">
+            <thead>
+              <tr><th></th><th>Último turno</th><th>Total del hilo</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Tokens entrada</td>
+                <td>{{ fmtTokens(chat.lastUsage()?.inputTokens) }}</td>
+                <td>{{ fmtTokens(chat.threadTotals().inputTokens) }}</td>
+              </tr>
+              <tr>
+                <td>Tokens salida</td>
+                <td>{{ fmtTokens(chat.lastUsage()?.outputTokens) }}</td>
+                <td>{{ fmtTokens(chat.threadTotals().outputTokens) }}</td>
+              </tr>
+              <tr>
+                <td>Caché (lectura)</td>
+                <td>{{ fmtTokens(chat.lastUsage()?.cachedTokens) }}</td>
+                <td>{{ fmtTokens(chat.threadTotals().cachedTokens) }}</td>
+              </tr>
+              <tr class="usage-cost">
+                <td>Costo</td>
+                <td>{{ fmtCost(chat.lastUsage()?.costUsd) }}</td>
+                <td>{{ fmtCost(chat.threadTotals().costUsd) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        } @else {
+          <p class="usage-empty">
+            Todavía no hay uso en esta conversación. Mandá un mensaje, o abrí una conversación previa desde la barra lateral.
+          </p>
+        }
+
+        <div class="usage-historic">
+          <span>Histórico · {{ chat.threads().length }} conversaciones</span>
+          <strong>{{ fmtCost(totalHistoricCost()) }}</strong>
+        </div>
+
+        <p class="usage-note">Uso de tu chat reportado por el agente. No incluye el uso a nivel de cuenta/plan de Claude.</p>
+        <div class="usage-actions">
+          <button class="usage-close" type="button" (click)="closeUsage()">Cerrar</button>
+        </div>
+      </div>
+    </ng-template>
   `,
   styles: [`
     :host { display: block; height: 100%; min-height: 0; }
@@ -291,12 +348,61 @@ interface Suggestion { icon: string; text: string; }
       .chip:hover { transform: none; }
       .thread-sidebar { transition: none; }
     }
+
+    /* ===== Usage dialog ===== */
+    .usage-dialog {
+      padding: 20px 22px;
+      min-width: 320px; max-width: 420px;
+      color: var(--text-primary);
+    }
+    .usage-head { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .usage-head mat-icon { color: var(--brand-accent); }
+    .usage-head h3 { margin: 0; font-size: 1.05rem; font-weight: 600; }
+    .usage-model { margin: 0 0 14px; color: var(--text-secondary); font-size: .85rem; text-transform: capitalize; }
+    .usage-table {
+      width: 100%; border-collapse: collapse; font-size: .85rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .usage-table th {
+      text-align: right; font-weight: 600; color: var(--text-tertiary);
+      font-size: .72rem; text-transform: uppercase; letter-spacing: .04em;
+      padding: 0 0 8px; border-bottom: 1px solid var(--border-color);
+    }
+    .usage-table th:first-child { text-align: left; }
+    .usage-table td { padding: 9px 0; text-align: right; color: var(--text-primary); }
+    .usage-table td:first-child { text-align: left; color: var(--text-secondary); }
+    .usage-table tbody tr:not(:last-child) td { border-bottom: 1px solid color-mix(in srgb, var(--border-color) 55%, transparent); }
+    .usage-table .usage-cost td { font-weight: 700; color: var(--brand-accent); }
+    .usage-table .usage-cost td:first-child { color: var(--text-primary); font-weight: 600; }
+    .usage-empty {
+      margin: 4px 0 0; padding: 16px; border-radius: 10px;
+      background: var(--bg-secondary); border: 1px dashed var(--border-light);
+      color: var(--text-secondary); font-size: .85rem; line-height: 1.5; text-align: center;
+    }
+    .usage-historic {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border-color);
+      font-size: .82rem; color: var(--text-secondary);
+      font-variant-numeric: tabular-nums;
+    }
+    .usage-historic strong { color: var(--text-primary); font-size: .95rem; }
+    .usage-note { margin: 14px 0 0; font-size: .72rem; color: var(--text-tertiary); line-height: 1.4; }
+    .usage-actions { display: flex; justify-content: flex-end; margin-top: 16px; }
+    .usage-close {
+      border: none; cursor: pointer; padding: 8px 18px; border-radius: 8px;
+      background: var(--brand-accent); color: var(--bg-primary);
+      font-weight: 600; font-size: .85rem; transition: filter .15s;
+    }
+    .usage-close:hover { filter: brightness(1.1); }
   `],
 })
 export class AsistenteComponent implements OnInit {
   readonly chat = inject(ChatService);
+  private readonly snack = inject(MatSnackBar);
+  private readonly dialog = inject(MatDialog);
 
   private readonly scrollEl = viewChild.required<ElementRef<HTMLDivElement>>('scroll');
+  private readonly usageDialog = viewChild.required<TemplateRef<unknown>>('usageDialog');
 
   readonly models: AgentModel[] = ['sonnet', 'opus', 'haiku'];
   readonly sidebarOpen = signal(false);
@@ -323,6 +429,17 @@ export class AsistenteComponent implements OnInit {
     const fromThread = id ? this.chat.threads().find((x) => x.id === id)?.costUsd : undefined;
     return fromThread ?? this.chat.lastUsage()?.costUsd;
   });
+
+  /** ¿La conversación abierta tiene uso para mostrar? */
+  readonly hasUsage = computed(() => {
+    const t = this.chat.threadTotals();
+    return this.chat.lastUsage() != null || t.outputTokens > 0 || (t.costUsd ?? 0) > 0;
+  });
+
+  /** Costo acumulado de todas las conversaciones del usuario. */
+  readonly totalHistoricCost = computed(() =>
+    this.chat.threads().reduce((sum, t) => sum + (t.costUsd ?? 0), 0),
+  );
 
   private injector = inject(Injector);
   private lastLen = 0;
@@ -371,6 +488,69 @@ export class AsistenteComponent implements OnInit {
     this.stickToBottom.set(true);
     void this.chat.sendMessage(payload.text, payload.images);
     this.scrollToBottom('smooth');
+  }
+
+  /** Slash commands de acción (los de UI). Los de dominio llegan por (send). */
+  onCommand(e: CommandEvent): void {
+    switch (e.name) {
+      case 'clear':
+      case 'new':
+        this.onNewChat();
+        this.toast('Conversación nueva');
+        break;
+      case 'model': {
+        const m = e.args.trim().toLowerCase();
+        if ((this.models as string[]).includes(m)) {
+          this.chat.setModel(m as AgentModel);
+          this.toast(`Modelo: ${m}`);
+        } else {
+          this.toast('Modelo inválido. Usá sonnet, opus o haiku.');
+        }
+        break;
+      }
+      case 'cost': {
+        const c = this.threadCost();
+        this.toast(c != null ? `Costo del hilo: $${c.toFixed(4)}` : 'Todavía no hay costo registrado.');
+        break;
+      }
+      case 'copy': {
+        const last = [...this.chat.messages()].reverse().find((m) => m.role === 'assistant' && m.text.trim());
+        if (last) {
+          this.onCopy(last.text);
+          this.toast('Respuesta copiada');
+        } else {
+          this.toast('No hay respuesta para copiar.');
+        }
+        break;
+      }
+      case 'usage':
+        this.openUsage();
+        break;
+    }
+  }
+
+  async openUsage(): Promise<void> {
+    // Traer los totales reales del hilo abierto antes de mostrar el panel.
+    await this.chat.refreshThreadTotals();
+    this.dialog.open(this.usageDialog(), { panelClass: 'usage-dialog-panel', autoFocus: false });
+  }
+
+  closeUsage(): void {
+    this.dialog.closeAll();
+  }
+
+  fmtTokens(n: number | undefined): string {
+    if (n == null) return '—';
+    return n.toLocaleString('en-US');
+  }
+
+  fmtCost(n: number | undefined): string {
+    if (n == null) return '—';
+    return '$' + n.toFixed(4);
+  }
+
+  private toast(msg: string): void {
+    this.snack.open(msg, '', { duration: 2500, horizontalPosition: 'center', verticalPosition: 'bottom' });
   }
 
   onRegenerate(): void {

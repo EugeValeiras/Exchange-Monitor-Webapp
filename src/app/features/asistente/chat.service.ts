@@ -98,6 +98,11 @@ export class ChatService {
   private _lastUsage = signal<UsageInfo | null>(null);
   readonly lastUsage: Signal<UsageInfo | null> = this._lastUsage.asReadonly();
 
+  /** Cumulative usage for the open thread (seeded from the thread detail and
+   *  kept in sync via the per-turn `usage` events). */
+  private _threadTotals = signal<UsageInfo>({ inputTokens: 0, outputTokens: 0, cachedTokens: 0, costUsd: 0 });
+  readonly threadTotals: Signal<UsageInfo> = this._threadTotals.asReadonly();
+
   // --- Thread list ---
   private _threads = signal<ThreadSummary[]>([]);
   readonly threads: Signal<ThreadSummary[]> = this._threads.asReadonly();
@@ -115,6 +120,27 @@ export class ChatService {
 
   setModel(model: AgentModel): void {
     this._model.set(model);
+  }
+
+  /**
+   * Fetch the authoritative cumulative usage for the open thread straight from
+   * the API (the backend accumulates it via $inc). Keeps `/usage` correct even
+   * if the in-memory accumulator is stale or the page was just reloaded.
+   */
+  async refreshThreadTotals(): Promise<void> {
+    const id = this._currentThreadId();
+    if (!id) return;
+    try {
+      const detail = await firstValueFrom(this.threadsApi.get(id));
+      this._threadTotals.set({
+        inputTokens: detail.inputTokens ?? 0,
+        outputTokens: detail.outputTokens ?? 0,
+        cachedTokens: detail.cachedTokens ?? 0,
+        costUsd: detail.costUsd ?? 0,
+      });
+    } catch {
+      /* keep the in-memory accumulator on error */
+    }
   }
 
   /** GET /agent/threads -> _threads. Fire-and-forget. */
@@ -140,6 +166,7 @@ export class ChatService {
     this._currentThreadId.set(null);
     this._claudeSessionId = null;
     this._lastUsage.set(null);
+    this._threadTotals.set({ inputTokens: 0, outputTokens: 0, cachedTokens: 0, costUsd: 0 });
   }
 
   /** GET /agent/threads/:id; map entries -> ChatMessage; set model/session. */
@@ -155,6 +182,12 @@ export class ChatService {
       const detail: ThreadDetail = await firstValueFrom(this.threadsApi.get(id));
       this._currentThreadId.set(detail.id);
       this._claudeSessionId = detail.claudeSessionId ?? null;
+      this._threadTotals.set({
+        inputTokens: detail.inputTokens ?? 0,
+        outputTokens: detail.outputTokens ?? 0,
+        cachedTokens: detail.cachedTokens ?? 0,
+        costUsd: detail.costUsd ?? 0,
+      });
       if (detail.model) {
         this._model.set(detail.model);
       }
@@ -308,6 +341,13 @@ export class ChatService {
           cachedTokens: ev.cachedTokens,
           costUsd: ev.costUsd,
         });
+        // Mirror the backend's $inc so the cumulative view stays in sync.
+        this._threadTotals.update((t) => ({
+          inputTokens: t.inputTokens + (ev.inputTokens ?? 0),
+          outputTokens: t.outputTokens + (ev.outputTokens ?? 0),
+          cachedTokens: t.cachedTokens + (ev.cachedTokens ?? 0),
+          costUsd: (t.costUsd ?? 0) + (ev.costUsd ?? 0),
+        }));
         break;
 
       case 'done':
