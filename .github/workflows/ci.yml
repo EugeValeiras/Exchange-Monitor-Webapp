@@ -1,0 +1,26 @@
+# CI — Exchange-Monitor-Webapp (Angular). Build en hosted: `ng build` se mata
+# por OOM en la Pi, y acá no hace falta nada de la Pi. main lo cubre deploy.yml.
+name: CI
+
+on:
+  push:
+    branches-ignore: [main]
+  pull_request:
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Dependencias
+        run: npm ci --no-audit
+
+      - name: Build producción
+        run: npm run build:prod

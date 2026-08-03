@@ -1,0 +1,79 @@
+# Deploy continuo de Exchange-Monitor-Webapp, espejo del esquema de CCE con
+# UNA diferencia clave: `ng build` completo se mata por OOM en la Pi de 4GB,
+# así que el build corre en un runner hosted de GitHub y la Pi solo recibe el
+# artifact, swapea dist/ (con backup en dist.prev) y verifica.
+#
+# serve.js lee del disco en cada request, así que el swap alcanza: no hace
+# falta reiniciar exchange-monitor-webapp ni tocar sudoers.
+name: Deploy Exchange-Monitor-Webapp
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: deploy-webapp
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build (hosted, la Pi no banca ng build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Dependencias
+        run: npm ci --no-audit
+
+      - name: Build producción
+        run: npm run build:prod
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: webapp-dist
+          path: dist/exchange-monitor-webapp
+          if-no-files-found: error
+
+  deploy:
+    name: Deploy (swap de dist en la Pi)
+    needs: build
+    runs-on: [self-hosted, exchange-pi]
+    defaults:
+      run:
+        working-directory: /home/evaleiras/workspace/exchange-monitor/exchange-monitor-webapp
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: webapp-dist
+          path: ${{ runner.temp }}/webapp-dist
+
+      # Guard duro, misma filosofía que CCE: si el checkout de prod tiene
+      # trabajo sin commitear, el dist servido puede incluirlo — swapear al
+      # build de main sería REGRESIONAR lo que se está sirviendo. No se toca.
+      - name: Guard de árbol limpio
+        run: |
+          git diff --quiet && git diff --cached --quiet || {
+            echo "::error::El checkout de prod tiene cambios sin commitear: el dist servido puede incluirlos, no lo piso"; exit 1; }
+
+      - name: Sync del checkout de prod
+        run: git fetch origin main && git merge --ff-only origin/main
+
+      - name: Swap de dist (backup en dist.prev)
+        run: |
+          rm -rf dist.prev
+          [ -d dist ] && mv dist dist.prev
+          mkdir -p dist/exchange-monitor-webapp
+          cp -a "${{ runner.temp }}/webapp-dist/." dist/exchange-monitor-webapp/
+
+      - name: Verificación (serve.js sirve el build nuevo)
+        run: |
+          curl -sf http://localhost:4200/ | grep -qi "<app-root" && echo "webapp sana" || {
+            echo "::error::serve.js no responde con la SPA — revirtiendo a dist.prev"
+            rm -rf dist && mv dist.prev dist
+            exit 1
+          }
