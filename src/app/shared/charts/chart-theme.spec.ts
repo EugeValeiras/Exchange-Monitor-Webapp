@@ -49,12 +49,24 @@ describe('chart-theme · Y domain', () => {
     expect(resolveVisibleDomain({ lo: 100, hi: 100 })).toEqual({ min: 100, max: 100 });
   });
 
-  it('includes a nearby average entry price in the domain', () => {
+  it('includes an average entry price that sits inside the data', () => {
+    expect(shouldIncludeInDomain(85399, btcWeekly, { log: true })).toBe(true);
     expect(shouldIncludeInDomain(85399, btcWeekly)).toBe(true);
   });
 
-  it('excludes an average entry price far from the data, so it cannot flatten it', () => {
+  it('excludes an average entry far from the data, so it cannot flatten it', () => {
     expect(shouldIncludeInDomain(20100, { lo: 90000, hi: 95000 })).toBe(false);
+  });
+
+  it('measures the distance in log space when the axis is logarithmic', () => {
+    // 500 against a 15k–110k range widens the linear span by only 15%, but it
+    // is one and a half decades on a log axis: the guard has to catch it
+    const range = { lo: 15200, hi: 110000 };
+    expect(shouldIncludeInDomain(500, range, { log: true })).toBe(false);
+  });
+
+  it('rejects a non-positive value, which a log axis cannot plot at all', () => {
+    expect(shouldIncludeInDomain(0, btcWeekly, { log: true })).toBe(false);
   });
 
   it('applies each panel domain by its declared intent', () => {

@@ -79,15 +79,33 @@ export function resolveVisibleDomain(
 }
 
 /**
- * A price line should only widen the domain when it is actually near the
- * data. An average entry price far from the visible range (bought very cheap,
- * or very expensive) would flatten the candles all over again — so past that
- * distance the line is pinned to the edge and labelled instead.
+ * A price line should only widen the domain when it is actually near the data.
+ * An average entry far from the visible range (bought very cheap, or very
+ * expensive) would flatten the candles all over again — past that distance the
+ * line is pinned to the edge and labelled instead.
+ *
+ * The distance has to be measured in the space the axis actually uses. On a
+ * log axis, dropping the floor from 15.000 to 500 is one and a half decades
+ * even though in linear terms it only widens the span by 15%, so a linear
+ * tolerance lets through exactly the case this guard exists for.
  */
-export function shouldIncludeInDomain(value: number, range: PriceRange, tolerance = 3): boolean {
-  const mid = (range.lo + range.hi) / 2;
-  const span = range.hi - range.lo;
-  return span > 0 && Math.abs(value - mid) <= tolerance * span;
+export function shouldIncludeInDomain(
+  value: number,
+  range: PriceRange,
+  { log = false, tolerance = 0.3 }: { log?: boolean; tolerance?: number } = {},
+): boolean {
+  const { lo, hi } = range;
+  if (!(hi > lo) || value <= 0) return false;
+
+  if (log) {
+    const ratio = hi / lo;
+    const widened = Math.max(hi, value) / Math.min(lo, value);
+    return widened <= ratio * (1 + tolerance);
+  }
+
+  const span = hi - lo;
+  const widened = Math.max(hi, value) - Math.min(lo, value);
+  return widened <= span * (1 + tolerance);
 }
 
 export function applyYDomain(scale: Record<string, unknown>, domain: YDomain, range?: PriceRange, log = false): void {
