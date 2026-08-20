@@ -10,22 +10,6 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Chart } from 'chart.js';
-import {
-  CategoryScale,
-  LinearScale,
-  LogarithmicScale,
-  TimeScale,
-  PointElement,
-  LineElement,
-  LineController,
-  BarElement,
-  BarController,
-  Filler,
-} from 'chart.js';
-import { CandlestickController, CandlestickElement } from 'chartjs-chart-financial';
-import 'chartjs-adapter-date-fns';
-
 import {
   IndicatorsResponse,
   MarketAnalysisService,
@@ -44,20 +28,6 @@ import { ChartAction } from './agent-chat.component';
 import { groupTrades } from './lib/trade-grouping';
 import { markersFromOrders } from './lib/chart-markers';
 
-Chart.register(
-  CategoryScale,
-  LinearScale,
-  LogarithmicScale,
-  TimeScale,
-  PointElement,
-  LineElement,
-  LineController,
-  BarElement,
-  BarController,
-  CandlestickController,
-  CandlestickElement,
-  Filler,
-);
 
 const TIMEFRAMES: MarketTimeframe[] = ['15m', '1h', '4h', '1d', '1w'];
 const STATE_KEY = 'marketAnalysisChart';

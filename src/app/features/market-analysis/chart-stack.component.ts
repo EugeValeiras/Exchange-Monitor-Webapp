@@ -11,14 +11,47 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BaseChartDirective } from 'ng2-charts';
-import { Chart, ChartData, ChartOptions } from 'chart.js';
+import {
+  BarController,
+  BarElement,
+  CategoryScale,
+  Chart,
+  ChartData,
+  ChartOptions,
+  Filler,
+  LineController,
+  LineElement,
+  LinearScale,
+  LogarithmicScale,
+  PointElement,
+  TimeScale,
+} from 'chart.js';
+import { CandlestickController, CandlestickElement } from 'chartjs-chart-financial';
+import 'chartjs-adapter-date-fns';
 import { OhlcCandle, IndicatorPoint, MarketTimeframe } from '../../core/services/market-analysis.service';
 import { chartColors, chartTheme, resolveVisibleDomain, shouldIncludeInDomain } from '../../shared/charts/chart-theme';
 import { TradeMarker } from './lib/chart-markers';
 import { tradeLayerPlugin } from './lib/trade-layer.plugin';
 import { crosshairPlugin } from './lib/crosshair.plugin';
 
-Chart.register(tradeLayerPlugin, crosshairPlugin);
+// The panel that draws candles registers what it needs, instead of relying on
+// whichever screen imported the financial plugin first.
+Chart.register(
+  CategoryScale,
+  LinearScale,
+  LogarithmicScale,
+  TimeScale,
+  PointElement,
+  LineElement,
+  LineController,
+  BarElement,
+  BarController,
+  CandlestickController,
+  CandlestickElement,
+  Filler,
+  tradeLayerPlugin,
+  crosshairPlugin,
+);
 
 const TIME_UNIT: Record<MarketTimeframe, 'minute' | 'hour' | 'day' | 'week'> = {
   '15m': 'minute',
@@ -304,7 +337,7 @@ export class ChartStackComponent {
     let hi = Math.max(...candles.map((c) => c.high));
 
     const avg = this.avgEntrySignal();
-    if (avg !== null && this.layerOn() && shouldIncludeInDomain(avg, { lo, hi })) {
+    if (avg !== null && this.layerOn() && shouldIncludeInDomain(avg, { lo, hi }, { log: this.log })) {
       lo = Math.min(lo, avg);
       hi = Math.max(hi, avg);
     }
@@ -314,7 +347,7 @@ export class ChartStackComponent {
   readonly avgEntryOutOfRange = computed(() => {
     const avg = this.avgEntrySignal();
     if (avg === null) return false;
-    return !shouldIncludeInDomain(avg, this.priceRange());
+    return !shouldIncludeInDomain(avg, this.priceRange(), { log: this.log });
   });
 
   readonly priceData = computed<ChartData<'candlestick'>>(() => {
