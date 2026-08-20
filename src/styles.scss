@@ -63,7 +63,11 @@ $dark-theme: mat.m2-define-dark-theme((
     accent: $accent-palette,
     warn: $warn-palette,
   ),
-  typography: mat.m2-define-typography-config(),
+  // Sin esto Material impone Roboto en toda tabla, chip, botón y tooltip,
+  // que convive con Inter dentro de la misma celda.
+  typography: mat.m2-define-typography-config(
+    $font-family: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
+  ),
   density: 0,
 ));
 
@@ -110,6 +114,93 @@ $dark-theme: mat.m2-define-dark-theme((
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+
+  // ==========================================================
+  // Escalas. Hasta acá los únicos tokens eran color y sombras:
+  // cada pantalla elegía sus paddings, radios y tamaños a mano.
+  // ==========================================================
+
+  // Spacing
+  --sp-1: 2px;
+  --sp-2: 4px;
+  --sp-3: 8px;
+  --sp-4: 12px;
+  --sp-5: 16px;
+  --sp-6: 24px;
+
+  // Radii
+  --r-1: 4px;
+  --r-2: 6px;
+  --r-3: 8px;
+  --r-4: 12px;
+
+  // Type scale
+  --fs-10: 10px;
+  --fs-11: 11px;
+  --fs-12: 12px;
+  --fs-13: 13px;
+  --fs-16: 16px;
+  --fs-18: 18px;
+  --fs-24: 24px;
+  --fs-40: 40px;
+
+  // Motion
+  --dur-fast: 120ms;
+  --dur: 200ms;
+  --ease: cubic-bezier(0.2, 0, 0.13, 1);
+
+  // Layers
+  --z-rail: 10;
+  --z-overlay: 100;
+  --z-modal: 1000;
+
+  // ==========================================================
+  // Chart tokens. Antes cada gráfico repetía los mismos hex a
+  // mano: cambiar la identidad eran 40 ediciones sueltas.
+  //
+  // REGLA SEMÁNTICA, no negociable:
+  //   up / down  → dirección de mercado o resultado económico.
+  //                Nunca éxito/error de UI, nunca estado activo.
+  //   mine       → "esto es tuyo": PPC, tus marcadores, selección.
+  //   agent      → lo que dibujó el agente.
+  // ==========================================================
+  --chart-up: #0ecb81;
+  --chart-down: #f6465d;
+  --chart-mine: #00bcd4;
+  --chart-agent: #f0b90b;
+  --chart-grid: rgba(255, 255, 255, 0.055);
+  --chart-axis: rgba(255, 255, 255, 0.42);
+  --chart-crosshair: rgba(255, 255, 255, 0.28);
+  --chart-band: rgba(255, 255, 255, 0.025);
+  --chart-ma-1: #f0b90b;
+  --chart-ma-2: #a78bfa;
+  --chart-ma-3: #8ab4f8;
+
+  // Density. Two modes, so density travels as a token instead of
+  // being copied by imitation from whichever screen looked good.
+  --row-h: 52px;
+  --ctl-h: 36px;
+  --fs-body: 13px;
+}
+
+[data-density='compact'] {
+  --row-h: 44px;
+  --ctl-h: 28px;
+  --fs-body: 12px;
+}
+
+// Tone of a signed number, so colour is never decided ad hoc.
+.em-up { color: var(--chart-up); }
+.em-down { color: var(--chart-down); }
+.em-flat { color: var(--text-secondary); }
+.em-mine { color: var(--chart-mine); }
+
+// Every figure that can be compared vertically gets tabular numerals.
+.num,
+.em-up,
+.em-down,
+.em-flat {
+  font-variant-numeric: tabular-nums;
 }
 
 // ============================================
