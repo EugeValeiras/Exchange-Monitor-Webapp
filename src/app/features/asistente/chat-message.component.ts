@@ -5,12 +5,13 @@ import { MatIconModule } from '@angular/material/icon';
 import { ChatMessage } from './chat.service';
 import { MarkdownService } from './markdown.service';
 import { ToolCardComponent } from './tool-card.component';
+import { WorkflowCardComponent } from './workflow-card.component';
 
 @Component({
   selector: 'app-chat-message',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ToolCardComponent, MatIconModule],
+  imports: [ToolCardComponent, WorkflowCardComponent, MatIconModule],
   template: `
     @if (msg().role === 'user') {
       <div class="msg user">
@@ -32,7 +33,11 @@ import { ToolCardComponent } from './tool-card.component';
         <div class="avatar"><mat-icon aria-hidden="true">auto_awesome</mat-icon></div>
         <div class="body">
           @for (tool of msg().tools; track tool.id) {
-            <app-tool-card [tool]="tool" />
+            @if (tool.workflow) {
+              <app-workflow-card [wf]="tool.workflow" />
+            } @else {
+              <app-tool-card [tool]="tool" />
+            }
           }
 
           @if (showThinking()) {

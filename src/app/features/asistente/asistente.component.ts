@@ -38,6 +38,17 @@ interface Suggestion { icon: string; text: string; }
           </button>
           <span class="topbar-title">{{ topbarTitle() }}</span>
           <div class="topbar-actions">
+            <button
+              class="plan-toggle"
+              type="button"
+              [class.active]="chat.planMode()"
+              [attr.aria-pressed]="chat.planMode()"
+              title="Plan mode — el agente planifica read-only antes de actuar"
+              (click)="onTogglePlan()"
+            >
+              <mat-icon aria-hidden="true">checklist</mat-icon>
+              <span class="plan-label">Plan</span>
+            </button>
             <div class="model-selector">
               <span class="model-label">Modelo</span>
               <div class="model-chips">
@@ -210,6 +221,21 @@ interface Suggestion { icon: string; text: string; }
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .topbar-actions { display: flex; align-items: center; gap: 12px; }
+
+    .plan-toggle {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 10px; border-radius: 10px;
+      border: 1px solid var(--border-color); background: var(--bg-tertiary);
+      color: var(--text-secondary); cursor: pointer;
+      font-size: .75rem; font-weight: 600;
+      transition: all .15s;
+    }
+    .plan-toggle:hover { color: var(--text-primary); border-color: var(--text-tertiary); }
+    .plan-toggle.active {
+      background: var(--brand-accent); border-color: var(--brand-accent);
+      color: var(--bg-primary);
+    }
+    .plan-toggle mat-icon { font-size: 17px; width: 17px; height: 17px; line-height: 17px; }
 
     .model-selector { display: flex; align-items: center; gap: 8px; }
     .model-label {
@@ -523,10 +549,22 @@ export class AsistenteComponent implements OnInit {
         }
         break;
       }
+      case 'plan':
+        this.onTogglePlan();
+        break;
       case 'usage':
         this.openUsage();
         break;
     }
+  }
+
+  onTogglePlan(): void {
+    const on = this.chat.togglePlanMode();
+    this.toast(
+      on
+        ? 'Plan mode activado — el agente planifica antes de actuar'
+        : 'Plan mode desactivado',
+    );
   }
 
   async openUsage(): Promise<void> {

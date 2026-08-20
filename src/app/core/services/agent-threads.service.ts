@@ -20,6 +20,8 @@ export interface PersistedToolRecord {
   input?: unknown;
   result?: string;
   isError?: boolean;
+  /** Final workflow orchestration snapshot (Workflow tool only). */
+  workflow?: unknown;
 }
 
 export interface PersistedMessage {

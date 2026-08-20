@@ -186,8 +186,24 @@ export class ToolCardComponent {
     }
   });
 
+  /** Nombres claros para las tools de orquestación / agentes (features nuevas). */
+  private readonly SPECIAL_NAMES: Record<string, string> = {
+    Workflow: 'Workflow · orquestación multi-agente',
+    Agent: 'Subagente',
+    Task: 'Tarea en background',
+    TaskCreate: 'Tarea en background · iniciar',
+    TaskGet: 'Tarea en background · estado',
+    TaskList: 'Tareas en background',
+    TaskOutput: 'Tarea en background · salida',
+    TaskStop: 'Tarea en background · detener',
+    TaskUpdate: 'Tarea en background · actualizar',
+    Monitor: 'Esperando tarea / condición',
+    ExitPlanMode: 'Plan propuesto',
+  };
+
   readonly friendlyName = computed(() => {
     const raw = this.tool().name;
+    if (this.SPECIAL_NAMES[raw]) return this.SPECIAL_NAMES[raw];
     const verbs: Record<string, string> = {
       get: 'Consultando',
       list: 'Listando',

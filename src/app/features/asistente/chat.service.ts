@@ -26,6 +26,37 @@ export interface ImageAttachment {
   previewUrl: string;
 }
 
+export interface WorkflowPhase {
+  index: number;
+  title: string;
+}
+
+export interface WorkflowAgent {
+  index: number;
+  label: string;
+  phaseIndex: number;
+  phaseTitle: string;
+  /** 'start' | 'progress' | 'done' | 'error' */
+  state: string;
+  model?: string;
+  tokens?: number;
+  toolCalls?: number;
+  promptPreview?: string;
+  resultPreview?: string;
+  durationMs?: number;
+  attempt?: number;
+}
+
+export interface WorkflowState {
+  name?: string;
+  description?: string;
+  status: 'running' | 'completed' | 'error';
+  /** Latest activity line, e.g. "Saludar: saludo-2". */
+  activity?: string;
+  phases: WorkflowPhase[];
+  agents: WorkflowAgent[];
+}
+
 export interface ToolRecord {
   id: string;
   name: string;
@@ -33,6 +64,8 @@ export interface ToolRecord {
   /** undefined while pending. */
   result?: string;
   isError?: boolean;
+  /** Live/persisted workflow orchestration tree (Workflow tool only). */
+  workflow?: WorkflowState;
 }
 
 export interface ChatMessage {
@@ -95,6 +128,10 @@ export class ChatService {
   private _model = signal<AgentModel>('sonnet');
   readonly model: Signal<AgentModel> = this._model.asReadonly();
 
+  /** Plan mode: next turn the agent plans read-only before acting. Sticky until toggled off. */
+  private _planMode = signal(false);
+  readonly planMode: Signal<boolean> = this._planMode.asReadonly();
+
   private _lastUsage = signal<UsageInfo | null>(null);
   readonly lastUsage: Signal<UsageInfo | null> = this._lastUsage.asReadonly();
 
@@ -120,6 +157,15 @@ export class ChatService {
 
   setModel(model: AgentModel): void {
     this._model.set(model);
+  }
+
+  setPlanMode(on: boolean): void {
+    this._planMode.set(on);
+  }
+
+  togglePlanMode(): boolean {
+    this._planMode.update((v) => !v);
+    return this._planMode();
   }
 
   /**
@@ -265,6 +311,7 @@ export class ChatService {
         sessionId: this._claudeSessionId ?? undefined,
         threadId: this._currentThreadId() ?? undefined,
         model: this._model(),
+        planMode: this._planMode(),
         signal: ctrl.signal,
       })) {
         if (ev.type === 'text') {
@@ -334,6 +381,40 @@ export class ChatService {
         }));
         break;
 
+      case 'workflow_started':
+        this.patchWorkflow(assistantId, ev.toolUseId, (wf) => ({
+          ...wf,
+          name: ev.workflowName ?? wf.name,
+          description: ev.description ?? wf.description,
+          status: 'running',
+        }));
+        break;
+
+      case 'workflow_progress':
+        this.patchWorkflow(assistantId, ev.toolUseId, (wf) => {
+          const phases = [...wf.phases];
+          for (const p of ev.phases) {
+            if (!phases.some((x) => x.index === p.index)) phases.push(p);
+          }
+          phases.sort((a, b) => a.index - b.index);
+          const agents = [...wf.agents];
+          for (const a of ev.agents) {
+            const i = agents.findIndex((x) => x.index === a.index);
+            if (i >= 0) agents[i] = { ...agents[i], ...a };
+            else agents.push({ ...a });
+          }
+          agents.sort((a, b) => a.index - b.index);
+          return { ...wf, activity: ev.activity ?? wf.activity, phases, agents };
+        });
+        break;
+
+      case 'workflow_done':
+        this.patchWorkflow(assistantId, ev.toolUseId, (wf) => ({
+          ...wf,
+          status: ev.status === 'completed' ? 'completed' : 'error',
+        }));
+        break;
+
       case 'usage':
         this._lastUsage.set({
           inputTokens: ev.inputTokens,
@@ -379,6 +460,24 @@ export class ChatService {
     this.patchAssistant(assistantId, (m) => ({ ...m, error }));
   }
 
+  /** Merge live workflow progress into the matching Workflow tool record. */
+  private patchWorkflow(
+    assistantId: string,
+    toolUseId: string,
+    fn: (wf: WorkflowState) => WorkflowState,
+  ): void {
+    this.patchAssistant(assistantId, (m) => {
+      const idx = m.tools.findIndex((t) => t.id === toolUseId);
+      if (idx < 0) return m;
+      const tool = m.tools[idx];
+      const base: WorkflowState =
+        tool.workflow ?? { status: 'running', phases: [], agents: [] };
+      const tools = [...m.tools];
+      tools[idx] = { ...tool, workflow: fn(base) };
+      return { ...m, tools };
+    });
+  }
+
   private markNotStreaming(assistantId: string): void {
     this.patchAssistant(assistantId, (m) =>
       m.streaming ? { ...m, streaming: false } : m,
@@ -396,6 +495,7 @@ export class ChatService {
         input: t.input,
         result: t.result,
         isError: t.isError,
+        workflow: (t.workflow as WorkflowState | undefined) ?? undefined,
       })),
       error: entry.error,
       streaming: false,

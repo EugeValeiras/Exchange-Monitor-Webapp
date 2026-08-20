@@ -64,6 +64,10 @@ export const routes: Routes = [
         pathMatch: 'full'
       },
       {
+        path: 'paper-trading',
+        loadComponent: () => import('./features/paper-trading/paper-trading.component').then(m => m.PaperTradingComponent)
+      },
+      {
         path: 'swap-preview',
         loadComponent: () => import('./features/swap-preview/swap-preview.component').then(m => m.SwapPreviewComponent)
       },
