@@ -45,8 +45,45 @@ export interface TransactionFilter {
   types?: TransactionType[];
   asset?: string;
   assets?: string[];
+  /** Trading pair. USD-family quotes are interchangeable: BTC/USDT also matches BTC/USD */
+  pair?: string;
   startDate?: string;
   endDate?: string;
+}
+
+/** A single trade of a pair, as drawn on the candlestick chart */
+export interface PairTrade {
+  id: string;
+  exchange: string;
+  pair: string;
+  side: 'buy' | 'sell';
+  /** Base asset amount, always positive */
+  amount: number;
+  price: number;
+  total: number;
+  fee?: number;
+  feeAsset?: string;
+  timestamp: string;
+}
+
+/** Position resulting from every trade of the pair, not just the visible ones */
+export interface PairPosition {
+  netAmount: number;
+  /** Weighted moving average cost of the open position. 0 when flat */
+  avgEntryPrice: number;
+  costBasis: number;
+  realizedPnl: number;
+  totalBought: number;
+  totalSold: number;
+  tradeCount: number;
+}
+
+export interface PairTrades {
+  pair: string;
+  matchedPairs: string[];
+  trades: PairTrade[];
+  position: PairPosition;
+  outsideRange: number;
 }
 
 @Injectable({
@@ -70,6 +107,7 @@ export class TransactionsService {
     } else if (filter.asset) {
       params.set('asset', filter.asset);
     }
+    if (filter.pair) params.set('pair', filter.pair);
     if (filter.startDate) params.set('startDate', filter.startDate);
     if (filter.endDate) params.set('endDate', filter.endDate);
 
@@ -77,6 +115,19 @@ export class TransactionsService {
     const url = queryString ? `/transactions?${queryString}` : '/transactions';
 
     return this.api.get<PaginatedTransactions>(url);
+  }
+
+  /**
+   * Trades of a single pair plus the resulting position, for the "my trades"
+   * layer on the candlestick chart. `from`/`to` are epoch ms and only narrow
+   * the returned trades: the position always covers the full history.
+   */
+  getTradesByPair(pair: string, from?: number, to?: number): Observable<PairTrades> {
+    const params = new URLSearchParams({ pair });
+    if (from !== undefined) params.set('from', Math.floor(from).toString());
+    if (to !== undefined) params.set('to', Math.ceil(to).toString());
+
+    return this.api.get<PairTrades>(`/transactions/by-pair?${params.toString()}`);
   }
 
   getStats(filter?: {

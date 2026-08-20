@@ -3,7 +3,7 @@ import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
 
 export type MarketExchange = 'binance' | 'kraken';
-export type MarketTimeframe = '15m' | '1h' | '4h' | '1d';
+export type MarketTimeframe = '15m' | '1h' | '4h' | '1d' | '1w';
 
 export interface OhlcCandle {
   timestamp: number;
