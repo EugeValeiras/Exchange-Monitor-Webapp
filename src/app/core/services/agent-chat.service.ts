@@ -2,6 +2,26 @@ import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { AuthService } from './auth.service';
 
+export interface WorkflowPhaseEntry {
+  index: number;
+  title: string;
+}
+
+export interface WorkflowAgentEntry {
+  index: number;
+  label: string;
+  phaseIndex: number;
+  phaseTitle: string;
+  state: string; // 'start' | 'progress' | 'done' | 'error'
+  model?: string;
+  tokens?: number;
+  toolCalls?: number;
+  promptPreview?: string;
+  resultPreview?: string;
+  durationMs?: number;
+  attempt?: number;
+}
+
 export type AgentEvent =
   | { type: 'session'; sessionId: string }
   | { type: 'thread'; threadId: string }
@@ -15,6 +35,16 @@ export type AgentEvent =
       cachedTokens: number;
       costUsd?: number;
     }
+  | { type: 'workflow_started'; toolUseId: string; taskId: string; workflowName?: string; description?: string }
+  | {
+      type: 'workflow_progress';
+      toolUseId: string;
+      taskId: string;
+      activity?: string;
+      phases: WorkflowPhaseEntry[];
+      agents: WorkflowAgentEntry[];
+    }
+  | { type: 'workflow_done'; toolUseId: string; taskId: string; status: string; summary?: string }
   | { type: 'done'; result?: string; sessionId?: string }
   | { type: 'error'; message: string };
 
@@ -23,6 +53,8 @@ export interface ChatStreamOptions {
   sessionId?: string;
   threadId?: string;
   model?: 'sonnet' | 'opus' | 'haiku';
+  /** Plan mode: the agent plans read-only before acting. */
+  planMode?: boolean;
   signal?: AbortSignal;
 }
 
@@ -54,6 +86,7 @@ export class AgentChatService {
         sessionId: opts.sessionId,
         threadId: opts.threadId,
         model: opts.model,
+        planMode: opts.planMode,
       }),
       signal: opts.signal,
     });
@@ -90,6 +123,7 @@ export class AgentChatService {
           sessionId: opts.sessionId,
           threadId: opts.threadId,
           model: opts.model,
+          planMode: opts.planMode,
         }),
         signal: opts.signal,
       });

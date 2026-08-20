@@ -43,6 +43,7 @@ const COMMANDS: SlashCommand[] = [
     name: 'model', desc: 'Cambiar el modelo', kind: 'action',
     args: '<sonnet|opus|haiku>', argOptions: ['sonnet', 'opus', 'haiku'],
   },
+  { name: 'plan', desc: 'Activar/desactivar plan mode (planificar antes de actuar)', kind: 'action' },
   { name: 'cost', desc: 'Ver el costo del hilo', kind: 'action' },
   { name: 'usage', desc: 'Ver uso de tokens y costo de Claude', kind: 'action' },
   { name: 'copy', desc: 'Copiar la última respuesta', kind: 'action' },

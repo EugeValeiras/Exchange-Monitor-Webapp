@@ -2,17 +2,22 @@ import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatIconModule } from '@angular/material/icon';
+import { MatIconModule, MatIconRegistry } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { DomSanitizer } from '@angular/platform-browser';
 import { AuthService } from '../../../core/services/auth.service';
 
 interface NavItem {
   label: string;
-  icon: string;
+  icon?: string;
+  svgIcon?: string;
   route?: string;
   children?: { label: string; route: string }[];
 }
+
+// Ícono vendoreado de icons0.dev (material-symbols:candlestick-chart).
+const PAPER_TRADING_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M7 20v-2H5V6h2V4h2v2h2v12H9v2zm8 0v-5h-2V8h2V4h2v4h2v7h-2v5z"/></svg>`;
 
 @Component({
   selector: 'app-layout',
@@ -76,7 +81,11 @@ interface NavItem {
               <!-- Simple item -->
               <a class="nav-item" [routerLink]="item.route" routerLinkActive="active" [routerLinkActiveOptions]="{exact: item.route === '/dashboard'}" (click)="closeSidebar()"
                 [matTooltip]="collapsed() ? item.label : ''" matTooltipPosition="right">
-                <mat-icon class="nav-icon">{{ item.icon }}</mat-icon>
+                @if (item.svgIcon) {
+                  <mat-icon class="nav-icon" [svgIcon]="item.svgIcon"></mat-icon>
+                } @else {
+                  <mat-icon class="nav-icon">{{ item.icon }}</mat-icon>
+                }
                 <span class="nav-label">{{ item.label }}</span>
               </a>
             }
@@ -524,6 +533,7 @@ export class LayoutComponent {
     { label: 'Balances', icon: 'account_balance_wallet', route: '/balances' },
     { label: 'Transacciones', icon: 'swap_horiz', route: '/transactions' },
     { label: 'Historial P&L', icon: 'analytics', route: '/pnl-history' },
+    { label: 'Paper Trading', svgIcon: 'paper-trading', route: '/paper-trading' },
     { label: 'Swap Preview', icon: 'compare_arrows', route: '/swap-preview' },
     { label: 'Exchanges', icon: 'currency_exchange', route: '/exchanges' },
     {
@@ -544,7 +554,16 @@ export class LayoutComponent {
     }
   ];
 
-  constructor(public authService: AuthService) {}
+  constructor(
+    public authService: AuthService,
+    iconRegistry: MatIconRegistry,
+    sanitizer: DomSanitizer
+  ) {
+    iconRegistry.addSvgIconLiteral(
+      'paper-trading',
+      sanitizer.bypassSecurityTrustHtml(PAPER_TRADING_ICON_SVG)
+    );
+  }
 
   toggleExpand(label: string): void {
     // Estando colapsado no hay lugar para los hijos: expandimos el sidebar
@@ -585,6 +604,7 @@ export class LayoutComponent {
       '/balances': 'Balances',
       '/transactions': 'Transacciones',
       '/pnl-history': 'Historial P&L',
+      '/paper-trading': 'Paper Trading',
       '/swap-preview': 'Swap Preview',
       '/exchanges': 'Exchanges',
       '/security': 'Seguridad',
