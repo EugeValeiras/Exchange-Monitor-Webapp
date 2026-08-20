@@ -56,6 +56,12 @@ import {
   SummaryResponse,
   SummaryRow,
 } from '../../core/services/market-analysis.service';
+import {
+  PairTrade,
+  PairTrades,
+  TransactionsService,
+} from '../../core/services/transactions.service';
+import { TradesPanelComponent } from './trades-panel.component';
 
 Chart.register(
   CategoryScale,
@@ -74,7 +80,9 @@ Chart.register(
   Filler,
 );
 
-const TIMEFRAMES: MarketTimeframe[] = ['15m', '1h', '4h', '1d'];
+const TIMEFRAMES: MarketTimeframe[] = ['15m', '1h', '4h', '1d', '1w'];
+
+const TRADES_LAYER_KEY = 'marketAnalysisTradesLayer';
 
 @Component({
   selector: 'app-market-analysis',
@@ -96,6 +104,7 @@ const TIMEFRAMES: MarketTimeframe[] = ['15m', '1h', '4h', '1d'];
     ExchangeLogoComponent,
     LogoLoaderComponent,
     AgentChatComponent,
+    TradesPanelComponent,
   ],
   template: `
     <div class="ma-layout" [class.chat-collapsed]="chatCollapsed()">
@@ -252,6 +261,26 @@ const TIMEFRAMES: MarketTimeframe[] = ['15m', '1h', '4h', '1d'];
                   <mat-chip-option [value]="tf">{{ tf }}</mat-chip-option>
                 }
               </mat-chip-listbox>
+
+              <div class="filter-spacer"></div>
+
+              <button
+                type="button"
+                class="layer-toggle"
+                [class.active]="tradesLayerOn() && hasTrades()"
+                [disabled]="!hasTrades()"
+                [matTooltip]="
+                  hasTrades()
+                    ? 'Mostrar tus compras y ventas sobre las velas'
+                    : 'No tenés trades en ' + (selectedSymbol() ?? 'este par')
+                "
+                (click)="toggleTradesLayer()">
+                <mat-icon>layers</mat-icon>
+                <span>Mis trades</span>
+                @if (hasTrades()) {
+                  <span class="layer-count">{{ pairTrades()?.position?.tradeCount }}</span>
+                }
+              </button>
             </div>
 
             @if (detailLoading()) {
@@ -271,15 +300,72 @@ const TIMEFRAMES: MarketTimeframe[] = ['15m', '1h', '4h', '1d'];
                   </button>
                 </div>
               }
-              <div class="chart-block">
-                <h4 class="chart-title">Precio + medias + Bollinger</h4>
-                <div class="candlestick-chart">
-                  <canvas
-                    baseChart
-                    [data]="priceChartData()"
-                    [options]="priceChartOptions"
-                    [type]="'candlestick'"></canvas>
+              @if (tradesLayerOn()) {
+                @if (positionSummary(); as position) {
+                  <div class="position-bar">
+                    <mat-icon class="position-icon">layers</mat-icon>
+                    <div class="position-stat">
+                      <span class="stat-label">Posición</span>
+                      <span class="stat-value">
+                        {{ position.netAmount | number: '1.2-8' }} {{ baseAsset() }}
+                      </span>
+                    </div>
+                    <div class="position-sep"></div>
+                    <div class="position-stat">
+                      <span class="stat-label">PPC</span>
+                      <span class="stat-value accent">
+                        {{ position.avgEntryPrice | number: '1.2-2' }}
+                      </span>
+                    </div>
+                    @if (position.unrealizedPnl !== null) {
+                      <div class="position-sep"></div>
+                      <div class="position-stat">
+                        <span class="stat-label">No realizado</span>
+                        <span class="stat-value" [class]="pctClass(position.unrealizedPnl)">
+                          {{ position.unrealizedPnl > 0 ? '+' : ''
+                          }}{{ position.unrealizedPnl | number: '1.2-2' }}
+                          @if (position.unrealizedPct !== null) {
+                            ({{ formatPct(position.unrealizedPct) }})
+                          }
+                        </span>
+                      </div>
+                    }
+                    @if (position.realizedPnl) {
+                      <div class="position-sep"></div>
+                      <div class="position-stat">
+                        <span class="stat-label">Realizado</span>
+                        <span class="stat-value" [class]="pctClass(position.realizedPnl)">
+                          {{ position.realizedPnl > 0 ? '+' : ''
+                          }}{{ position.realizedPnl | number: '1.2-2' }}
+                        </span>
+                      </div>
+                    }
+                    <div class="filter-spacer"></div>
+                    <button mat-stroked-button class="hide-layer" (click)="toggleTradesLayer()">
+                      Ocultar capa
+                    </button>
+                  </div>
+                }
+              }
+
+              <div class="chart-block chart-with-panel">
+                <div class="chart-main">
+                  <h4 class="chart-title">Precio + medias + Bollinger</h4>
+                  <div class="candlestick-chart">
+                    <canvas
+                      baseChart
+                      [data]="priceChartData()"
+                      [options]="priceChartOptions"
+                      [type]="'candlestick'"></canvas>
+                  </div>
                 </div>
+                @if (tradesLayerOn() && hasTrades()) {
+                  <app-trades-panel
+                    class="trades-side"
+                    [data]="pairTrades()"
+                    [highlightedId]="hoveredTradeId()"
+                    (hover)="hoveredTradeId.set($event)"></app-trades-panel>
+                }
               </div>
 
               <div class="chart-block">
@@ -596,6 +682,144 @@ const TIMEFRAMES: MarketTimeframe[] = ['15m', '1h', '4h', '1d'];
         color: var(--text-secondary);
       }
 
+      /* "My trades" layer */
+      .layer-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        height: 32px;
+        padding: 0 12px;
+        border: 1px solid var(--border-light);
+        border-radius: 8px;
+        background: transparent;
+        color: var(--text-secondary);
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+      }
+
+      .layer-toggle:hover:not(:disabled) {
+        color: var(--text-primary);
+      }
+
+      .layer-toggle:disabled {
+        border-style: dashed;
+        color: var(--text-disabled);
+        cursor: default;
+      }
+
+      .layer-toggle.active {
+        border-color: rgba(0, 188, 212, 0.5);
+        background: rgba(0, 188, 212, 0.14);
+        color: var(--brand-accent);
+      }
+
+      .layer-toggle mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+
+      .layer-count {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 18px;
+        height: 18px;
+        padding: 0 5px;
+        border-radius: 9px;
+        background: var(--bg-tertiary);
+        color: var(--text-secondary);
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .layer-toggle.active .layer-count {
+        background: var(--brand-accent);
+        color: #0b0e11;
+      }
+
+      .position-bar {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 10px 14px;
+        margin: 4px 0 12px;
+        border: 1px solid rgba(0, 188, 212, 0.25);
+        border-radius: 8px;
+        background: rgba(0, 188, 212, 0.08);
+        flex-wrap: wrap;
+      }
+
+      .position-icon {
+        color: var(--brand-accent);
+      }
+
+      .position-stat {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .position-stat .stat-label {
+        font-size: 10.5px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+      }
+
+      .position-stat .stat-value {
+        font-size: 13.5px;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+        color: var(--text-primary);
+      }
+
+      .position-stat .stat-value.accent {
+        color: var(--brand-accent);
+      }
+
+      .position-sep {
+        width: 1px;
+        align-self: stretch;
+        background: rgba(0, 188, 212, 0.2);
+      }
+
+      .hide-layer {
+        font-size: 12.5px;
+      }
+
+      .chart-with-panel {
+        display: flex;
+        align-items: stretch;
+        gap: 16px;
+      }
+
+      .chart-main {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .trades-side {
+        display: block;
+        width: 300px;
+        flex: none;
+      }
+
+      /* The chat sidebar already eats horizontal room: stack below it first */
+      @media (max-width: 1280px) {
+        .chart-with-panel {
+          flex-direction: column;
+        }
+
+        .trades-side {
+          width: 100%;
+          max-height: 320px;
+        }
+      }
+
       .candlestick-chart {
         height: 360px;
         position: relative;
@@ -633,6 +857,7 @@ const TIMEFRAMES: MarketTimeframe[] = ['15m', '1h', '4h', '1d'];
 })
 export class MarketAnalysisComponent implements OnInit {
   private readonly marketService = inject(MarketAnalysisService);
+  private readonly transactionsService = inject(TransactionsService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
@@ -660,6 +885,42 @@ export class MarketAnalysisComponent implements OnInit {
 
   readonly indicators = signal<IndicatorsResponse | null>(null);
   readonly detailLoading = signal(false);
+
+  /** "My trades" layer: the user's own buys and sells drawn over the candles */
+  readonly tradesLayerOn = signal<boolean>(this.loadTradesLayerPref());
+  readonly pairTrades = signal<PairTrades | null>(null);
+  readonly hoveredTradeId = signal<string | null>(null);
+
+  readonly hasTrades = computed(
+    () => (this.pairTrades()?.position.tradeCount ?? 0) > 0,
+  );
+
+  readonly baseAsset = computed(() => this.selectedSymbol()?.split('/')[0] ?? '');
+
+  /** Last close of the candles already on screen, so numbers match the chart */
+  readonly lastClose = computed<number | null>(() => {
+    const candles = this.indicators()?.candles ?? [];
+    return candles.length ? candles[candles.length - 1].close : null;
+  });
+
+  /**
+   * Open position of the pair. Unrealized P&L is computed here, against the
+   * last candle being drawn, instead of asking the API for a second price.
+   */
+  readonly positionSummary = computed(() => {
+    const position = this.pairTrades()?.position;
+    if (!position || position.netAmount <= 0) return null;
+
+    const last = this.lastClose();
+    const unrealizedPnl =
+      last !== null ? position.netAmount * last - position.costBasis : null;
+    const unrealizedPct =
+      unrealizedPnl !== null && position.costBasis > 0
+        ? (unrealizedPnl / position.costBasis) * 100
+        : null;
+
+    return { ...position, unrealizedPnl, unrealizedPct };
+  });
 
   readonly priceChartData = computed<ChartData<'candlestick'>>(() => {
     const ind = this.indicators();
@@ -711,6 +972,8 @@ export class MarketAnalysisComponent implements OnInit {
       'price',
       priceRange,
     );
+
+    const tradeDatasets = this.buildTradeDatasets(priceRange);
 
     return {
       datasets: [
@@ -770,6 +1033,7 @@ export class MarketAnalysisComponent implements OnInit {
         } as any,
         ...(divergenceDatasets as any[]),
         ...(annotationDatasets as any[]),
+        ...(tradeDatasets as any[]),
       ],
     };
   });
@@ -785,7 +1049,19 @@ export class MarketAnalysisComponent implements OnInit {
           filter: (item) => !(item.text ?? '').startsWith('Div '),
         },
       },
-      tooltip: { mode: 'index', intersect: false },
+      tooltip: {
+        mode: 'index',
+        intersect: false,
+        // The layer draws its own datasets; they would otherwise show up as
+        // bare numbers. The trades of the hovered candle are appended instead.
+        filter: (item) => !(item.dataset as { isTradeLayer?: boolean }).isTradeLayer,
+        callbacks: {
+          afterBody: (items) =>
+            this.tradeTooltipLines(
+              (items[0]?.parsed as { x?: number } | undefined)?.x,
+            ),
+        },
+      },
     },
     scales: {
       x: {
@@ -987,6 +1263,7 @@ export class MarketAnalysisComponent implements OnInit {
     if (!next || next === this.selectedExchange()) return;
     this.selectedExchange.set(next);
     this.selectedSymbol.set(null);
+    this.pairTrades.set(null);
     this.indicators.set(null);
     this.syncQueryParams();
     this.loadSummary();
@@ -1077,6 +1354,160 @@ export class MarketAnalysisComponent implements OnInit {
     });
   }
 
+  /**
+   * Datasets of the "my trades" layer: one marker per trade at the price it
+   * executed, plus the average entry line across the visible range.
+   */
+  private buildTradeDatasets(range: { tMin: number; tMax: number }): unknown[] {
+    if (!this.tradesLayerOn()) return [];
+
+    const data = this.pairTrades();
+    if (!data?.trades.length) return [];
+
+    const hovered = this.hoveredTradeId();
+    const sets: unknown[] = [];
+
+    const sideSet = (trades: PairTrade[], label: string, color: string, letter: 'B' | 'S') => {
+      if (!trades.length) return;
+      sets.push({
+        type: 'line',
+        label,
+        data: trades.map((t) => ({
+          x: new Date(t.timestamp).getTime(),
+          y: t.price,
+        })),
+        showLine: false,
+        fill: false,
+        borderWidth: 0,
+        // Not drawn (no line, no fill) but it is what colors the legend box
+        borderColor: color,
+        backgroundColor: color,
+        pointStyle: trades.map((t) => tradeMarkerIcon(letter, color, t.id === hovered)),
+        pointRadius: trades.map((t) => (t.id === hovered ? 12 : 10)),
+        pointHoverRadius: 12,
+        isTradeLayer: true,
+      });
+    };
+
+    sideSet(
+      data.trades.filter((t) => t.side !== 'sell'),
+      'Compras',
+      '#0ecb81',
+      'B',
+    );
+    sideSet(
+      data.trades.filter((t) => t.side === 'sell'),
+      'Ventas',
+      '#f6465d',
+      'S',
+    );
+
+    const avgEntry = data.position.avgEntryPrice;
+    if (avgEntry > 0 && range.tMax > range.tMin) {
+      sets.push({
+        type: 'line',
+        label: 'PPC',
+        data: [
+          { x: range.tMin, y: avgEntry },
+          { x: range.tMax, y: avgEntry },
+        ],
+        borderColor: '#00bcd4',
+        borderWidth: 1.5,
+        borderDash: [5, 4],
+        pointRadius: 0,
+        fill: false,
+        showLine: true,
+        isTradeLayer: true,
+      });
+    }
+
+    return sets;
+  }
+
+  /**
+   * Trades that fall on the hovered candle, appended to the standard tooltip.
+   */
+  private tradeTooltipLines(timestamp: number | undefined): string[] {
+    if (timestamp === undefined || !this.tradesLayerOn()) return [];
+
+    const trades = this.pairTrades()?.trades ?? [];
+    if (!trades.length) return [];
+
+    const tolerance = this.candleSpanMs() / 2;
+    const asset = this.baseAsset();
+    const matching = trades.filter(
+      (t) => Math.abs(new Date(t.timestamp).getTime() - timestamp) <= tolerance,
+    );
+    if (!matching.length) return [];
+
+    return [
+      '',
+      ...matching.map((t) => {
+        const verb = t.side === 'sell' ? 'Venta' : 'Compra';
+        const amount = t.amount.toLocaleString('en-US', { maximumFractionDigits: 8 });
+        const price = t.price.toLocaleString('en-US', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        });
+        return `${verb} ${amount} ${asset} @ ${price} (${t.exchange})`;
+      }),
+    ];
+  }
+
+  /** Distance between two candles, used as the tooltip match window */
+  private candleSpanMs(): number {
+    const candles = this.indicators()?.candles ?? [];
+    if (candles.length < 2) return 60 * 60 * 1000;
+    return Math.abs(candles[1].timestamp - candles[0].timestamp);
+  }
+
+  toggleTradesLayer(): void {
+    const next = !this.tradesLayerOn();
+    this.tradesLayerOn.set(next);
+    if (!next) {
+      this.hoveredTradeId.set(null);
+    }
+    try {
+      localStorage.setItem(TRADES_LAYER_KEY, next ? '1' : '0');
+    } catch {
+      /* ignore */
+    }
+  }
+
+  private loadTradesLayerPref(): boolean {
+    try {
+      return localStorage.getItem(TRADES_LAYER_KEY) !== '0';
+    } catch {
+      return true;
+    }
+  }
+
+  /**
+   * Loads the user's trades for the selected pair. The visible range only
+   * narrows the returned trades: the position always covers the full history.
+   */
+  private loadTrades(): void {
+    const symbol = this.selectedSymbol();
+    if (!symbol) {
+      this.pairTrades.set(null);
+      return;
+    }
+
+    const candles = this.indicators()?.candles ?? [];
+    const from = candles.length ? candles[0].timestamp : undefined;
+    const to = candles.length
+      ? candles[candles.length - 1].timestamp + this.candleSpanMs()
+      : undefined;
+
+    this.transactionsService.getTradesByPair(symbol, from, to).subscribe({
+      next: (resp) => this.pairTrades.set(resp),
+      error: (err) => {
+        console.error('Failed to load trades for pair', err);
+        this.pairTrades.set(null);
+      },
+    });
+  }
+
   private loadDetail(): void {
     const symbol = this.selectedSymbol();
     if (!symbol) return;
@@ -1087,11 +1518,13 @@ export class MarketAnalysisComponent implements OnInit {
         next: (resp) => {
           this.indicators.set(resp);
           this.detailLoading.set(false);
+          this.loadTrades();
         },
         error: (err) => {
           console.error('Failed to load indicators', err);
           this.indicators.set(null);
           this.detailLoading.set(false);
+          this.pairTrades.set(null);
         },
       });
   }
@@ -1149,6 +1582,7 @@ export class MarketAnalysisComponent implements OnInit {
       this.selectedExchange.set(action.exchange as MarketExchange);
       this.selectedSymbol.set(null);
       this.indicators.set(null);
+      this.pairTrades.set(null);
       this.loadSummary();
       changed = true;
     }
@@ -1227,6 +1661,61 @@ export class MarketAnalysisComponent implements OnInit {
       return false;
     }
   }
+}
+
+const markerIconCache = new Map<string, HTMLCanvasElement>();
+
+/**
+ * Round B/S badge used as the point style of the trade markers. Chart.js has
+ * no way to draw text on a point, so each badge is a small cached canvas.
+ */
+function tradeMarkerIcon(
+  letter: 'B' | 'S',
+  color: string,
+  highlighted: boolean,
+): HTMLCanvasElement | undefined {
+  if (typeof document === 'undefined') return undefined;
+
+  const key = `${letter}:${color}:${highlighted}`;
+  const cached = markerIconCache.get(key);
+  if (cached) return cached;
+
+  const radius = highlighted ? 11 : 9;
+  const size = (radius + 5) * 2;
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return undefined;
+
+  const center = size / 2;
+  if (highlighted) {
+    ctx.beginPath();
+    ctx.arc(center, center, radius + 4, 0, Math.PI * 2);
+    ctx.strokeStyle = color;
+    ctx.globalAlpha = 0.45;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
+  ctx.beginPath();
+  ctx.arc(center, center, radius, 0, Math.PI * 2);
+  ctx.fillStyle = color;
+  ctx.fill();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = '#1e2329';
+  ctx.stroke();
+
+  ctx.fillStyle = '#0b0e11';
+  ctx.font = '700 11px Inter, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(letter, center, center + 0.5);
+
+  markerIconCache.set(key, canvas);
+  return canvas;
 }
 
 function mapLine(points: Array<{ x: number; y: number | null }>): Array<{ x: number; y: number | null }> {
