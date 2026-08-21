@@ -181,13 +181,16 @@ describe('ChartStackComponent · zoom', () => {
 
   afterEach(() => fixture.destroy());
 
-  it('enables wheel zoom and drag pan on the time axis only', () => {
+  it('enables wheel zoom on the time axis only', () => {
     const zoom = (component.priceOptions().plugins as Record<string, Record<string, never>>)['zoom'];
     expect(zoom).toBeTruthy();
     expect((zoom['zoom'] as { wheel: { enabled: boolean } }).wheel.enabled).toBe(true);
     expect((zoom['zoom'] as { mode: string }).mode).toBe('x');
-    expect((zoom['pan'] as { enabled: boolean; mode: string }).enabled).toBe(true);
-    expect((zoom['pan'] as { mode: string }).mode).toBe('x');
+  });
+
+  it('leaves the plugin drag-pan off, since it needs hammerjs', () => {
+    const zoom = (component.priceOptions().plugins as Record<string, Record<string, never>>)['zoom'];
+    expect((zoom['pan'] as { enabled: boolean }).enabled).toBe(false);
   });
 
   it('will not let you pan into empty space or zoom past a handful of candles', () => {
@@ -453,5 +456,78 @@ describe('ChartStackComponent · window survives re-renders', () => {
     const scales = component.priceOptions().scales as Record<string, { min?: number; max?: number }>;
     expect(scales['x'].min).toBe(min);
     expect(scales['x'].max).toBe(max);
+  });
+});
+
+describe('ChartStackComponent · drag to pan', () => {
+  let fixture: ComponentFixture<ChartStackComponent>;
+  let component: ChartStackComponent;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({ imports: [ChartStackComponent] }).compileComponents();
+    fixture = TestBed.createComponent(ChartStackComponent);
+    component = fixture.componentInstance;
+    component.candles = candles();
+    const host = fixture.nativeElement as HTMLElement;
+    host.style.width = '900px';
+    host.style.height = '600px';
+    document.body.appendChild(host);
+    fixture.detectChanges();
+  });
+
+  afterEach(() => fixture.destroy());
+
+  const pointer = (type: string, x: number): PointerEvent => {
+    const pane = (fixture.nativeElement as HTMLElement).querySelector('.pane.price')!;
+    const ev = new PointerEvent(type, { clientX: x, clientY: 300, bubbles: true, button: 0, buttons: 1 });
+    Object.defineProperty(ev, 'target', { value: pane });
+    return ev;
+  };
+
+  it('moves the window when dragging, and leaves its width alone', () => {
+    const chart = (component as unknown as {
+      charts?: { first?: { chart?: { scales: Record<string, { min: number; max: number }> } } };
+    }).charts?.first?.chart;
+    if (!chart?.scales?.['x']) {
+      pending('canvas has no layout in this environment');
+      return;
+    }
+
+    // zoom in first, otherwise there is nowhere to pan to
+    (chart as unknown as { zoom(f: number): void }).zoom(2);
+    const before = { min: chart.scales['x'].min, max: chart.scales['x'].max };
+
+    component.startDrag(pointer('pointerdown', 500), 0);
+    component.onPointerMove(pointer('pointermove', 560), 0);
+    component.onPointerMove(pointer('pointermove', 620), 0);
+    component.endDrag(pointer('pointerup', 620));
+
+    const after = { min: chart.scales['x'].min, max: chart.scales['x'].max };
+    expect(after.min).not.toBe(before.min);
+    // dragging right walks back in time
+    expect(after.min).toBeLessThan(before.min);
+    // and the window keeps its width: a pan is not a zoom
+    expect(Math.round(after.max - after.min)).toBe(Math.round(before.max - before.min));
+  });
+
+  it('ignores movement when no drag is in progress', () => {
+    const chart = (component as unknown as {
+      charts?: { first?: { chart?: { scales: Record<string, { min: number }> } } };
+    }).charts?.first?.chart;
+    if (!chart?.scales?.['x']) {
+      pending('canvas has no layout in this environment');
+      return;
+    }
+    const before = chart.scales['x'].min;
+    component.onPointerMove(pointer('pointermove', 700), 0);
+    expect(chart.scales['x'].min).toBe(before);
+  });
+
+  it('tracks the dragging state, for the cursor', () => {
+    expect(component.dragging).toBe(false);
+    component.startDrag(pointer('pointerdown', 400), 0);
+    expect(component.dragging).toBe(true);
+    component.endDrag(pointer('pointerup', 400));
+    expect(component.dragging).toBe(false);
   });
 });

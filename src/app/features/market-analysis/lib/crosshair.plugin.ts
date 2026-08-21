@@ -14,7 +14,6 @@ export interface CrosshairOptions {
   at: number | null;
   /** Draw the price label on the right edge (only the price panel does) */
   showLabel?: boolean;
-  labelFor?: (value: number) => string;
   /** Y in pixels for the label, when hovering this particular panel */
   pointerY?: number | null;
 }
@@ -23,6 +22,10 @@ declare module 'chart.js' {
   interface PluginOptionsByType<TType> {
     crosshair?: CrosshairOptions;
   }
+}
+
+function formatPrice(value: number): string {
+  return value.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 export const crosshairPlugin: Plugin = {
@@ -64,7 +67,10 @@ export const crosshairPlugin: Plugin = {
         ctx.stroke();
         ctx.setLineDash([]);
 
-        const text = (opts.labelFor ?? ((v: number) => v.toFixed(2)))(y.getValueForPixel(py) ?? 0);
+        // Deliberately not configurable through the options: Chart.js resolves
+        // any function it finds there as a scriptable option and calls it with
+        // its own context, not with the value.
+        const text = formatPrice(y.getValueForPixel(py) ?? 0);
         ctx.font = "600 10.5px Inter, sans-serif";
         const width = ctx.measureText(text).width + 12;
         ctx.fillStyle = '#2b3139';
