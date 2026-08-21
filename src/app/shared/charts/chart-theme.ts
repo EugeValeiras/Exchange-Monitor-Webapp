@@ -149,6 +149,26 @@ export interface ChartThemeOptions {
   yPosition?: 'left' | 'right';
 }
 
+/**
+ * Axis numbers in the same locale as every other figure in the app.
+ *
+ * Chart.js formats ticks with the browser default, so the axis read `1.0`
+ * while the crosshair pill right next to it read `1,16`. `ticks.callback` is
+ * a first-class Chart.js option, unlike a function smuggled into a plugin's
+ * own options block.
+ */
+export function formatAxisValue(value: number | string): string {
+  const n = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(n)) return String(value);
+
+  const abs = Math.abs(n);
+  const decimals = abs >= 1000 ? 0 : abs >= 1 ? 2 : 4;
+  return n.toLocaleString('es-AR', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
+}
+
 const DISPLAY_FORMATS: Record<string, Record<string, string>> = {
   minute: { minute: 'HH:mm', hour: 'HH:mm' },
   hour: { hour: 'HH:mm', day: 'dd MMM' },
@@ -169,7 +189,12 @@ export function chartTheme(opts: ChartThemeOptions = {}): ChartOptions {
   const y: Record<string, unknown> = {
     position: opts.yPosition ?? 'right',
     type: opts.log ? 'logarithmic' : 'linear',
-    ticks: { color: c.axis, maxTicksLimit: 6, font: { size: 10.5 } },
+    ticks: {
+      color: c.axis,
+      maxTicksLimit: 6,
+      font: { size: 10.5 },
+      callback: (value: number | string) => formatAxisValue(value),
+    },
     grid: { color: c.grid, drawTicks: false },
     border: { display: false },
   };
