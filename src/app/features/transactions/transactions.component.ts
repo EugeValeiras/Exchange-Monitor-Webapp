@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
@@ -150,6 +151,16 @@ interface ExchangeStat {
       </div>
 
       <!-- Filters -->
+      @if (filter.pair) {
+        <div class="pair-filter">
+          <mat-icon>filter_alt</mat-icon>
+          <span>Mostrando sólo el par <b>{{ filter.pair }}</b></span>
+          <button type="button" (click)="clearPairFilter()" aria-label="Quitar el filtro de par">
+            Quitar
+          </button>
+        </div>
+      }
+
       <div class="filters-wrapper">
         <!-- Skeleton Filters (only on initial load) -->
         <div class="filters-container filters-skeleton" [class.hidden]="!initialLoading">
@@ -463,14 +474,112 @@ export class TransactionsComponent implements OnInit {
 
   constructor(
     private transactionsService: TransactionsService,
-    private pnlService: PnlService
+    private pnlService: PnlService,
+    private route: ActivatedRoute,
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
     this.initialLoading = true;
+    this.readQueryParams();
     this.loadStats();
     this.loadTransactions();
     this.loadPnlSummary();
+  }
+
+  /**
+   * The filters live in the URL, so a filtered view can be linked to — which
+   * is what "Ver todos" from the analysis screen needs to land already
+   * narrowed to the pair you were looking at.
+   */
+  private readQueryParams(): void {
+    const params = this.route.snapshot.queryParamMap;
+
+    const set = (raw: string | null, target: Set<string>) => {
+      target.clear();
+      for (const value of (raw ?? '').split(',').map((v) => v.trim()).filter(Boolean)) {
+        target.add(value);
+      }
+    };
+
+    set(params.get('types'), this.selectedTypes);
+    set(params.get('assets'), this.selectedAssets);
+    set(params.get('exchanges'), this.selectedExchanges);
+
+    const from = params.get('from');
+    const to = params.get('to');
+    this.startDate = from ? new Date(from) : null;
+    this.endDate = to ? new Date(to) : null;
+
+    const page = Number(params.get('page'));
+    this.currentPage = Number.isFinite(page) && page > 0 ? page : 1;
+
+    const pair = params.get('pair');
+    if (pair) this.filter.pair = pair.toUpperCase();
+
+    this.buildFilterFromSelection();
+  }
+
+  /** Mirrors the current filters into the URL, without stacking history entries. */
+  private syncQueryParams(): void {
+    const join = (values: Set<string>) => (values.size ? Array.from(values).join(',') : null);
+    const iso = (date: Date | null) => (date ? date.toISOString().slice(0, 10) : null);
+
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        types: join(this.selectedTypes),
+        assets: join(this.selectedAssets),
+        exchanges: join(this.selectedExchanges),
+        pair: this.filter.pair ?? null,
+        from: iso(this.startDate),
+        to: iso(this.endDate),
+        page: this.currentPage > 1 ? this.currentPage : null,
+      },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+  }
+
+  /** Turns the selected chips into the shape the API expects. */
+  private buildFilterFromSelection(): void {
+    if (this.selectedTypes.size > 0) {
+      this.filter.types = Array.from(this.selectedTypes) as TransactionType[];
+      delete this.filter.type;
+    } else {
+      delete this.filter.types;
+      delete this.filter.type;
+    }
+
+    if (this.selectedAssets.size > 0) {
+      this.filter.assets = Array.from(this.selectedAssets);
+      delete this.filter.asset;
+    } else {
+      delete this.filter.assets;
+      delete this.filter.asset;
+    }
+
+    if (this.selectedExchanges.size === 1) {
+      this.filter.exchange = Array.from(this.selectedExchanges)[0] as ExchangeType;
+    } else {
+      // the API takes one exchange at a time; more than one means no narrowing
+      delete this.filter.exchange;
+    }
+
+    if (this.startDate) this.filter.startDate = this.startDate.toISOString().slice(0, 10);
+    else delete this.filter.startDate;
+
+    if (this.endDate) this.filter.endDate = this.endDate.toISOString().slice(0, 10);
+    else delete this.filter.endDate;
+  }
+
+  /** Drops the pair filter that arrived through the URL. */
+  clearPairFilter(): void {
+    delete this.filter.pair;
+    this.currentPage = 1;
+    this.syncQueryParams();
+    this.loadStats();
+    this.loadTransactions();
   }
 
   loadPnlSummary(): void {
@@ -571,38 +680,8 @@ export class TransactionsComponent implements OnInit {
 
   applyFilters(): void {
     this.currentPage = 1;
-
-    // Handle type filtering
-    if (this.selectedTypes.size > 0) {
-      this.filter.types = Array.from(this.selectedTypes) as TransactionType[];
-      delete this.filter.type;
-    } else {
-      delete this.filter.types;
-      delete this.filter.type;
-    }
-
-    // Handle asset filtering
-    if (this.selectedAssets.size > 0) {
-      this.filter.assets = Array.from(this.selectedAssets);
-      delete this.filter.asset;
-    } else {
-      delete this.filter.assets;
-      delete this.filter.asset;
-    }
-
-    // Handle exchange filtering based on selected exchanges (include mode)
-    if (this.selectedExchanges.size > 0) {
-      // If only one exchange selected, filter by that one
-      if (this.selectedExchanges.size === 1) {
-        this.filter.exchange = Array.from(this.selectedExchanges)[0] as ExchangeType;
-      } else {
-        // Multiple exchanges selected - for now just use the first one
-        // TODO: Backend should support multiple exchanges filter
-        delete this.filter.exchange;
-      }
-    } else {
-      delete this.filter.exchange;
-    }
+    this.buildFilterFromSelection();
+    this.syncQueryParams();
 
     this.loadStats();
     this.loadTransactions();
@@ -616,6 +695,7 @@ export class TransactionsComponent implements OnInit {
     this.selectedAssets.clear();
     this.selectedExchanges.clear();
     this.currentPage = 1;
+    this.syncQueryParams();
     this.loadStats();
     this.loadTransactions();
   }
