@@ -1,5 +1,5 @@
 import { Chart, Plugin } from 'chart.js';
-import { chartColors } from '../../../shared/charts/chart-theme';
+import { axisDecimals, chartColors, formatAxisValue } from '../../../shared/charts/chart-theme';
 
 /**
  * A single vertical line, snapped to the centre of a candle, drawn across
@@ -22,17 +22,6 @@ declare module 'chart.js' {
   interface PluginOptionsByType<TType> {
     crosshair?: CrosshairOptions;
   }
-}
-
-function formatPrice(value: number): string {
-  // Sub-unit assets need the extra digits: NEXO at 0,95 and at 0,9523 are not
-  // the same number, and two decimals hides that.
-  const abs = Math.abs(value);
-  const decimals = abs >= 1000 ? 2 : abs >= 1 ? 2 : 4;
-  return value.toLocaleString('es-AR', {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  });
 }
 
 /**
@@ -85,10 +74,10 @@ export const crosshairPlugin: Plugin = {
         ctx.stroke();
         ctx.setLineDash([]);
 
-        // Deliberately not configurable through the options: Chart.js resolves
-        // any function it finds there as a scriptable option and calls it with
-        // its own context, not with the value.
-        const text = formatPrice(y.getValueForPixel(py) ?? 0);
+        // Same precision as the ticks it sits between: a pill reading 1,06
+        // against an axis reading 1,000 looks like two different scales.
+        const decimals = axisDecimals((y as unknown as { ticks: Array<{ value: number }> }).ticks ?? []);
+        const text = formatAxisValue(y.getValueForPixel(py) ?? 0, decimals);
         ctx.font = "600 10.5px Inter, sans-serif";
         const width = ctx.measureText(text).width + 12;
         const left = labelLeft(chartArea.right, chart.width, width);
