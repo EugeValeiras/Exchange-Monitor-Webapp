@@ -78,6 +78,15 @@ interface Readout {
   markers: TradeMarker[];
 }
 
+/** How much history is on screen, in words. */
+function describeSpan(ms: number): string {
+  const days = ms / (24 * 60 * 60 * 1000);
+  if (days < 2) return `${Math.max(1, Math.round(days * 24))} h`;
+  if (days < 60) return `${Math.round(days)} días`;
+  if (days < 730) return `${Math.round(days / 30)} meses`;
+  return `${(days / 365).toFixed(1)} años`;
+}
+
 /**
  * The instrument: price, volume and one oscillator as three panels that share
  * an X domain and a single crosshair, instead of three independent widgets
@@ -95,7 +104,7 @@ interface Readout {
     <div class="stack" (pointerleave)="clearCrosshair()" (dblclick)="resetZoom()">
       @if (zoomed()) {
         <button type="button" class="reset" (click)="resetZoom()" title="Ver todo · F o doble click">
-          <span class="range">{{ visibleLabel() }}</span>
+          <span class="range">{{ rangeLabel() }}</span>
           <span class="action">Ver todo</span>
         </button>
       }
@@ -293,6 +302,10 @@ export class ChartStackComponent {
   @ViewChildren(BaseChartDirective) private charts?: QueryList<BaseChartDirective>;
 
   @Input({ required: true }) set candles(value: OhlcCandle[]) {
+    // new pair or timeframe: the old window means nothing here
+    this.viewRef = null;
+    this.zoomed.set(false);
+    this.rangeLabel.set('');
     this.candlesSignal.set(value ?? []);
   }
   @Input() set rsi(value: IndicatorPoint[]) {
@@ -331,9 +344,19 @@ export class ChartStackComponent {
   private readonly layerOn = signal(true);
   private readonly hovered = signal<string | null>(null);
   private readonly crosshairAt = signal<number | null>(null);
-  /** Visible window after zoom/pan; null means "everything that was loaded" */
-  private readonly view = signal<{ min: number; max: number } | null>(null);
-  readonly zoomed = computed(() => this.view() !== null);
+  /**
+   * Visible window after zoom/pan; null means "everything that was loaded".
+   *
+   * Deliberately a plain field and NOT a signal. It changes on every frame of
+   * a gesture, and anything reactive here recomputes the chart options
+   * mid-gesture, which resets the zoom plugin's own state — the exact bug this
+   * class keeps running into, from both ends.
+   */
+  private viewRef: { min: number; max: number } | null = null;
+
+  /** Cheap, low-frequency mirrors of the window, for the reset chip only. */
+  readonly zoomed = signal(false);
+  readonly rangeLabel = signal('');
 
   readonly readout = computed<Readout | null>(() => {
     const at = this.crosshairAt();
@@ -364,17 +387,6 @@ export class ChartStackComponent {
     return Math.min(82, Math.max(18, raw));
   });
 
-  /** How much history is on screen, so the zoom level is legible */
-  readonly visibleLabel = computed(() => {
-    const view = this.view();
-    if (!view) return '';
-    const days = (view.max - view.min) / (24 * 60 * 60 * 1000);
-    if (days < 2) return `${Math.max(1, Math.round(days * 24))} h`;
-    if (days < 60) return `${Math.round(days)} días`;
-    if (days < 730) return `${Math.round(days / 30)} meses`;
-    return `${(days / 365).toFixed(1)} años`;
-  });
-
   get dateFormat(): string {
     return this.timeframe === '15m' || this.timeframe === '1h' ? 'dd MMM HH:mm' : 'dd MMM yyyy';
   }
@@ -392,14 +404,14 @@ export class ChartStackComponent {
       min: candles[0].timestamp - span / 2,
       max: candles[candles.length - 1].timestamp + span / 2,
     };
-    const view = this.view();
+    const view = this.viewRef;
     return { min: view?.min ?? full.min, max: view?.max ?? full.max, span };
   });
 
   /** Candles inside the visible window — what the Y axis has to fit. */
   private readonly visibleCandles = computed(() => {
     const candles = this.candlesSignal();
-    const view = this.view();
+    const view = this.viewRef;
     if (!view) return candles;
     const inside = candles.filter((c) => c.timestamp >= view.min && c.timestamp <= view.max);
     return inside.length ? inside : candles;
@@ -656,11 +668,11 @@ export class ChartStackComponent {
     price.update('none');
   }
 
-  /** Mid-gesture bookkeeping: same window, without emitting on every frame. */
+  /** Mid-gesture bookkeeping. Touches no signal, so nothing re-renders. */
   trackView(chart: Chart): void {
     const x = chart.scales['x'];
     if (!x) return;
-    this.view.set({ min: x.min, max: x.max });
+    this.viewRef = { min: x.min, max: x.max };
   }
 
   /** Records the window once the gesture settles, for the reset affordance. */
@@ -676,13 +688,19 @@ export class ChartStackComponent {
 
     // back at the edges within a candle: treat it as "not zoomed"
     const atFullExtent = x.min <= fullMin + span && x.max >= fullMax - span;
-    this.view.set(atFullExtent ? null : { min: x.min, max: x.max });
-    this.viewChange.emit(atFullExtent ? null : { min: x.min, max: x.max });
+    const window = atFullExtent ? null : { min: x.min, max: x.max };
+
+    this.viewRef = window;
+    this.zoomed.set(window !== null);
+    this.rangeLabel.set(window ? describeSpan(window.max - window.min) : '');
+    this.viewChange.emit(window);
   }
 
   /** Back to the whole loaded history. Double click, the button, or F. */
   resetZoom(): void {
-    this.view.set(null);
+    this.viewRef = null;
+    this.zoomed.set(false);
+    this.rangeLabel.set('');
     this.viewChange.emit(null);
     for (const directive of this.charts?.toArray() ?? []) {
       directive.chart?.resetZoom('none');
