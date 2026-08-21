@@ -172,6 +172,10 @@ describe('ChartStackComponent · zoom', () => {
     fixture = TestBed.createComponent(ChartStackComponent);
     component = fixture.componentInstance;
     component.candles = candles();
+    const host = fixture.nativeElement as HTMLElement;
+    host.style.width = '900px';
+    host.style.height = '600px';
+    document.body.appendChild(host);
     fixture.detectChanges();
   });
 
@@ -196,7 +200,7 @@ describe('ChartStackComponent · zoom', () => {
 
   it('starts unzoomed and reports no window', () => {
     expect(component.zoomed()).toBe(false);
-    expect(component.visibleLabel()).toBe('');
+    expect(component.rangeLabel()).toBe('');
   });
 
   it('refits the price axis to the candles left visible', () => {
@@ -204,21 +208,30 @@ describe('ChartStackComponent · zoom', () => {
     // a window over the cheap early candles only
     const min = data[0].timestamp;
     const max = data[9].timestamp;
-    component['view'].set({ min, max });
-    fixture.detectChanges();
 
-    const scales = component.priceOptions().scales as Record<string, { max?: number }>;
+    // The axis is refitted imperatively during the gesture, on purpose: doing
+    // it through a signal is what resets the zoom plugin mid-drag.
+    component['viewRef'] = { min, max };
+    component['refitPriceAxis'](min, max);
+
+    const chart = (component as unknown as {
+      charts?: { first?: { chart?: { options: { scales: Record<string, { max?: number }> } } } };
+    }).charts?.first?.chart;
+    if (!chart) {
+      pending('canvas has no layout in this environment');
+      return;
+    }
+
     const highestVisible = Math.max(...data.slice(0, 10).map((c) => c.high));
     const highestOverall = Math.max(...data.map((c) => c.high));
 
-    // the axis follows the window instead of staying sized for the whole range
-    expect(scales['y'].max!).toBeLessThan(highestOverall / 2);
-    expect(scales['y'].max!).toBeGreaterThanOrEqual(highestVisible);
+    expect(chart.options.scales['y'].max!).toBeLessThan(highestOverall / 2);
+    expect(chart.options.scales['y'].max!).toBeGreaterThanOrEqual(highestVisible);
   });
 
   it('keeps the three panels on the same window while zoomed', () => {
     const data = candles();
-    component['view'].set({ min: data[5].timestamp, max: data[15].timestamp });
+    component['viewRef'] = { min: data[5].timestamp, max: data[15].timestamp };
     fixture.detectChanges();
 
     const x = (o: Record<string, unknown>) =>
@@ -229,21 +242,23 @@ describe('ChartStackComponent · zoom', () => {
 
   it('describes the visible window in human terms, by magnitude', () => {
     const data = candles();
+    const commit = (min: number, max: number) =>
+      component['commitView']({ scales: { x: { min, max } } } as never);
 
-    component['view'].set({ min: data[0].timestamp, max: data[8].timestamp });
-    expect(component.visibleLabel()).toBe('56 días');
+    commit(data[0].timestamp, data[8].timestamp);
+    expect(component.rangeLabel()).toBe('56 días');
     expect(component.zoomed()).toBe(true);
 
-    component['view'].set({ min: data[0].timestamp, max: data[20].timestamp });
-    expect(component.visibleLabel()).toContain('meses');
+    commit(data[0].timestamp, data[20].timestamp);
+    expect(component.rangeLabel()).toContain('meses');
 
-    component['view'].set({ min: data[0].timestamp, max: data[0].timestamp + 12 * 60 * 60 * 1000 });
-    expect(component.visibleLabel()).toBe('12 h');
+    commit(data[0].timestamp, data[0].timestamp + 12 * 60 * 60 * 1000);
+    expect(component.rangeLabel()).toBe('12 h');
   });
 
   it('goes back to the full history on reset', () => {
     const data = candles();
-    component['view'].set({ min: data[5].timestamp, max: data[15].timestamp });
+    component['commitView']({ scales: { x: { min: data[5].timestamp, max: data[15].timestamp } } } as never);
     expect(component.zoomed()).toBe(true);
 
     component.resetZoom();
@@ -371,18 +386,32 @@ describe('ChartStackComponent · pan', () => {
     expect(plugins['crosshair'].at).toBeNull();
   });
 
-  it('keeps the window current while the gesture is still going', () => {
+  it('tracks the window mid-gesture without re-rendering anything', () => {
     const data = candles();
     const fake = {
       scales: { x: { min: data[5].timestamp, max: data[15].timestamp } },
     } as unknown as Parameters<ChartStackComponent['trackView']>[0];
 
+    const optionsBefore = JSON.stringify(component.priceOptions().scales);
     component['trackView'](fake);
-    expect(component.zoomed()).toBe(true);
+    fixture.detectChanges();
 
-    const scales = component.priceOptions().scales as Record<string, { min?: number; max?: number }>;
-    expect(scales['x'].min).toBe(data[5].timestamp);
-    expect(scales['x'].max).toBe(data[15].timestamp);
+    // the source of truth moves...
+    expect(component['viewRef']).toEqual({ min: data[5].timestamp, max: data[15].timestamp });
+    // ...and nothing re-renders. Recomputing options mid-gesture is precisely
+    // what reset the zoom plugin and cancelled the pan.
+    expect(JSON.stringify(component.priceOptions().scales)).toBe(optionsBefore);
+    expect(component.zoomed()).toBe(false);
+  });
+
+  it('publishes the window once the gesture settles', () => {
+    const data = candles();
+    component['commitView']({
+      scales: { x: { min: data[5].timestamp, max: data[15].timestamp } },
+    } as never);
+
+    expect(component.zoomed()).toBe(true);
+    expect(component.rangeLabel()).toBeTruthy();
   });
 
   it('still lets the crosshair reach the readout', () => {
