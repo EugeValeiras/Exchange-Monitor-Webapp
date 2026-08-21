@@ -95,7 +95,7 @@ export interface HeaderContext {
             <span>· vol 24h <b class="num">{{ context!.volume24h | emCompact }}</b></span>
           }
           <span class="sep">|</span>
-          <span class="freshness" [class.stale]="isStale">
+          <span class="freshness" [class.stale]="isStale" [class.offline]="!socketConnected">
             <span class="dot"></span>{{ freshnessLabel }}
           </span>
         </div>
@@ -309,6 +309,14 @@ export interface HeaderContext {
         background: var(--color-warning);
       }
 
+      .freshness.offline {
+        color: var(--text-tertiary);
+      }
+
+      .freshness.offline .dot {
+        background: var(--text-disabled);
+      }
+
       .controls {
         display: flex;
         flex-direction: column;
@@ -442,6 +450,8 @@ export class InstrumentHeaderComponent {
   @Input() tradesLayer = true;
   @Input() hasTrades = false;
   @Input() tradeCount = 0;
+  /** Live price feed. Off means the numbers only move on the poll. */
+  @Input() socketConnected = true;
 
   @Output() timeframeChange = new EventEmitter<MarketTimeframe>();
   @Output() logChange = new EventEmitter<boolean>();
@@ -458,6 +468,8 @@ export class InstrumentHeaderComponent {
 
   /** A financial number without a timestamp is a number you cannot trust. */
   get freshnessLabel(): string {
+    if (!this.socketConnected) return 'sin conexión en vivo';
+
     const age = this.context?.ageSeconds;
     if (age === null || age === undefined) return 'sin datos';
     if (age < 60) return `hace ${Math.max(1, Math.round(age))} s`;

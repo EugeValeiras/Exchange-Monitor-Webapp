@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   HostListener,
   OnInit,
   ViewChild,
@@ -19,6 +20,7 @@ import {
 } from '../../core/services/market-analysis.service';
 import { PairTrades, TransactionsService } from '../../core/services/transactions.service';
 import { PnlService, UnrealizedPnlPosition } from '../../core/services/pnl.service';
+import { PriceSocketService } from '../../core/services/price-socket.service';
 import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-loader.component';
 import { InstrumentHeaderComponent, HeaderContext } from './instrument-header.component';
 import { ChartStackComponent } from './chart-stack.component';
@@ -34,6 +36,12 @@ const STATE_KEY = 'marketAnalysisChart';
 const LOG_KEY = 'marketAnalysisLog';
 const LAYER_KEY = 'marketAnalysisTradesLayer';
 const FACET_KEY = 'marketAnalysisFacet';
+
+/** Matches the backend's candle cache TTL: asking faster just re-reads it. */
+const REFRESH_MS = 60_000;
+
+/** The freshness dot has to keep counting even when nothing else changes. */
+const CLOCK_MS = 1_000;
 
 /** Wide-range timeframes read wrong on a linear scale, so they default to log. */
 const LOG_BY_DEFAULT: MarketTimeframe[] = ['1d', '1w'];
@@ -61,15 +69,16 @@ const CANDLE_LIMIT = 500;
         [exchange]="selectedExchange()"
         [timeframe]="selectedTimeframe()"
         [timeframes]="timeframes"
-        [price]="lastClose()"
-        [change]="change()"
-        [changePct]="changePct()"
+        [price]="livePrice()"
+        [change]="liveChange()"
+        [changePct]="liveChangePct()"
         [position]="headerPosition()"
         [context]="headerContext()"
         [log]="log()"
         [tradesLayer]="tradesLayer()"
         [hasTrades]="hasTrades()"
         [tradeCount]="pairTrades()?.position?.tradeCount ?? 0"
+        [socketConnected]="socketConnected()"
         (timeframeChange)="setTimeframe($event)"
         (logChange)="setLog($event)"
         (tradesLayerChange)="setTradesLayer($event)"
@@ -94,6 +103,7 @@ const CANDLE_LIMIT = 500;
             [log]="log()"
             [timeframe]="selectedTimeframe()"
             [baseAsset]="baseAssetOf()"
+            [seriesKey]="seriesKey()"
             (hoveredMarker)="onHoveredMarker($event)"></app-chart-stack>
           } @else {
             <div class="loading empty">
@@ -224,6 +234,8 @@ export class MarketAnalysisComponent implements OnInit {
   private readonly marketService = inject(MarketAnalysisService);
   private readonly transactionsService = inject(TransactionsService);
   private readonly pnlService = inject(PnlService);
+  private readonly priceSocket = inject(PriceSocketService);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
@@ -245,6 +257,10 @@ export class MarketAnalysisComponent implements OnInit {
   readonly summary = signal<SummaryResponse | null>(null);
   readonly unrealized = signal<UnrealizedPnlPosition[]>([]);
   readonly loadedAt = signal<number | null>(null);
+  /** Ticks so the "hace X s" keeps moving between refreshes */
+  private readonly now = signal(Date.now());
+  private refreshTimer?: ReturnType<typeof setInterval>;
+  private clockTimer?: ReturnType<typeof setInterval>;
 
   // ── derived ───────────────────────────────────────────────────────────────
 
@@ -252,6 +268,36 @@ export class MarketAnalysisComponent implements OnInit {
     const candles = this.indicators()?.candles ?? [];
     return candles.length ? candles[candles.length - 1].close : null;
   });
+
+  /**
+   * Live price for the header. The socket ticks between refreshes; the last
+   * close covers the gap before the first tick arrives, or if the socket is
+   * down. Everything else on screen — the position, the chart — stays on the
+   * candles, so no number ever contradicts what is drawn.
+   */
+  readonly livePrice = computed<number | null>(() => {
+    const symbol = this.selectedSymbol();
+    if (!symbol) return null;
+    const tick = this.priceSocket.getPrice(symbol);
+    return tick?.price ?? this.lastClose();
+  });
+
+  readonly liveChangePct = computed<number | null>(() => {
+    const symbol = this.selectedSymbol();
+    const tick = symbol ? this.priceSocket.getPrice(symbol) : undefined;
+    return tick?.change24h ?? this.changePct();
+  });
+
+  readonly liveChange = computed<number | null>(() => {
+    const price = this.livePrice();
+    const pct = this.liveChangePct();
+    if (price === null || pct === null) return this.change();
+    // from the percentage back to the absolute move, so both agree
+    const previous = price / (1 + pct / 100);
+    return price - previous;
+  });
+
+  readonly socketConnected = computed(() => this.priceSocket.isConnected());
 
   readonly change = computed<number | null>(() => {
     const candles = this.indicators()?.candles ?? [];
@@ -276,6 +322,11 @@ export class MarketAnalysisComponent implements OnInit {
   readonly hasTrades = computed(() => (this.pairTrades()?.position.tradeCount ?? 0) > 0);
 
   readonly baseAssetOf = computed(() => this.selectedSymbol()?.split('/')[0] ?? '');
+
+  /** Identifies the series, so a refresh does not count as a new chart. */
+  readonly seriesKey = computed(
+    () => `${this.selectedExchange()}:${this.selectedSymbol()}:${this.selectedTimeframe()}`,
+  );
 
   readonly grouped = computed(() =>
     groupTrades(this.pairTrades()?.trades ?? [], this.pairTrades()?.position ?? null, this.candleSpanMs()),
@@ -332,7 +383,7 @@ export class MarketAnalysisComponent implements OnInit {
       high: candles.length ? Math.max(...candles.map((c) => c.high)) : null,
       low: candles.length ? Math.min(...candles.map((c) => c.low)) : null,
       volume24h: row?.volume24h ?? null,
-      ageSeconds: at === null ? null : (Date.now() - at) / 1000,
+      ageSeconds: at === null ? null : (this.now() - at) / 1000,
     };
   });
 
@@ -386,6 +437,73 @@ export class MarketAnalysisComponent implements OnInit {
     this.loadUnrealized();
     if (this.selectedSymbol()) this.loadDetail();
     else this.paletteOpen.set(true);
+
+    this.startLiveUpdates();
+  }
+
+  // ── staying current ───────────────────────────────────────────────────────
+
+  /**
+   * Three layers, because they move at different speeds:
+   *  - the price ticks over the socket, continuously
+   *  - the candles are polled at the backend's own cache TTL; asking faster
+   *    only re-reads the same cached response
+   *  - the clock ticks every second so "hace X s" keeps counting
+   *
+   * All of it pauses when the tab is hidden — a chart nobody is looking at
+   * should not be spending requests or battery — and refreshes on the way
+   * back, since whatever is on screen is stale by then.
+   */
+  private startLiveUpdates(): void {
+    this.priceSocket.connect();
+    this.subscribeToSymbol();
+
+    this.clockTimer = setInterval(() => this.now.set(Date.now()), CLOCK_MS);
+    this.resumePolling();
+
+    document.addEventListener('visibilitychange', this.onVisibilityChange);
+
+    this.destroyRef.onDestroy(() => {
+      clearInterval(this.clockTimer);
+      this.pausePolling();
+      document.removeEventListener('visibilitychange', this.onVisibilityChange);
+      const symbol = this.selectedSymbol();
+      if (symbol) this.priceSocket.unsubscribe([symbol]);
+    });
+  }
+
+  private readonly onVisibilityChange = (): void => {
+    if (document.hidden) {
+      this.pausePolling();
+      return;
+    }
+    // back on screen: what is showing is old, so catch up before resuming
+    this.refresh({ silent: true });
+    this.resumePolling();
+  };
+
+  private resumePolling(): void {
+    this.pausePolling();
+    this.refreshTimer = setInterval(() => {
+      if (!document.hidden) this.refresh({ silent: true });
+    }, REFRESH_MS);
+  }
+
+  private pausePolling(): void {
+    if (this.refreshTimer) clearInterval(this.refreshTimer);
+    this.refreshTimer = undefined;
+  }
+
+  private subscribeToSymbol(previous?: string | null): void {
+    if (previous) this.priceSocket.unsubscribe([previous]);
+    const symbol = this.selectedSymbol();
+    if (symbol) this.priceSocket.subscribe([symbol]);
+  }
+
+  /** A silent refresh leaves the chart in place instead of dimming it. */
+  private refresh({ silent }: { silent: boolean }): void {
+    if (!this.selectedSymbol()) return;
+    this.loadDetail({ silent });
   }
 
   // ── keyboard ──────────────────────────────────────────────────────────────
@@ -477,7 +595,9 @@ export class MarketAnalysisComponent implements OnInit {
   onPickPair(row: PaletteRow): void {
     this.paletteOpen.set(false);
     if (row.symbol === this.selectedSymbol()) return;
+    const previous = this.selectedSymbol();
     this.selectedSymbol.set(row.symbol);
+    this.subscribeToSymbol(previous);
     this.pairTrades.set(null);
     this.syncQueryParams();
     this.loadDetail();
@@ -535,7 +655,9 @@ export class MarketAnalysisComponent implements OnInit {
       changed = true;
     }
     if (action.symbol && action.symbol !== this.selectedSymbol()) {
+      const previous = this.selectedSymbol();
       this.selectedSymbol.set(action.symbol);
+      this.subscribeToSymbol(previous);
       changed = true;
     }
     if (action.clearAnnotations) this.annotations.set([]);
@@ -554,16 +676,17 @@ export class MarketAnalysisComponent implements OnInit {
 
   // ── loading ───────────────────────────────────────────────────────────────
 
-  loadDetail(): void {
+  loadDetail({ silent = false }: { silent?: boolean } = {}): void {
     const symbol = this.selectedSymbol();
     if (!symbol) return;
-    this.detailLoading.set(true);
+    if (!silent) this.detailLoading.set(true);
     this.marketService
       .getIndicators(this.selectedExchange(), symbol, this.selectedTimeframe(), CANDLE_LIMIT)
       .subscribe({
       next: (resp) => {
         this.indicators.set(resp);
         this.loadedAt.set(Date.now());
+        this.now.set(Date.now());
         this.detailLoading.set(false);
         this.loadTrades();
       },

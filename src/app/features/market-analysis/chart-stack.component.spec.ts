@@ -642,3 +642,68 @@ describe('ChartStackComponent · trade tooltip', () => {
     expect(component.tradeTip()).toBeNull();
   });
 });
+
+describe('ChartStackComponent · staying live', () => {
+  let fixture: ComponentFixture<ChartStackComponent>;
+  let component: ChartStackComponent;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({ imports: [ChartStackComponent] }).compileComponents();
+    fixture = TestBed.createComponent(ChartStackComponent);
+    component = fixture.componentInstance;
+    component.seriesKey = 'binance:BTC/USDT:1d';
+    component.candles = candles();
+    fixture.detectChanges();
+  });
+
+  afterEach(() => fixture.destroy());
+
+  it('keeps your zoom across a refresh of the same series', () => {
+    const data = candles();
+    component['commitView']({
+      scales: { x: { min: data[5].timestamp, max: data[15].timestamp } },
+    } as never);
+    expect(component.zoomed()).toBe(true);
+
+    // a poll brings fresh candles for the same pair and timeframe
+    component.seriesKey = 'binance:BTC/USDT:1d';
+    component.candles = candles(42);
+    fixture.detectChanges();
+
+    // a chart that re-aims itself every minute is worse than one that does not move
+    expect(component.zoomed()).toBe(true);
+    expect(component['viewRef']).not.toBeNull();
+  });
+
+  it('drops the zoom when the series itself changes', () => {
+    const data = candles();
+    component['commitView']({
+      scales: { x: { min: data[5].timestamp, max: data[15].timestamp } },
+    } as never);
+
+    component.seriesKey = 'binance:ETH/USDT:1d';
+    component.candles = candles();
+    fixture.detectChanges();
+
+    expect(component.zoomed()).toBe(false);
+    expect(component['viewRef']).toBeNull();
+  });
+
+  it('drops it when only the timeframe changes, too', () => {
+    component['commitView']({
+      scales: { x: { min: candles()[5].timestamp, max: candles()[15].timestamp } },
+    } as never);
+
+    component.seriesKey = 'binance:BTC/USDT:4h';
+    expect(component.zoomed()).toBe(false);
+  });
+
+  it('takes fresh candles into the chart', () => {
+    const grown = candles(45);
+    component.candles = grown;
+    fixture.detectChanges();
+
+    const data = component.priceData().datasets[0].data as Array<{ x: number }>;
+    expect(data.length).toBe(45);
+  });
+});
