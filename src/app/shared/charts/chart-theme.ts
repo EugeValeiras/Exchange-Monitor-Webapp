@@ -157,16 +157,36 @@ export interface ChartThemeOptions {
  * a first-class Chart.js option, unlike a function smuggled into a plugin's
  * own options block.
  */
-export function formatAxisValue(value: number | string): string {
+export function formatAxisValue(value: number | string, decimals = 2): string {
   const n = typeof value === 'number' ? value : Number(value);
   if (!Number.isFinite(n)) return String(value);
-
-  const abs = Math.abs(n);
-  const decimals = abs >= 1000 ? 0 : abs >= 1 ? 2 : 4;
   return n.toLocaleString('es-AR', {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
   });
+}
+
+/**
+ * How many decimals an axis needs, decided ONCE for the whole axis from the
+ * distance between ticks.
+ *
+ * Deciding per value gives an axis reading 1,00 · 0,8000 · 0,5734, where the
+ * same column carries three different shapes. What matters is not how big
+ * each number is, it is how close together the ticks are: a step of 0,1 needs
+ * two decimals, a step of 20.000 needs none.
+ */
+export function axisDecimals(ticks: Array<{ value: number }>): number {
+  if (ticks.length < 2) return 2;
+
+  let step = Infinity;
+  for (let i = 1; i < ticks.length; i++) {
+    const gap = Math.abs(ticks[i].value - ticks[i - 1].value);
+    if (gap > 0) step = Math.min(step, gap);
+  }
+  if (!Number.isFinite(step)) return 2;
+  if (step >= 100) return 0;
+
+  return Math.max(0, Math.min(6, Math.ceil(-Math.log10(step)) + 1));
 }
 
 const DISPLAY_FORMATS: Record<string, Record<string, string>> = {
@@ -193,7 +213,9 @@ export function chartTheme(opts: ChartThemeOptions = {}): ChartOptions {
       color: c.axis,
       maxTicksLimit: 6,
       font: { size: 10.5 },
-      callback: (value: number | string) => formatAxisValue(value),
+      callback: function (this: { ticks: Array<{ value: number }> }, value: number | string) {
+        return formatAxisValue(value, axisDecimals(this.ticks ?? []));
+      },
     },
     grid: { color: c.grid, drawTicks: false },
     border: { display: false },

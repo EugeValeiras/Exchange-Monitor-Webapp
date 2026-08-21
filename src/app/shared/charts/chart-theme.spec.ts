@@ -1,4 +1,10 @@
-import { applyYDomain, formatAxisValue, resolveVisibleDomain, shouldIncludeInDomain } from './chart-theme';
+import {
+  applyYDomain,
+  axisDecimals,
+  formatAxisValue,
+  resolveVisibleDomain,
+  shouldIncludeInDomain,
+} from './chart-theme';
 
 describe('chart-theme · Y domain', () => {
   const btcWeekly = { lo: 15417, hi: 126480 };
@@ -92,20 +98,42 @@ describe('chart-theme · Y domain', () => {
 });
 
 describe('chart-theme · axis numbers', () => {
+  const ticksOf = (...values: number[]) => values.map((value) => ({ value }));
+
   it('formats in the same locale as the rest of the app', () => {
     // the axis read 1.0 next to a crosshair pill reading 1,16
     expect(formatAxisValue(1.16)).toBe('1,16');
     expect(formatAxisValue(1)).toBe('1,00');
   });
 
-  it('gives sub-unit assets the digits that tell candles apart', () => {
-    expect(formatAxisValue(0.9523)).toBe('0,9523');
-    expect(formatAxisValue(0.65)).toBe('0,6500');
+  it('gives every tick of an axis the same shape', () => {
+    // the regression: 1,00 · 0,8000 · 0,5734 in one column
+    const ticks = ticksOf(0.5734, 0.8, 1.0);
+    const decimals = axisDecimals(ticks);
+    const rendered = ticks.map((t) => formatAxisValue(t.value, decimals));
+
+    const shapes = new Set(rendered.map((r) => r.split(',')[1]?.length ?? 0));
+    expect(shapes.size).toBe(1);
+  });
+
+  it('takes the decimals from the distance between ticks, not their size', () => {
+    // a tenth apart: two decimals tell them apart
+    expect(axisDecimals(ticksOf(0.7, 0.8, 0.9))).toBe(2);
+    // thousandths apart: more are needed
+    expect(axisDecimals(ticksOf(0.9520, 0.9530, 0.9540))).toBeGreaterThanOrEqual(4);
+    // twenty thousand apart: none mean anything
+    expect(axisDecimals(ticksOf(20000, 40000, 60000))).toBe(0);
   });
 
   it('drops the decimals once they stop meaning anything', () => {
-    expect(formatAxisValue(85399.1)).toBe('85.399');
-    expect(formatAxisValue(126480)).toBe('126.480');
+    const decimals = axisDecimals(ticksOf(20000, 40000, 60000));
+    expect(formatAxisValue(85399.1, decimals)).toBe('85.399');
+    expect(formatAxisValue(126480, decimals)).toBe('126.480');
+  });
+
+  it('survives an axis with a single tick', () => {
+    expect(axisDecimals(ticksOf(1))).toBe(2);
+    expect(axisDecimals([])).toBe(2);
   });
 
   it('passes through anything that is not a number', () => {
