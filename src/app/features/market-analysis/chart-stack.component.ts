@@ -396,7 +396,12 @@ export class ChartStackComponent {
   }
 
   // ── shared X domain ───────────────────────────────────────────────────────
-  private readonly xDomain = computed(() => {
+  /**
+   * NOT a computed: it reads `viewRef`, which is a plain field on purpose. A
+   * computed would cache the pre-gesture window and hand it back the next time
+   * anything rebuilds the options — snapping the chart out of the zoom.
+   */
+  private xDomain(): { min: number | undefined; max: number | undefined; span: number } {
     const candles = this.candlesSignal();
     if (!candles.length) return { min: undefined, max: undefined, span: 0 };
     const span = candles.length > 1 ? candles[1].timestamp - candles[0].timestamp : 0;
@@ -406,22 +411,22 @@ export class ChartStackComponent {
     };
     const view = this.viewRef;
     return { min: view?.min ?? full.min, max: view?.max ?? full.max, span };
-  });
+  }
 
   /** Candles inside the visible window — what the Y axis has to fit. */
-  private readonly visibleCandles = computed(() => {
+  private visibleCandles(): OhlcCandle[] {
     const candles = this.candlesSignal();
     const view = this.viewRef;
     if (!view) return candles;
     const inside = candles.filter((c) => c.timestamp >= view.min && c.timestamp <= view.max);
     return inside.length ? inside : candles;
-  });
+  }
 
   /**
    * Price domain: the visible candles, plus the average entry line only when
    * it is close enough that including it will not flatten the candles.
    */
-  private readonly priceRange = computed(() => {
+  private priceRange(): { lo: number; hi: number } {
     const candles = this.visibleCandles();
     if (!candles.length) return { lo: 0, hi: 1 };
     let lo = Math.min(...candles.map((c) => c.low));
@@ -433,13 +438,13 @@ export class ChartStackComponent {
       hi = Math.max(hi, avg);
     }
     return { lo, hi };
-  });
+  }
 
-  readonly avgEntryOutOfRange = computed(() => {
+  avgEntryOutOfRange(): boolean {
     const avg = this.avgEntrySignal();
     if (avg === null) return false;
     return !shouldIncludeInDomain(avg, this.priceRange(), { log: this.log });
-  });
+  }
 
   readonly priceData = computed<ChartData<'candlestick'>>(() => {
     const c = chartColors();
