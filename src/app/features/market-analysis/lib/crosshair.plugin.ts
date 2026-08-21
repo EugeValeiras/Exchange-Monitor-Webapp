@@ -25,7 +25,25 @@ declare module 'chart.js' {
 }
 
 function formatPrice(value: number): string {
-  return value.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  // Sub-unit assets need the extra digits: NEXO at 0,95 and at 0,9523 are not
+  // the same number, and two decimals hides that.
+  const abs = Math.abs(value);
+  const decimals = abs >= 1000 ? 2 : abs >= 1 ? 2 : 4;
+  return value.toLocaleString('es-AR', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
+}
+
+/**
+ * Keeps the price pill inside the canvas.
+ *
+ * It sits in the axis gutter to the right of the plot, but the gutter is only
+ * as wide as the tick labels need — a wider number (or a wider format) runs
+ * straight off the edge and gets clipped.
+ */
+export function labelLeft(plotRight: number, canvasWidth: number, labelWidth: number): number {
+  return Math.min(plotRight + 2, canvasWidth - labelWidth - 2);
 }
 
 export const crosshairPlugin: Plugin = {
@@ -73,12 +91,13 @@ export const crosshairPlugin: Plugin = {
         const text = formatPrice(y.getValueForPixel(py) ?? 0);
         ctx.font = "600 10.5px Inter, sans-serif";
         const width = ctx.measureText(text).width + 12;
+        const left = labelLeft(chartArea.right, chart.width, width);
         ctx.fillStyle = '#2b3139';
-        ctx.fillRect(chartArea.right + 2, py - 9, width, 18);
+        ctx.fillRect(left, py - 9, width, 18);
         ctx.fillStyle = '#eaecef';
         ctx.textAlign = 'left';
         ctx.textBaseline = 'middle';
-        ctx.fillText(text, chartArea.right + 8, py + 0.5);
+        ctx.fillText(text, left + 6, py + 0.5);
       }
     }
     ctx.restore();
