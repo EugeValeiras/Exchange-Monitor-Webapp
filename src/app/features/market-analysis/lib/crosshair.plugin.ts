@@ -74,9 +74,10 @@ export const crosshairPlugin: Plugin = {
         ctx.stroke();
         ctx.setLineDash([]);
 
-        // Same precision as the ticks it sits between: a pill reading 1,06
-        // against an axis reading 1,000 looks like two different scales.
-        const decimals = axisDecimals((y as unknown as { ticks: Array<{ value: number }> }).ticks ?? []);
+        // Same precision as the ticks it sits between: a pill reading 1,01
+        // against an axis reading 0,800 looks like two different scales.
+        const scale = y as unknown as { $emDecimals?: number; ticks?: Array<{ value: number }> };
+        const decimals = scale.$emDecimals ?? axisDecimals(scale.ticks ?? []);
         const text = formatAxisValue(y.getValueForPixel(py) ?? 0, decimals);
         ctx.font = "600 10.5px Inter, sans-serif";
         const width = ctx.measureText(text).width + 12;

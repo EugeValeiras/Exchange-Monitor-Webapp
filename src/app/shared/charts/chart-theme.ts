@@ -213,8 +213,17 @@ export function chartTheme(opts: ChartThemeOptions = {}): ChartOptions {
       color: c.axis,
       maxTicksLimit: 6,
       font: { size: 10.5 },
-      callback: function (this: { ticks: Array<{ value: number }> }, value: number | string) {
-        return formatAxisValue(value, axisDecimals(this.ticks ?? []));
+      callback: function (
+        this: { ticks: Array<{ value: number }>; $emDecimals?: number },
+        value: number | string,
+      ) {
+        const decimals = axisDecimals(this.ticks ?? []);
+        // Published on the scale so anything drawing in the gutter — the
+        // crosshair pill — can match it exactly. A logarithmic axis generates
+        // intermediate ticks that a plugin reading `scale.ticks` never sees,
+        // so recomputing it there lands on a different answer.
+        this.$emDecimals = decimals;
+        return formatAxisValue(value, decimals);
       },
     },
     grid: { color: c.grid, drawTicks: false },
