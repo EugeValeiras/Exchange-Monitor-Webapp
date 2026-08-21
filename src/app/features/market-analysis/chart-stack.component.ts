@@ -436,12 +436,27 @@ export class ChartStackComponent {
   @ViewChildren(BaseChartDirective) private charts?: QueryList<BaseChartDirective>;
 
   @Input({ required: true }) set candles(value: OhlcCandle[]) {
-    // new pair or timeframe: the old window means nothing here
+    this.candlesSignal.set(value ?? []);
+  }
+
+  /**
+   * Identifies the series on screen (pair + timeframe + exchange).
+   *
+   * A refresh brings new candles for the SAME series, and must not throw away
+   * the window you zoomed into — that is the difference between a chart that
+   * stays live and one you have to re-aim every minute. Only a new series
+   * clears it.
+   */
+  @Input() set seriesKey(value: string) {
+    if (value === this.currentSeries) return;
+    this.currentSeries = value;
     this.viewRef = null;
     this.zoomed.set(false);
     this.rangeLabel.set('');
-    this.candlesSignal.set(value ?? []);
+    this.tradeTip.set(null);
   }
+
+  private currentSeries = '';
   @Input() set rsi(value: IndicatorPoint[]) {
     this.rsiSignal.set(value ?? []);
   }
