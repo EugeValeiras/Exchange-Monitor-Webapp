@@ -139,11 +139,24 @@ interface Readout {
   `,
   styles: [
     `
+      /* The host is what the grid gives height to; without laying it out as a
+         column the inner stack falls back to content height and every panel
+         collapses to the canvas default of 150px. */
+      /* The host is what the grid gives height to; without laying it out as a
+         column the inner stack falls back to content height and every panel
+         collapses to the canvas default of 150px. */
+      :host {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        min-height: 0;
+      }
+
       .stack {
         position: relative;
         display: flex;
         flex-direction: column;
-        flex: 1;
+        flex: 1 1 auto;
         min-height: 0;
         border: 1px solid var(--border-color);
         border-radius: var(--r-4);

@@ -295,3 +295,46 @@ describe('ChartStackComponent · zoom gesture', () => {
     }
   });
 });
+
+describe('ChartStackComponent · layout', () => {
+  let fixture: ComponentFixture<ChartStackComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({ imports: [ChartStackComponent] }).compileComponents();
+    fixture = TestBed.createComponent(ChartStackComponent);
+    fixture.componentInstance.candles = candles();
+
+    // a real box, the way the screen's grid hands one to the component
+    const host = fixture.nativeElement as HTMLElement;
+    host.style.height = '600px';
+    host.style.width = '900px';
+    document.body.appendChild(host);
+    fixture.detectChanges();
+  });
+
+  afterEach(() => fixture.destroy());
+
+  it('gives the price panel the space it is handed, not the canvas default', () => {
+    const price = (fixture.nativeElement as HTMLElement).querySelector('.pane.price');
+    const height = price?.getBoundingClientRect().height ?? 0;
+
+    // the regression: the inner stack fell back to content height and every
+    // panel collapsed to the 150px a bare <canvas> defaults to
+    expect(height).toBeGreaterThan(300);
+  });
+
+  it('makes price the tallest panel, by a wide margin', () => {
+    const host = fixture.nativeElement as HTMLElement;
+    const h = (sel: string) => host.querySelector(sel)?.getBoundingClientRect().height ?? 0;
+
+    expect(h('.pane.price')).toBeGreaterThan(h('.pane.oscillator') * 2);
+    expect(h('.pane.price')).toBeGreaterThan(h('.pane.volume') * 3);
+  });
+
+  it('fills the height it was given, without spilling past it', () => {
+    const host = fixture.nativeElement as HTMLElement;
+    const stack = host.querySelector('.stack')?.getBoundingClientRect().height ?? 0;
+    expect(stack).toBeGreaterThan(560);
+    expect(stack).toBeLessThanOrEqual(600);
+  });
+});
