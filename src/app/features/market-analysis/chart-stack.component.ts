@@ -474,7 +474,11 @@ export class ChartStackComponent {
           hoveredOrderId: this.hovered(),
           enabled: this.layerOn(),
         },
-        crosshair: { at: this.crosshairAt(), showLabel: true },
+        // NOT bound to the crosshair signal on purpose: the pointer moves on
+        // every frame of a drag, and recomputing options mid-gesture reapplies
+        // the pre-pan window and cancels the pan. The crosshair is written
+        // straight into the live chart in onPointerMove instead.
+        crosshair: { at: null, showLabel: true },
       },
     } as ChartOptions;
   });
@@ -514,7 +518,7 @@ export class ChartStackComponent {
         ...base.scales,
         y: { ...(base.scales as never as Record<string, object>)['y'], ticks: { display: false }, grid: { display: false } },
       },
-      plugins: { ...base.plugins, crosshair: { at: this.crosshairAt() } },
+      plugins: { ...base.plugins, crosshair: { at: null } },
     } as ChartOptions;
   });
 
@@ -553,7 +557,7 @@ export class ChartStackComponent {
           ticks: { color: chartColors().axis, stepSize: 40, font: { size: 10 } },
         },
       },
-      plugins: { ...base.plugins, crosshair: { at: this.crosshairAt() } },
+      plugins: { ...base.plugins, crosshair: { at: null } },
     } as ChartOptions;
   });
 
@@ -578,14 +582,22 @@ export class ChartStackComponent {
         enabled: true,
         mode: 'x',
         threshold: 4,
-        onPan: ({ chart }: { chart: Chart }) => this.syncFromChart(chart),
+        onPan: ({ chart }: { chart: Chart }) => {
+          this.syncFromChart(chart);
+          // keep the source of truth current mid-gesture, so any change
+          // detection that lands during the drag agrees with the screen
+          this.trackView(chart);
+        },
         onPanComplete: ({ chart }: { chart: Chart }) => this.commitView(chart),
       },
       zoom: {
         wheel: { enabled: true, speed: 0.08 },
         pinch: { enabled: true },
         mode: 'x',
-        onZoom: ({ chart }: { chart: Chart }) => this.syncFromChart(chart),
+        onZoom: ({ chart }: { chart: Chart }) => {
+          this.syncFromChart(chart);
+          this.trackView(chart);
+        },
         onZoomComplete: ({ chart }: { chart: Chart }) => this.commitView(chart),
       },
     };
@@ -642,6 +654,13 @@ export class ChartStackComponent {
     scale.min = domain.min;
     scale.max = domain.max;
     price.update('none');
+  }
+
+  /** Mid-gesture bookkeeping: same window, without emitting on every frame. */
+  trackView(chart: Chart): void {
+    const x = chart.scales['x'];
+    if (!x) return;
+    this.view.set({ min: x.min, max: x.max });
   }
 
   /** Records the window once the gesture settles, for the reset affordance. */
