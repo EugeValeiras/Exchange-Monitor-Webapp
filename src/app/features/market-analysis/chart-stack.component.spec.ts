@@ -162,3 +162,136 @@ describe('ChartStackComponent', () => {
     expect(on['tradeLayer'].enabled).toBe(true);
   });
 });
+
+describe('ChartStackComponent · zoom', () => {
+  let fixture: ComponentFixture<ChartStackComponent>;
+  let component: ChartStackComponent;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({ imports: [ChartStackComponent] }).compileComponents();
+    fixture = TestBed.createComponent(ChartStackComponent);
+    component = fixture.componentInstance;
+    component.candles = candles();
+    fixture.detectChanges();
+  });
+
+  afterEach(() => fixture.destroy());
+
+  it('enables wheel zoom and drag pan on the time axis only', () => {
+    const zoom = (component.priceOptions().plugins as Record<string, Record<string, never>>)['zoom'];
+    expect(zoom).toBeTruthy();
+    expect((zoom['zoom'] as { wheel: { enabled: boolean } }).wheel.enabled).toBe(true);
+    expect((zoom['zoom'] as { mode: string }).mode).toBe('x');
+    expect((zoom['pan'] as { enabled: boolean; mode: string }).enabled).toBe(true);
+    expect((zoom['pan'] as { mode: string }).mode).toBe('x');
+  });
+
+  it('will not let you pan into empty space or zoom past a handful of candles', () => {
+    const zoom = (component.priceOptions().plugins as Record<string, Record<string, never>>)['zoom'];
+    const limits = zoom['limits'] as { x: { min: string; max: string; minRange: number } };
+    expect(limits.x.min).toBe('original');
+    expect(limits.x.max).toBe('original');
+    expect(limits.x.minRange).toBeGreaterThan(0);
+  });
+
+  it('starts unzoomed and reports no window', () => {
+    expect(component.zoomed()).toBe(false);
+    expect(component.visibleLabel()).toBe('');
+  });
+
+  it('refits the price axis to the candles left visible', () => {
+    const data = candles();
+    // a window over the cheap early candles only
+    const min = data[0].timestamp;
+    const max = data[9].timestamp;
+    component['view'].set({ min, max });
+    fixture.detectChanges();
+
+    const scales = component.priceOptions().scales as Record<string, { max?: number }>;
+    const highestVisible = Math.max(...data.slice(0, 10).map((c) => c.high));
+    const highestOverall = Math.max(...data.map((c) => c.high));
+
+    // the axis follows the window instead of staying sized for the whole range
+    expect(scales['y'].max!).toBeLessThan(highestOverall / 2);
+    expect(scales['y'].max!).toBeGreaterThanOrEqual(highestVisible);
+  });
+
+  it('keeps the three panels on the same window while zoomed', () => {
+    const data = candles();
+    component['view'].set({ min: data[5].timestamp, max: data[15].timestamp });
+    fixture.detectChanges();
+
+    const x = (o: Record<string, unknown>) =>
+      (o['scales'] as Record<string, { min?: number; max?: number }>)['x'];
+    expect(x(component.volumeOptions() as never).min).toBe(x(component.priceOptions() as never).min);
+    expect(x(component.rsiOptions() as never).max).toBe(x(component.priceOptions() as never).max);
+  });
+
+  it('describes the visible window in human terms, by magnitude', () => {
+    const data = candles();
+
+    component['view'].set({ min: data[0].timestamp, max: data[8].timestamp });
+    expect(component.visibleLabel()).toBe('56 días');
+    expect(component.zoomed()).toBe(true);
+
+    component['view'].set({ min: data[0].timestamp, max: data[20].timestamp });
+    expect(component.visibleLabel()).toContain('meses');
+
+    component['view'].set({ min: data[0].timestamp, max: data[0].timestamp + 12 * 60 * 60 * 1000 });
+    expect(component.visibleLabel()).toBe('12 h');
+  });
+
+  it('goes back to the full history on reset', () => {
+    const data = candles();
+    component['view'].set({ min: data[5].timestamp, max: data[15].timestamp });
+    expect(component.zoomed()).toBe(true);
+
+    component.resetZoom();
+    expect(component.zoomed()).toBe(false);
+    const scales = component.priceOptions().scales as Record<string, { max?: number }>;
+    expect(scales['y'].max!).toBeGreaterThan(Math.max(...data.map((c) => c.high)) * 0.9);
+  });
+});
+
+describe('ChartStackComponent · zoom gesture', () => {
+  let fixture: ComponentFixture<ChartStackComponent>;
+  let component: ChartStackComponent;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({ imports: [ChartStackComponent] }).compileComponents();
+    fixture = TestBed.createComponent(ChartStackComponent);
+    component = fixture.componentInstance;
+    component.candles = candles();
+    // the panels need a real size for the scales to resolve
+    const host = fixture.nativeElement as HTMLElement;
+    host.style.width = '900px';
+    host.style.height = '600px';
+    document.body.appendChild(host);
+    fixture.detectChanges();
+  });
+
+  afterEach(() => fixture.destroy());
+
+  it('narrows the window and keeps the other panels in step', () => {
+    const charts = (component as unknown as { charts: { toArray(): Array<{ chart?: never }> } }).charts;
+    const list = charts.toArray().map((d) => (d as { chart?: { scales: Record<string, { min: number; max: number }>; zoom(f: number): void } }).chart);
+    const price = list[0];
+    if (!price?.scales?.['x']) {
+      pending('canvas has no layout in this environment');
+      return;
+    }
+
+    const before = { min: price.scales['x'].min, max: price.scales['x'].max };
+    price.zoom(1.6);
+
+    const after = { min: price.scales['x'].min, max: price.scales['x'].max };
+    expect(after.max - after.min).toBeLessThan(before.max - before.min);
+
+    for (const other of list.slice(1)) {
+      const scale = other?.scales?.['x'];
+      if (!scale) continue;
+      expect(Math.round(scale.min)).toBe(Math.round(after.min));
+      expect(Math.round(scale.max)).toBe(Math.round(after.max));
+    }
+  });
+});

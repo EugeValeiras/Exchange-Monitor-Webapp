@@ -27,9 +27,15 @@ import {
   TimeScale,
 } from 'chart.js';
 import { CandlestickController, CandlestickElement } from 'chartjs-chart-financial';
+import zoomPlugin from 'chartjs-plugin-zoom';
 import 'chartjs-adapter-date-fns';
 import { OhlcCandle, IndicatorPoint, MarketTimeframe } from '../../core/services/market-analysis.service';
-import { chartColors, chartTheme, resolveVisibleDomain, shouldIncludeInDomain } from '../../shared/charts/chart-theme';
+import {
+  chartColors,
+  chartTheme,
+  resolveVisibleDomain,
+  shouldIncludeInDomain,
+} from '../../shared/charts/chart-theme';
 import { TradeMarker } from './lib/chart-markers';
 import { tradeLayerPlugin } from './lib/trade-layer.plugin';
 import { crosshairPlugin } from './lib/crosshair.plugin';
@@ -49,6 +55,7 @@ Chart.register(
   CandlestickController,
   CandlestickElement,
   Filler,
+  zoomPlugin,
   tradeLayerPlugin,
   crosshairPlugin,
 );
@@ -85,7 +92,13 @@ interface Readout {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, BaseChartDirective],
   template: `
-    <div class="stack" (pointerleave)="clearCrosshair()">
+    <div class="stack" (pointerleave)="clearCrosshair()" (dblclick)="resetZoom()">
+      @if (zoomed()) {
+        <button type="button" class="reset" (click)="resetZoom()" title="Ver todo · F o doble click">
+          <span class="range">{{ visibleLabel() }}</span>
+          <span class="action">Ver todo</span>
+        </button>
+      }
       @if (readout(); as r) {
         <div class="readout" [style.left.%]="readoutLeft()">
           <span class="date">{{ r.t | date: dateFormat }}</span>
@@ -170,6 +183,33 @@ interface Readout {
         letter-spacing: 0.06em;
         color: var(--text-tertiary);
         pointer-events: none;
+      }
+
+      .reset {
+        position: absolute;
+        top: 8px;
+        right: 86px;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        gap: var(--sp-3);
+        padding: 4px 9px;
+        border: 1px solid var(--border-light);
+        border-radius: var(--r-2);
+        background: rgba(11, 14, 17, 0.94);
+        color: var(--text-secondary);
+        font-family: inherit;
+        font-size: 10.5px;
+        cursor: pointer;
+      }
+
+      .reset:hover {
+        color: var(--text-primary);
+      }
+
+      .reset .action {
+        color: var(--brand-accent);
+        font-weight: 500;
       }
 
       .readout {
@@ -267,6 +307,8 @@ export class ChartStackComponent {
   @Input() timeframe: MarketTimeframe = '1h';
 
   @Output() hoveredMarker = new EventEmitter<TradeMarker | null>();
+  /** Visible window after a gesture, or null when showing everything */
+  @Output() viewChange = new EventEmitter<{ min: number; max: number } | null>();
 
   private readonly candlesSignal = signal<OhlcCandle[]>([]);
   private readonly rsiSignal = signal<IndicatorPoint[]>([]);
@@ -276,6 +318,9 @@ export class ChartStackComponent {
   private readonly layerOn = signal(true);
   private readonly hovered = signal<string | null>(null);
   private readonly crosshairAt = signal<number | null>(null);
+  /** Visible window after zoom/pan; null means "everything that was loaded" */
+  private readonly view = signal<{ min: number; max: number } | null>(null);
+  readonly zoomed = computed(() => this.view() !== null);
 
   readonly readout = computed<Readout | null>(() => {
     const at = this.crosshairAt();
@@ -306,6 +351,17 @@ export class ChartStackComponent {
     return Math.min(82, Math.max(18, raw));
   });
 
+  /** How much history is on screen, so the zoom level is legible */
+  readonly visibleLabel = computed(() => {
+    const view = this.view();
+    if (!view) return '';
+    const days = (view.max - view.min) / (24 * 60 * 60 * 1000);
+    if (days < 2) return `${Math.max(1, Math.round(days * 24))} h`;
+    if (days < 60) return `${Math.round(days)} días`;
+    if (days < 730) return `${Math.round(days / 30)} meses`;
+    return `${(days / 365).toFixed(1)} años`;
+  });
+
   get dateFormat(): string {
     return this.timeframe === '15m' || this.timeframe === '1h' ? 'dd MMM HH:mm' : 'dd MMM yyyy';
   }
@@ -319,11 +375,21 @@ export class ChartStackComponent {
     const candles = this.candlesSignal();
     if (!candles.length) return { min: undefined, max: undefined, span: 0 };
     const span = candles.length > 1 ? candles[1].timestamp - candles[0].timestamp : 0;
-    return {
+    const full = {
       min: candles[0].timestamp - span / 2,
       max: candles[candles.length - 1].timestamp + span / 2,
-      span,
     };
+    const view = this.view();
+    return { min: view?.min ?? full.min, max: view?.max ?? full.max, span };
+  });
+
+  /** Candles inside the visible window — what the Y axis has to fit. */
+  private readonly visibleCandles = computed(() => {
+    const candles = this.candlesSignal();
+    const view = this.view();
+    if (!view) return candles;
+    const inside = candles.filter((c) => c.timestamp >= view.min && c.timestamp <= view.max);
+    return inside.length ? inside : candles;
   });
 
   /**
@@ -331,7 +397,7 @@ export class ChartStackComponent {
    * it is close enough that including it will not flatten the candles.
    */
   private readonly priceRange = computed(() => {
-    const candles = this.candlesSignal();
+    const candles = this.visibleCandles();
     if (!candles.length) return { lo: 0, hi: 1 };
     let lo = Math.min(...candles.map((c) => c.low));
     let hi = Math.max(...candles.map((c) => c.high));
@@ -386,6 +452,7 @@ export class ChartStackComponent {
       ...base,
       plugins: {
         ...base.plugins,
+        zoom: this.zoomConfig(),
         tradeLayer: {
           markers: this.markersSignal(),
           avgEntry: this.layerOn() ? this.avgEntrySignal() : null,
@@ -476,6 +543,119 @@ export class ChartStackComponent {
       plugins: { ...base.plugins, crosshair: { at: this.crosshairAt() } },
     } as ChartOptions;
   });
+
+  // ── zoom & pan ────────────────────────────────────────────────────────────
+
+  /**
+   * Wheel zooms, drag pans, both on X only: the vertical range is not
+   * something the user should have to manage — it follows what is visible.
+   *
+   * The whole thing is driven from the price panel and mirrored onto the other
+   * two, rather than each panel zooming itself: three independent zoom states
+   * is how stacked charts drift out of sync.
+   */
+  private zoomConfig(): Record<string, unknown> {
+    const span = this.xDomain().span || 60 * 60 * 1000;
+    return {
+      limits: {
+        // never pan into empty space, never zoom past ~8 candles
+        x: { min: 'original', max: 'original', minRange: span * 8 },
+      },
+      pan: {
+        enabled: true,
+        mode: 'x',
+        threshold: 4,
+        onPan: ({ chart }: { chart: Chart }) => this.syncFromChart(chart),
+        onPanComplete: ({ chart }: { chart: Chart }) => this.commitView(chart),
+      },
+      zoom: {
+        wheel: { enabled: true, speed: 0.08 },
+        pinch: { enabled: true },
+        mode: 'x',
+        onZoom: ({ chart }: { chart: Chart }) => this.syncFromChart(chart),
+        onZoomComplete: ({ chart }: { chart: Chart }) => this.commitView(chart),
+      },
+    };
+  }
+
+  /**
+   * Applies the window of the chart being manipulated to the other panels and
+   * refits the price axis, imperatively. Runs on every wheel tick, so it stays
+   * out of change detection.
+   */
+  private syncFromChart(source: Chart): void {
+    const x = source.scales['x'];
+    if (!x) return;
+    const min = x.min;
+    const max = x.max;
+
+    for (const directive of this.charts?.toArray() ?? []) {
+      const chart = directive.chart;
+      if (!chart || chart === source) continue;
+      const scale = chart.options.scales?.['x'] as { min?: number; max?: number } | undefined;
+      if (!scale) continue;
+      scale.min = min;
+      scale.max = max;
+      chart.update('none');
+    }
+
+    this.refitPriceAxis(min, max);
+  }
+
+  /**
+   * The Y axis follows the zoom. Without this you zoom into a quiet stretch
+   * and the candles collapse into a flat line in the middle of the panel,
+   * because the axis is still sized for a range that is no longer on screen.
+   */
+  private refitPriceAxis(min: number, max: number): void {
+    const price = this.charts?.first?.chart;
+    if (!price) return;
+
+    const inside = this.candlesSignal().filter((c) => c.timestamp >= min && c.timestamp <= max);
+    if (inside.length < 2) return;
+
+    let lo = Math.min(...inside.map((c) => c.low));
+    let hi = Math.max(...inside.map((c) => c.high));
+
+    const avg = this.avgEntrySignal();
+    if (avg !== null && this.layerOn() && shouldIncludeInDomain(avg, { lo, hi }, { log: this.log })) {
+      lo = Math.min(lo, avg);
+      hi = Math.max(hi, avg);
+    }
+
+    const domain = resolveVisibleDomain({ lo, hi }, { log: this.log });
+    const scale = price.options.scales?.['y'] as { min?: number; max?: number } | undefined;
+    if (!scale) return;
+    scale.min = domain.min;
+    scale.max = domain.max;
+    price.update('none');
+  }
+
+  /** Records the window once the gesture settles, for the reset affordance. */
+  private commitView(chart: Chart): void {
+    const x = chart.scales['x'];
+    if (!x) return;
+
+    const candles = this.candlesSignal();
+    if (!candles.length) return;
+    const span = this.xDomain().span;
+    const fullMin = candles[0].timestamp - span / 2;
+    const fullMax = candles[candles.length - 1].timestamp + span / 2;
+
+    // back at the edges within a candle: treat it as "not zoomed"
+    const atFullExtent = x.min <= fullMin + span && x.max >= fullMax - span;
+    this.view.set(atFullExtent ? null : { min: x.min, max: x.max });
+    this.viewChange.emit(atFullExtent ? null : { min: x.min, max: x.max });
+  }
+
+  /** Back to the whole loaded history. Double click, the button, or F. */
+  resetZoom(): void {
+    this.view.set(null);
+    this.viewChange.emit(null);
+    for (const directive of this.charts?.toArray() ?? []) {
+      directive.chart?.resetZoom('none');
+    }
+  }
 
   // ── crosshair ─────────────────────────────────────────────────────────────
 
