@@ -91,7 +91,11 @@ type SideFilter = 'all' | 'buy' | 'sell';
 
               <div class="foot">
                 <span>{{ p.tradeCount }} movimientos</span>
-                <a routerLink="/transactions">Ver todos<mat-icon>chevron_right</mat-icon></a>
+                <a
+                  routerLink="/transactions"
+                  [queryParams]="{ pair: symbol, types: 'trade' }">
+                  Ver todos<mat-icon>chevron_right</mat-icon>
+                </a>
               </div>
             </div>
           } @else {
