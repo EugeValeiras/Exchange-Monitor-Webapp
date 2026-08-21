@@ -126,7 +126,13 @@ function describeSpan(ms: number): string {
         </div>
       }
 
-      <div class="pane price" (pointermove)="onPointerMove($event, 0)">
+      <div
+        class="pane price"
+        [class.dragging]="dragging"
+        (pointermove)="onPointerMove($event, 0)"
+        (pointerdown)="startDrag($event, 0)"
+        (pointerup)="endDrag($event)"
+        (pointercancel)="endDrag($event)">
         <span class="pane-label">PRECIO{{ log ? ' · LOG' : '' }}</span>
         <canvas
           baseChart
@@ -180,6 +186,11 @@ function describeSpan(ms: number): string {
 
       .pane.price {
         flex: 1 1 auto;
+        cursor: grab;
+      }
+
+      .pane.price.dragging {
+        cursor: grabbing;
       }
 
       .pane.volume {
@@ -595,18 +606,11 @@ export class ChartStackComponent {
         // never pan into empty space, never zoom past ~8 candles
         x: { min: 'original', max: 'original', minRange: span * 8 },
       },
-      pan: {
-        enabled: true,
-        mode: 'x',
-        threshold: 4,
-        onPan: ({ chart }: { chart: Chart }) => {
-          this.syncFromChart(chart);
-          // keep the source of truth current mid-gesture, so any change
-          // detection that lands during the drag agrees with the screen
-          this.trackView(chart);
-        },
-        onPanComplete: ({ chart }: { chart: Chart }) => this.commitView(chart),
-      },
+      // The plugin's own drag-pan routes through hammerjs, which is not in
+      // the bundle (and is an unmaintained 20KB dependency). The drag is
+      // handled by hand below instead, on the pointer events this component
+      // already listens to for the crosshair.
+      pan: { enabled: false },
       zoom: {
         wheel: { enabled: true, speed: 0.08 },
         pinch: { enabled: true },
@@ -701,6 +705,63 @@ export class ChartStackComponent {
     this.viewChange.emit(window);
   }
 
+  /**
+   * Drag-to-pan, by hand.
+   *
+   * `chart.pan()` is the plugin's own API, so the limits, the axis mode and
+   * the completion bookkeeping all still apply — only the gesture detection
+   * is ours.
+   */
+  dragging = false;
+  private dragX: number | null = null;
+
+  startDrag(event: PointerEvent, paneIndex: number): void {
+    if (event.button !== 0) return;
+    const chart = this.charts?.toArray()[paneIndex]?.chart;
+    if (!chart) return;
+
+    this.dragging = true;
+    this.dragX = event.clientX;
+    // keep receiving moves even if the pointer leaves the canvas mid-drag.
+    // Capture is a nicety: if the browser refuses it, the drag still works.
+    try {
+      (event.target as HTMLElement).setPointerCapture?.(event.pointerId);
+    } catch {
+      /* ignore */
+    }
+  }
+
+  private continueDrag(event: PointerEvent, chart: Chart): boolean {
+    if (!this.dragging || this.dragX === null) return false;
+
+    const dx = event.clientX - this.dragX;
+    if (Math.abs(dx) < 1) return true;
+
+    this.dragX = event.clientX;
+    (chart as unknown as { pan(delta: { x: number }, scales?: unknown, mode?: string): void }).pan(
+      { x: dx },
+      undefined,
+      'default',
+    );
+    this.syncFromChart(chart);
+    this.trackView(chart);
+    return true;
+  }
+
+  endDrag(event: PointerEvent): void {
+    if (!this.dragging) return;
+    this.dragging = false;
+    this.dragX = null;
+    try {
+      (event.target as HTMLElement).releasePointerCapture?.(event.pointerId);
+    } catch {
+      /* ignore */
+    }
+
+    const chart = this.charts?.first?.chart;
+    if (chart) this.commitView(chart);
+  }
+
   /** Back to the whole loaded history. Double click, the button, or F. */
   resetZoom(): void {
     this.viewRef = null;
@@ -723,6 +784,9 @@ export class ChartStackComponent {
     const charts = this.charts?.toArray() ?? [];
     const source = charts[paneIndex]?.chart;
     if (!source) return;
+
+    // a drag in progress owns the gesture; the crosshair keeps following along
+    this.continueDrag(event, source);
 
     const rect = source.canvas.getBoundingClientRect();
     const scale = source.scales['x'];
@@ -751,7 +815,6 @@ export class ChartStackComponent {
       if (!crosshair) return;
       crosshair.at = nearest.timestamp;
       crosshair.pointerY = index === paneIndex ? pointerY : null;
-      crosshair.labelFor = (v: number) => this.fmt(v);
       chart.update('none');
     });
   }
