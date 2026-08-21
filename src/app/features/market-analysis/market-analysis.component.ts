@@ -38,6 +38,9 @@ const FACET_KEY = 'marketAnalysisFacet';
 /** Wide-range timeframes read wrong on a linear scale, so they default to log. */
 const LOG_BY_DEFAULT: MarketTimeframe[] = ['1d', '1w'];
 
+/** More candles than fit on screen, so there is history to pan into. */
+const CANDLE_LIMIT = 500;
+
 @Component({
   selector: 'app-market-analysis',
   standalone: true,
@@ -215,6 +218,7 @@ const LOG_BY_DEFAULT: MarketTimeframe[] = ['1d', '1w'];
 })
 export class MarketAnalysisComponent implements OnInit {
   @ViewChild(AnalysisRailComponent) private rail?: AnalysisRailComponent;
+  @ViewChild(ChartStackComponent) private chartStack?: ChartStackComponent;
 
   private readonly marketService = inject(MarketAnalysisService);
   private readonly transactionsService = inject(TransactionsService);
@@ -430,6 +434,9 @@ export class MarketAnalysisComponent implements OnInit {
       case 'r':
         this.loadDetail();
         break;
+      case 'f':
+        this.chartStack?.resetZoom();
+        break;
     }
   }
 
@@ -548,7 +555,9 @@ export class MarketAnalysisComponent implements OnInit {
     const symbol = this.selectedSymbol();
     if (!symbol) return;
     this.detailLoading.set(true);
-    this.marketService.getIndicators(this.selectedExchange(), symbol, this.selectedTimeframe()).subscribe({
+    this.marketService
+      .getIndicators(this.selectedExchange(), symbol, this.selectedTimeframe(), CANDLE_LIMIT)
+      .subscribe({
       next: (resp) => {
         this.indicators.set(resp);
         this.loadedAt.set(Date.now());

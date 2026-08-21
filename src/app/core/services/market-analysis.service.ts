@@ -99,15 +99,21 @@ export class MarketAnalysisService {
     return this.api.get<OhlcResponse>('/market-analysis/ohlc', params);
   }
 
+  /**
+   * `limit` asks for more candles than the chart shows at once, so there is
+   * history to pan into. Defaults to the API's own 200 when omitted.
+   */
   getIndicators(
     exchange: MarketExchange,
     symbol: string,
     timeframe: MarketTimeframe,
+    limit?: number,
   ): Observable<IndicatorsResponse> {
     return this.api.get<IndicatorsResponse>('/market-analysis/indicators', {
       exchange,
       symbol,
       timeframe,
+      ...(limit ? { limit } : {}),
     });
   }
 
