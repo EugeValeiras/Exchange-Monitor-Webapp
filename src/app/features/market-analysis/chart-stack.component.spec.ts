@@ -338,3 +338,56 @@ describe('ChartStackComponent · layout', () => {
     expect(stack).toBeLessThanOrEqual(600);
   });
 });
+
+describe('ChartStackComponent · pan', () => {
+  let fixture: ComponentFixture<ChartStackComponent>;
+  let component: ChartStackComponent;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({ imports: [ChartStackComponent] }).compileComponents();
+    fixture = TestBed.createComponent(ChartStackComponent);
+    component = fixture.componentInstance;
+    component.candles = candles();
+    const host = fixture.nativeElement as HTMLElement;
+    host.style.width = '900px';
+    host.style.height = '600px';
+    document.body.appendChild(host);
+    fixture.detectChanges();
+  });
+
+  afterEach(() => fixture.destroy());
+
+  it('does not tie the chart options to the crosshair', () => {
+    // The regression this exists for: the pointer moves on every frame of a
+    // drag. If the options depend on the crosshair, change detection reapplies
+    // the pre-pan window mid-gesture and the chart never moves.
+    const before = JSON.stringify(component.priceOptions().scales);
+    component['crosshairAt'].set(candles()[10].timestamp);
+    fixture.detectChanges();
+    const after = JSON.stringify(component.priceOptions().scales);
+
+    expect(after).toBe(before);
+    const plugins = component.priceOptions().plugins as Record<string, { at?: number | null }>;
+    expect(plugins['crosshair'].at).toBeNull();
+  });
+
+  it('keeps the window current while the gesture is still going', () => {
+    const data = candles();
+    const fake = {
+      scales: { x: { min: data[5].timestamp, max: data[15].timestamp } },
+    } as unknown as Parameters<ChartStackComponent['trackView']>[0];
+
+    component['trackView'](fake);
+    expect(component.zoomed()).toBe(true);
+
+    const scales = component.priceOptions().scales as Record<string, { min?: number; max?: number }>;
+    expect(scales['x'].min).toBe(data[5].timestamp);
+    expect(scales['x'].max).toBe(data[15].timestamp);
+  });
+
+  it('still lets the crosshair reach the readout', () => {
+    const data = candles();
+    component['crosshairAt'].set(data[12].timestamp);
+    expect(component.readout()?.t).toBe(data[12].timestamp);
+  });
+});
