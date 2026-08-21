@@ -37,6 +37,7 @@ import {
   shouldIncludeInDomain,
 } from '../../shared/charts/chart-theme';
 import { TradeMarker } from './lib/chart-markers';
+import { TradeOrder } from './lib/trade-grouping';
 import { tradeLayerPlugin } from './lib/trade-layer.plugin';
 import { crosshairPlugin } from './lib/crosshair.plugin';
 
@@ -115,13 +116,40 @@ function describeSpan(ms: number): string {
           <span class="ohlc num">M <b>{{ fmt(r.high) }}</b></span>
           <span class="ohlc num">m <b>{{ fmt(r.low) }}</b></span>
           <span class="ohlc num">C <b [class]="r.up ? 'em-up' : 'em-down'">{{ fmt(r.close) }}</b></span>
-          @for (m of r.markers; track m.t + m.side) {
-            <span class="sep"></span>
-            <span class="trade" [class]="m.side === 'sell' ? 'em-down' : 'em-up'">
-              <span class="badge" [class.sell]="m.side === 'sell'">{{ m.side === 'sell' ? 'S' : 'B' }}</span>
-              {{ m.count }} {{ m.side === 'sell' ? (m.count === 1 ? 'venta' : 'ventas') : (m.count === 1 ? 'compra' : 'compras') }}
-              · <span class="num">{{ fmt(m.total) }}</span>
-            </span>
+        </div>
+      }
+
+      @if (tradeTip(); as tip) {
+        <div
+          class="trade-tip"
+          [style.left.px]="tip.x"
+          [style.top.px]="tip.y"
+          [class.flip-x]="tip.flipX"
+          [class.flip-y]="tip.flipY">
+          @for (order of tip.orders; track order.id) {
+            <div class="tip-order" [class.sell]="order.side === 'sell'">
+              <div class="tip-head">
+                <span class="badge" [class.sell]="order.side === 'sell'">
+                  {{ order.side === 'sell' ? 'S' : 'B' }}
+                </span>
+                <span class="verb">{{ order.side === 'sell' ? 'Venta' : 'Compra' }}</span>
+                <span class="exchange">{{ order.exchange | titlecase }}</span>
+              </div>
+              <div class="tip-rows">
+                <div><span>Cantidad</span><b class="num">{{ fmt(order.amount) }} {{ baseAsset }}</b></div>
+                <div><span>Precio</span><b class="num">{{ fmt(order.price) }}</b></div>
+                <div><span>Total</span><b class="num">{{ fmt(order.total) }}</b></div>
+                @if (order.fills.length > 1) {
+                  <div><span>Fills</span><b class="num">{{ order.fills.length }}</b></div>
+                }
+              </div>
+              @if (vsSpot(order.price); as vs) {
+                <div class="tip-foot">
+                  <span>vs. precio de hoy</span>
+                  <b [class]="vs.tone">{{ vs.label }}</b>
+                </div>
+              }
+            </div>
           }
         </div>
       }
@@ -290,6 +318,101 @@ function describeSpan(ms: number): string {
         font-size: var(--fs-11);
       }
 
+      .trade-tip {
+        position: absolute;
+        z-index: 3;
+        display: flex;
+        flex-direction: column;
+        gap: var(--sp-3);
+        width: 216px;
+        padding: 10px 12px;
+        border: 1px solid var(--border-light);
+        border-radius: var(--r-2);
+        background: rgba(11, 14, 17, 0.96);
+        box-shadow: var(--shadow-lg);
+        pointer-events: none;
+        /* anchored beside the marker; flipped when it would leave the panel */
+        transform: translate(14px, -50%);
+      }
+
+      .trade-tip.flip-x {
+        transform: translate(calc(-100% - 14px), -50%);
+      }
+
+      .trade-tip.flip-y {
+        transform: translate(14px, -90%);
+      }
+
+      .trade-tip.flip-x.flip-y {
+        transform: translate(calc(-100% - 14px), -90%);
+      }
+
+      .tip-order + .tip-order {
+        padding-top: var(--sp-3);
+        border-top: 1px solid var(--border-color);
+      }
+
+      .tip-head {
+        display: flex;
+        align-items: center;
+        gap: var(--sp-2);
+        margin-bottom: var(--sp-3);
+      }
+
+      .tip-head .verb {
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--chart-up);
+      }
+
+      .tip-order.sell .verb {
+        color: var(--chart-down);
+      }
+
+      .tip-head .exchange {
+        margin-left: auto;
+        font-size: 11px;
+        color: var(--text-tertiary);
+      }
+
+      .tip-rows {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      .tip-rows > div,
+      .tip-foot {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: var(--sp-4);
+      }
+
+      .tip-rows span,
+      .tip-foot span {
+        font-size: 11px;
+        color: var(--text-tertiary);
+      }
+
+      .tip-rows b {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text-primary);
+      }
+
+      .tip-foot {
+        padding-top: var(--sp-3);
+        border-top: 1px solid var(--border-color);
+      }
+
+      .tip-foot b {
+        font-size: 12px;
+        font-weight: 600;
+      }
+
       .badge {
         display: inline-flex;
         align-items: center;
@@ -342,6 +465,8 @@ export class ChartStackComponent {
   }
   @Input() log = false;
   @Input() timeframe: MarketTimeframe = '1h';
+  /** Base asset of the pair, for the amounts in the trade tooltip */
+  @Input() baseAsset = '';
 
   @Output() hoveredMarker = new EventEmitter<TradeMarker | null>();
   /** Visible window after a gesture, or null when showing everything */
@@ -355,6 +480,20 @@ export class ChartStackComponent {
   private readonly layerOn = signal(true);
   private readonly hovered = signal<string | null>(null);
   private readonly crosshairAt = signal<number | null>(null);
+
+  /**
+   * The trade tooltip is its own surface, anchored to the marker.
+   *
+   * It used to be tacked onto the end of the candle readout, which made one
+   * strip carry two unrelated things: what the market did, and what you did.
+   */
+  readonly tradeTip = signal<{
+    x: number;
+    y: number;
+    flipX: boolean;
+    flipY: boolean;
+    orders: TradeOrder[];
+  } | null>(null);
   /**
    * Visible window after zoom/pan; null means "everything that was loaded".
    *
@@ -400,6 +539,20 @@ export class ChartStackComponent {
 
   get dateFormat(): string {
     return this.timeframe === '15m' || this.timeframe === '1h' ? 'dd MMM HH:mm' : 'dd MMM yyyy';
+  }
+
+  /** How the trade's price compares with the last close on screen. */
+  vsSpot(price: number): { label: string; tone: string } | null {
+    const candles = this.candlesSignal();
+    if (!candles.length || !price) return null;
+
+    const last = candles[candles.length - 1].close;
+    const pct = ((last - price) / price) * 100;
+    const sign = pct > 0 ? '+' : pct < 0 ? '−' : '';
+    return {
+      label: `${sign}${Math.abs(pct).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`,
+      tone: pct > 0 ? 'em-up' : pct < 0 ? 'em-down' : 'em-flat',
+    };
   }
 
   fmt(value: number): string {
@@ -810,7 +963,9 @@ export class ChartStackComponent {
 
     if (nearest.timestamp !== this.crosshairAt()) {
       this.crosshairAt.set(nearest.timestamp);
-      this.hoveredMarker.emit(this.markersSignal().find((m) => m.t === nearest.timestamp) ?? null);
+      const marker = this.markersSignal().find((m) => m.t === nearest.timestamp) ?? null;
+      this.hoveredMarker.emit(marker);
+      this.placeTradeTip(nearest.timestamp);
     }
 
     const pointerY = event.clientY - rect.top;
@@ -825,7 +980,49 @@ export class ChartStackComponent {
     });
   }
 
+  /**
+   * Puts the trade tooltip beside its marker, flipped when it would otherwise
+   * run off the panel.
+   */
+  private placeTradeTip(at: number): void {
+    const price = this.charts?.first?.chart;
+    const markers = this.markersSignal().filter((m) => m.t === at);
+
+    if (!price || !markers.length || !this.layerOn()) {
+      this.tradeTip.set(null);
+      return;
+    }
+
+    const x = price.scales['x'];
+    const y = price.scales['y'];
+    const area = price.chartArea;
+    if (!x || !y || !area) {
+      this.tradeTip.set(null);
+      return;
+    }
+
+    const orders = markers.flatMap((m) => m.orders);
+    if (!orders.length) {
+      this.tradeTip.set(null);
+      return;
+    }
+
+    // vertically, sit beside the marker that carries the most money
+    const anchor = markers.reduce((best, m) => (m.total > best.total ? m : best));
+    const px = x.getPixelForValue(anchor.t);
+    const py = y.getPixelForValue(anchor.price);
+
+    this.tradeTip.set({
+      x: px,
+      y: py,
+      flipX: px > area.right - 250,
+      flipY: py < area.top + 120,
+      orders,
+    });
+  }
+
   clearCrosshair(): void {
+    this.tradeTip.set(null);
     if (this.crosshairAt() === null) return;
     this.crosshairAt.set(null);
     this.hoveredMarker.emit(null);

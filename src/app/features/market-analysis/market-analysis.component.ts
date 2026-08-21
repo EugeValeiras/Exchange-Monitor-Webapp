@@ -93,6 +93,7 @@ const CANDLE_LIMIT = 500;
             [hoveredOrderId]="hoveredOrderId()"
             [log]="log()"
             [timeframe]="selectedTimeframe()"
+            [baseAsset]="baseAssetOf()"
             (hoveredMarker)="onHoveredMarker($event)"></app-chart-stack>
           } @else {
             <div class="loading empty">
@@ -273,6 +274,8 @@ export class MarketAnalysisComponent implements OnInit {
   });
 
   readonly hasTrades = computed(() => (this.pairTrades()?.position.tradeCount ?? 0) > 0);
+
+  readonly baseAssetOf = computed(() => this.selectedSymbol()?.split('/')[0] ?? '');
 
   readonly grouped = computed(() =>
     groupTrades(this.pairTrades()?.trades ?? [], this.pairTrades()?.position ?? null, this.candleSpanMs()),
