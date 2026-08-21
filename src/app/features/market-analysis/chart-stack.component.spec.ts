@@ -420,3 +420,38 @@ describe('ChartStackComponent · pan', () => {
     expect(component.readout()?.t).toBe(data[12].timestamp);
   });
 });
+
+describe('ChartStackComponent · window survives re-renders', () => {
+  let fixture: ComponentFixture<ChartStackComponent>;
+  let component: ChartStackComponent;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({ imports: [ChartStackComponent] }).compileComponents();
+    fixture = TestBed.createComponent(ChartStackComponent);
+    component = fixture.componentInstance;
+    component.candles = candles();
+    fixture.detectChanges();
+  });
+
+  afterEach(() => fixture.destroy());
+
+  it('keeps the zoomed window when options are rebuilt for an unrelated reason', () => {
+    const data = candles();
+    const min = data[5].timestamp;
+    const max = data[15].timestamp;
+
+    // as a gesture would leave it
+    component['viewRef'] = { min, max };
+
+    // something unrelated invalidates the options — a hovered trade, new
+    // markers, the layer toggling. If the window is cached anywhere, the
+    // rebuilt options snap back to the full range and the zoom is lost.
+    component.markers = [];
+    component.tradesLayer = true;
+    fixture.detectChanges();
+
+    const scales = component.priceOptions().scales as Record<string, { min?: number; max?: number }>;
+    expect(scales['x'].min).toBe(min);
+    expect(scales['x'].max).toBe(max);
+  });
+});
