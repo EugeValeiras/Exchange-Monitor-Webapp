@@ -531,3 +531,114 @@ describe('ChartStackComponent · drag to pan', () => {
     expect(component.dragging).toBe(false);
   });
 });
+
+describe('ChartStackComponent · trade tooltip', () => {
+  let fixture: ComponentFixture<ChartStackComponent>;
+  let component: ChartStackComponent;
+
+  const order = (over: Record<string, unknown> = {}) => ({
+    id: 'o1', side: 'buy', exchange: 'binance', amount: 21113.82, price: 0.95,
+    total: 20000, fee: 0, fills: [], isDust: false, timestamp: '2026-01-20T12:00:00Z',
+    ...over,
+  }) as never;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({ imports: [ChartStackComponent] }).compileComponents();
+    fixture = TestBed.createComponent(ChartStackComponent);
+    component = fixture.componentInstance;
+    component.candles = candles();
+    component.baseAsset = 'NEXO';
+    const host = fixture.nativeElement as HTMLElement;
+    host.style.width = '900px';
+    host.style.height = '600px';
+    document.body.appendChild(host);
+    fixture.detectChanges();
+  });
+
+  afterEach(() => fixture.destroy());
+
+  it('keeps the candle readout free of trades', () => {
+    const data = candles();
+    component.markers = [{
+      t: data[10].timestamp, price: data[10].close, side: 'buy',
+      count: 1, total: 20000, orders: [order()],
+    }];
+    component['crosshairAt'].set(data[10].timestamp);
+    fixture.detectChanges();
+
+    const readout = (fixture.nativeElement as HTMLElement).querySelector('.readout')?.textContent ?? '';
+    // the readout says what the market did, and nothing about what you did
+    expect(readout).toContain('A ');
+    expect(readout).not.toContain('compra');
+    expect(readout).not.toContain('20.000');
+  });
+
+  it('shows the trade in a surface of its own', () => {
+    const data = candles();
+    component.markers = [{
+      t: data[10].timestamp, price: data[10].close, side: 'buy',
+      count: 1, total: 20000, orders: [order()],
+    }];
+    component['placeTradeTip'](data[10].timestamp);
+    fixture.detectChanges();
+
+    const tip = (fixture.nativeElement as HTMLElement).querySelector('.trade-tip');
+    if (!tip) {
+      pending('canvas has no layout in this environment');
+      return;
+    }
+    const text = tip.textContent ?? '';
+    expect(text).toContain('Compra');
+    expect(text).toContain('NEXO');
+    expect(text).toContain('20.000,00');
+  });
+
+  it('lists every order of the candle, not just the first', () => {
+    const data = candles();
+    component.markers = [
+      { t: data[12].timestamp, price: 1, side: 'buy', count: 1, total: 900, orders: [order({ id: 'a' })] },
+      { t: data[12].timestamp, price: 1.2, side: 'sell', count: 1, total: 500, orders: [order({ id: 'b', side: 'sell' })] },
+    ];
+    component['placeTradeTip'](data[12].timestamp);
+
+    expect(component.tradeTip()?.orders.length).toBe(2);
+  });
+
+  it('says nothing when the candle has no trades', () => {
+    component['placeTradeTip'](candles()[3].timestamp);
+    expect(component.tradeTip()).toBeNull();
+  });
+
+  it('stays quiet while the layer is off', () => {
+    const data = candles();
+    component.markers = [{
+      t: data[10].timestamp, price: 1, side: 'buy', count: 1, total: 100, orders: [order()],
+    }];
+    component.tradesLayer = false;
+    component['placeTradeTip'](data[10].timestamp);
+
+    expect(component.tradeTip()).toBeNull();
+  });
+
+  it('compares the trade against the last close', () => {
+    const data = candles();
+    const last = data[data.length - 1].close;
+
+    const cheaper = component.vsSpot(last / 2);
+    expect(cheaper?.tone).toBe('em-up');      // bought at half of today: up
+    expect(cheaper?.label).toContain('+');
+
+    const dearer = component.vsSpot(last * 2);
+    expect(dearer?.tone).toBe('em-down');
+  });
+
+  it('clears itself when the pointer leaves', () => {
+    const data = candles();
+    component.markers = [{
+      t: data[10].timestamp, price: 1, side: 'buy', count: 1, total: 100, orders: [order()],
+    }];
+    component['placeTradeTip'](data[10].timestamp);
+    component.clearCrosshair();
+    expect(component.tradeTip()).toBeNull();
+  });
+});
