@@ -439,7 +439,55 @@ interface ExchangeStat {
       }
     </div>
   `,
-  styleUrl: './transactions.component.scss'
+  styleUrl: './transactions.component.scss',
+  // Kept out of the .scss on purpose: that file was already 14,86 kB, a hair
+  // under the budget that fails the build, and this is not the change to pay
+  // down that debt in.
+  styles: [
+    `
+      .pair-filter {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+        padding: 10px 14px;
+        border: 1px solid rgba(0, 188, 212, 0.28);
+        border-radius: 8px;
+        background: rgba(0, 188, 212, 0.08);
+        font-size: 13px;
+        color: var(--text-secondary);
+      }
+
+      .pair-filter mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        color: var(--brand-accent);
+      }
+
+      .pair-filter b {
+        color: var(--text-primary);
+        font-weight: 600;
+      }
+
+      .pair-filter button {
+        margin-left: auto;
+        height: 26px;
+        padding: 0 10px;
+        border: 1px solid var(--border-light);
+        border-radius: 6px;
+        background: transparent;
+        color: var(--text-secondary);
+        font-family: inherit;
+        font-size: 12px;
+        cursor: pointer;
+      }
+
+      .pair-filter button:hover {
+        color: var(--text-primary);
+      }
+    `,
+  ],
 })
 export class TransactionsComponent implements OnInit {
   transactions: Transaction[] = [];
