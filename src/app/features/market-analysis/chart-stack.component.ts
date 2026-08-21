@@ -582,7 +582,13 @@ export class ChartStackComponent {
         ...base.scales,
         y: {
           ...(base.scales as never as Record<string, object>)['y'],
-          ticks: { color: chartColors().axis, stepSize: 40, font: { size: 10 } },
+          ticks: {
+            color: chartColors().axis,
+            stepSize: 40,
+            font: { size: 10 },
+            // 0–100 with no decimals: this axis is an index, not a price
+            callback: (value: number | string) => String(Math.round(Number(value))),
+          },
         },
       },
       plugins: { ...base.plugins, crosshair: { at: null } },

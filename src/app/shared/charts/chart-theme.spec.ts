@@ -1,4 +1,4 @@
-import { applyYDomain, resolveVisibleDomain, shouldIncludeInDomain } from './chart-theme';
+import { applyYDomain, formatAxisValue, resolveVisibleDomain, shouldIncludeInDomain } from './chart-theme';
 
 describe('chart-theme · Y domain', () => {
   const btcWeekly = { lo: 15417, hi: 126480 };
@@ -88,5 +88,27 @@ describe('chart-theme · Y domain', () => {
     applyYDomain(macd, 'symmetric-zero', { lo: -140, hi: 320 });
     expect(macd['min']).toBe(-320);
     expect(macd['max']).toBe(320);
+  });
+});
+
+describe('chart-theme · axis numbers', () => {
+  it('formats in the same locale as the rest of the app', () => {
+    // the axis read 1.0 next to a crosshair pill reading 1,16
+    expect(formatAxisValue(1.16)).toBe('1,16');
+    expect(formatAxisValue(1)).toBe('1,00');
+  });
+
+  it('gives sub-unit assets the digits that tell candles apart', () => {
+    expect(formatAxisValue(0.9523)).toBe('0,9523');
+    expect(formatAxisValue(0.65)).toBe('0,6500');
+  });
+
+  it('drops the decimals once they stop meaning anything', () => {
+    expect(formatAxisValue(85399.1)).toBe('85.399');
+    expect(formatAxisValue(126480)).toBe('126.480');
+  });
+
+  it('passes through anything that is not a number', () => {
+    expect(formatAxisValue('—')).toBe('—');
   });
 });
