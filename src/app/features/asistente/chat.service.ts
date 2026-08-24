@@ -15,7 +15,7 @@ import {
 // MODEL INTERFACES (UI-facing shapes consumed by the asistente components)
 // ============================================================================
 
-export type AgentModel = 'sonnet' | 'opus' | 'haiku';
+export type AgentModel = 'sonnet' | 'opus' | 'haiku' | 'fable';
 
 export interface ImageAttachment {
   /** base64, NO `data:` prefix. */

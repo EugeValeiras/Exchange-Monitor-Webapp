@@ -5,7 +5,7 @@ import { ApiService } from './api.service';
 export interface ThreadSummary {
   id: string;
   title: string;
-  model: 'sonnet' | 'opus' | 'haiku';
+  model: 'sonnet' | 'opus' | 'haiku' | 'fable';
   claudeSessionId: string | null;
   messageCount: number;
   lastMessagePreview: string;
@@ -36,7 +36,7 @@ export interface PersistedMessage {
 export interface ThreadDetail {
   id: string;
   title: string;
-  model: 'sonnet' | 'opus' | 'haiku';
+  model: 'sonnet' | 'opus' | 'haiku' | 'fable';
   claudeSessionId: string | null;
   messages: PersistedMessage[];
   costUsd: number;
@@ -59,7 +59,7 @@ export class AgentThreadsService {
     return this.api.get<ThreadDetail>(`/agent/threads/${id}`);
   }
 
-  create(body?: { title?: string; model?: 'sonnet' | 'opus' | 'haiku' }): Observable<{ id: string }> {
+  create(body?: { title?: string; model?: 'sonnet' | 'opus' | 'haiku' | 'fable' }): Observable<{ id: string }> {
     return this.api.post<{ id: string }>('/agent/threads', body ?? {});
   }
 
