@@ -23,7 +23,7 @@ export interface WorkflowAgentEntry {
 }
 
 export type AgentEvent =
-  | { type: 'session'; sessionId: string }
+  | { type: 'session'; sessionId: string; resolvedModel?: string }
   | { type: 'thread'; threadId: string }
   | { type: 'text'; text: string }
   | { type: 'tool_use'; id: string; name: string; input: unknown }
@@ -52,7 +52,7 @@ export interface ChatStreamOptions {
   message: string;
   sessionId?: string;
   threadId?: string;
-  model?: 'sonnet' | 'opus' | 'haiku';
+  model?: 'sonnet' | 'opus' | 'haiku' | 'fable';
   /** Plan mode: the agent plans read-only before acting. */
   planMode?: boolean;
   signal?: AbortSignal;

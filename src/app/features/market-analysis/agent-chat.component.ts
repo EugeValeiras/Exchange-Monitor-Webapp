@@ -108,7 +108,13 @@ export interface ChartAction {
             <option value="sonnet">Sonnet</option>
             <option value="opus">Opus</option>
             <option value="haiku">Haiku</option>
+            <option value="fable">Fable</option>
           </select>
+          @if (resolvedModel()) {
+            <span class="model-resolved" [title]="'Modelo que respondió: ' + resolvedModel()">
+              {{ shortModel(resolvedModel()!) }}
+            </span>
+          }
           <button
             mat-icon-button
             matTooltip="Historial"
@@ -320,6 +326,14 @@ export interface ChartAction {
         border-radius: 4px;
         padding: 4px 8px;
         font-size: 12px;
+      }
+
+      .model-resolved {
+        font-size: 11px;
+        color: var(--text-secondary);
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        white-space: nowrap;
+        opacity: 0.85;
       }
 
       .chat-messages {
@@ -735,7 +749,15 @@ export class AgentChatComponent implements OnDestroy, AfterViewChecked, OnInit {
   readonly activeThreadId = signal<string | null>(null);
 
   draft = '';
-  model: 'sonnet' | 'opus' | 'haiku' = 'sonnet';
+  model: 'sonnet' | 'opus' | 'haiku' | 'fable' = 'sonnet';
+
+  /** Modelo real informado por claude (ej. 'claude-opus-5'), o null si todavía no contestó. */
+  readonly resolvedModel = signal<string | null>(null);
+
+  /** 'claude-opus-5[1m]' -> 'opus-5'. */
+  shortModel(m: string): string {
+    return m.replace(/^claude-/, '').replace(/\[.*$/, '');
+  }
 
   private sessionId: string | null = null;
   private abortController: AbortController | null = null;
@@ -998,6 +1020,9 @@ export class AgentChatComponent implements OnDestroy, AfterViewChecked, OnInit {
     switch (event.type) {
       case 'session':
         this.sessionId = event.sessionId;
+        // El alias ('sonnet') no dice qué modelo contestó. El init de claude sí:
+        // lo mostramos al lado del selector para poder verificar la elección.
+        if (event.resolvedModel) this.resolvedModel.set(event.resolvedModel);
         break;
       case 'thread':
         if (event.threadId && event.threadId !== this.activeThreadId()) {

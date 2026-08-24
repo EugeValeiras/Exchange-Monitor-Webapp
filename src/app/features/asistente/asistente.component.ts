@@ -430,7 +430,7 @@ export class AsistenteComponent implements OnInit {
   private readonly scrollEl = viewChild.required<ElementRef<HTMLDivElement>>('scroll');
   private readonly usageDialog = viewChild.required<TemplateRef<unknown>>('usageDialog');
 
-  readonly models: AgentModel[] = ['sonnet', 'opus', 'haiku'];
+  readonly models: AgentModel[] = ['sonnet', 'opus', 'haiku', 'fable'];
   readonly sidebarOpen = signal(false);
   readonly stickToBottom = signal(true);
 
@@ -530,7 +530,7 @@ export class AsistenteComponent implements OnInit {
           this.chat.setModel(m as AgentModel);
           this.toast(`Modelo: ${m}`);
         } else {
-          this.toast('Modelo inválido. Usá sonnet, opus o haiku.');
+          this.toast('Modelo inválido. Usá sonnet, opus, haiku o fable.');
         }
         break;
       }
