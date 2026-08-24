@@ -232,7 +232,7 @@ export interface ChartAction {
               @if (msg.error) {
                 <div class="error">
                   <mat-icon>error_outline</mat-icon>
-                  {{ msg.error }}
+                  <span class="error-text">{{ msg.error }}</span>
                 </div>
               }
             </div>
@@ -577,11 +577,27 @@ export interface ChartAction {
 
       .error {
         display: flex;
-        align-items: center;
+        /* flex-start, no center: el mensaje puede ocupar varias líneas y el
+           icono tiene que quedar alineado con la primera. */
+        align-items: flex-start;
         gap: 6px;
         color: #f6465d;
         font-size: 13px;
         margin-top: 6px;
+      }
+
+      .error mat-icon {
+        flex: 0 0 auto;
+      }
+
+      /* Sin esto el texto no envuelve y los errores largos se cortan contra el
+         borde del panel — que es justo cuando importa leerlos enteros (ej.
+         "OAuth session expired and could not be refreshed"). */
+      .error-text {
+        flex: 1 1 auto;
+        min-width: 0;
+        overflow-wrap: anywhere;
+        white-space: pre-wrap;
       }
 
       .usage {
