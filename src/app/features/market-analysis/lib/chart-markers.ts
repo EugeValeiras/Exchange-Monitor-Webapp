@@ -20,6 +20,8 @@ export interface TradeMarker {
   count: number;
   total: number;
   orders: TradeOrder[];
+  /** Came through another pair: drawn hollow, never merged with direct trades */
+  cross: boolean;
 }
 
 /** Collapses orders sharing a candle and a side into one marker. */
@@ -32,6 +34,8 @@ export function markersFromOrders(orders: TradeOrder[], candleTimes: number[], c
 
   const buckets = new Map<string, TradeMarker>();
   for (const order of orders) {
+    // a cross trade the P&L never priced has nowhere to sit on the Y axis
+    if (!(order.price > 0)) continue;
     const at = new Date(order.timestamp).getTime();
     if (at < first - span || at > last + span) continue;
 
@@ -41,7 +45,8 @@ export function markersFromOrders(orders: TradeOrder[], candleTimes: number[], c
       Math.max(0, Math.round((at - first) / span)),
     );
     const t = candleTimes[index];
-    const key = `${t}:${order.side}`;
+    const cross = !!order.via;
+    const key = `${t}:${order.side}:${cross ? 'via' : 'direct'}`;
 
     const marker = buckets.get(key);
     if (marker) {
@@ -59,6 +64,7 @@ export function markersFromOrders(orders: TradeOrder[], candleTimes: number[], c
         count: 1,
         total: order.total,
         orders: [order],
+        cross,
       });
     }
   }
