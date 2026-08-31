@@ -1,8 +1,20 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  EventEmitter,
+  HostListener,
+  Input,
+  Output,
+  ViewChild,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ExchangeLogoComponent } from '../../shared/components/exchange-logo/exchange-logo.component';
+import { SeriesMenuComponent } from './series-menu.component';
+import { DEFAULT_SERIES, SeriesConfig } from './lib/series';
 import { EmCompactPipe, EmMoneyPipe, EmPctPipe, EmSignedPipe, toneOf } from '../../shared/pipes/format.pipes';
 import { MarketExchange, MarketTimeframe } from '../../core/services/market-analysis.service';
 
@@ -37,6 +49,7 @@ export interface HeaderContext {
     MatIconModule,
     MatTooltipModule,
     ExchangeLogoComponent,
+    SeriesMenuComponent,
     EmMoneyPipe,
     EmPctPipe,
     EmSignedPipe,
@@ -140,9 +153,38 @@ export interface HeaderContext {
               <span class="count">{{ tradeCount }}</span>
             }
           </button>
-          <button type="button" class="toggle" title="Series e indicadores · S" (click)="openSeries.emit()">
-            <span>Series</span>
-            <mat-icon>expand_more</mat-icon>
+          <div class="anchor" #anchor>
+            <button
+              type="button"
+              class="toggle"
+              [class.active]="seriesMenuOpen()"
+              title="Series e indicadores · S"
+              [attr.aria-expanded]="seriesMenuOpen()"
+              aria-haspopup="menu"
+              (click)="toggleSeriesMenu()">
+              <span>Series</span>
+              @if (activeSeries > 0) {
+                <span class="count">{{ activeSeries }}</span>
+              }
+              <mat-icon>{{ seriesMenuOpen() ? 'expand_less' : 'expand_more' }}</mat-icon>
+            </button>
+            @if (seriesMenuOpen()) {
+              <app-series-menu
+                [series]="series"
+                (seriesChange)="seriesChange.emit($event)"
+                (reset)="seriesChange.emit(defaults)"></app-series-menu>
+            }
+          </div>
+          <button
+            type="button"
+            class="toggle rail"
+            [class.active]="railOpen"
+            [matTooltip]="railHint"
+            [attr.aria-pressed]="railOpen"
+            [attr.aria-label]="railLabel"
+            (click)="railOpenChange.emit(!railOpen)">
+            <span>Panel</span>
+            <mat-icon>{{ railOpen ? 'chevron_right' : 'chevron_left' }}</mat-icon>
           </button>
         </div>
       </div>
@@ -357,6 +399,7 @@ export interface HeaderContext {
       .toggles {
         display: flex;
         align-items: center;
+        flex-wrap: wrap;
         gap: 7px;
       }
 
@@ -397,6 +440,10 @@ export interface HeaderContext {
         font-size: 14px;
         width: 14px;
         height: 14px;
+      }
+
+      .anchor {
+        position: relative;
       }
 
       .count {
@@ -452,14 +499,61 @@ export class InstrumentHeaderComponent {
   @Input() tradeCount = 0;
   /** Live price feed. Off means the numbers only move on the poll. */
   @Input() socketConnected = true;
+  /** Whether the position/trades/agent rail is showing. */
+  @Input() railOpen = true;
+  /** Which indicator series the chart is drawing. */
+  @Input() series: SeriesConfig = { ...DEFAULT_SERIES };
 
   @Output() timeframeChange = new EventEmitter<MarketTimeframe>();
   @Output() logChange = new EventEmitter<boolean>();
   @Output() tradesLayerChange = new EventEmitter<boolean>();
   @Output() openSwitcher = new EventEmitter<void>();
-  @Output() openSeries = new EventEmitter<void>();
+  @Output() seriesChange = new EventEmitter<SeriesConfig>();
+  @Output() railOpenChange = new EventEmitter<boolean>();
 
   readonly tone = toneOf;
+  readonly defaults = DEFAULT_SERIES;
+
+  @ViewChild('anchor') private anchor?: ElementRef<HTMLElement>;
+
+  readonly seriesMenuOpen = signal(false);
+
+  /** How many series are on the chart right now, shown on the button. */
+  get activeSeries(): number {
+    return Object.values(this.series).filter(Boolean).length;
+  }
+
+  toggleSeriesMenu(): void {
+    this.seriesMenuOpen.update((open) => !open);
+  }
+
+  closeSeriesMenu(): void {
+    this.seriesMenuOpen.set(false);
+  }
+
+  /**
+   * A click anywhere outside the button and its menu closes it — including
+   * elsewhere in this header, which a host-wide check would have missed.
+   */
+  @HostListener('document:pointerdown', ['$event'])
+  onDocumentDown(event: PointerEvent): void {
+    if (!this.seriesMenuOpen()) return;
+    const anchor = this.anchor?.nativeElement;
+    if (anchor && !anchor.contains(event.target as Node)) this.closeSeriesMenu();
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.closeSeriesMenu();
+  }
+
+  get railLabel(): string {
+    return this.railOpen ? 'Ocultar el panel lateral' : 'Mostrar el panel lateral';
+  }
+
+  get railHint(): string {
+    return `${this.railLabel} · B`;
+  }
 
   get isStale(): boolean {
     const age = this.context?.ageSeconds;

@@ -147,7 +147,7 @@ describe('ChartStackComponent', () => {
       side: 'buy',
       count: 2,
       total: 500,
-      orders: [],
+      orders: [], cross: false,
     };
     component.markers = [marker];
     component.tradesLayer = false;
@@ -561,7 +561,7 @@ describe('ChartStackComponent · trade tooltip', () => {
     const data = candles();
     component.markers = [{
       t: data[10].timestamp, price: data[10].close, side: 'buy',
-      count: 1, total: 20000, orders: [order()],
+      count: 1, total: 20000, cross: false, orders: [order()],
     }];
     component['crosshairAt'].set(data[10].timestamp);
     fixture.detectChanges();
@@ -577,7 +577,7 @@ describe('ChartStackComponent · trade tooltip', () => {
     const data = candles();
     component.markers = [{
       t: data[10].timestamp, price: data[10].close, side: 'buy',
-      count: 1, total: 20000, orders: [order()],
+      count: 1, total: 20000, cross: false, orders: [order()],
     }];
     component['placeTradeTip'](data[10].timestamp);
     fixture.detectChanges();
@@ -596,8 +596,8 @@ describe('ChartStackComponent · trade tooltip', () => {
   it('lists every order of the candle, not just the first', () => {
     const data = candles();
     component.markers = [
-      { t: data[12].timestamp, price: 1, side: 'buy', count: 1, total: 900, orders: [order({ id: 'a' })] },
-      { t: data[12].timestamp, price: 1.2, side: 'sell', count: 1, total: 500, orders: [order({ id: 'b', side: 'sell' })] },
+      { t: data[12].timestamp, price: 1, side: 'buy', count: 1, total: 900, cross: false, orders: [order({ id: 'a' })] },
+      { t: data[12].timestamp, price: 1.2, side: 'sell', count: 1, total: 500, cross: false, orders: [order({ id: 'b', side: 'sell' })] },
     ];
     component['placeTradeTip'](data[12].timestamp);
 
@@ -612,7 +612,7 @@ describe('ChartStackComponent · trade tooltip', () => {
   it('stays quiet while the layer is off', () => {
     const data = candles();
     component.markers = [{
-      t: data[10].timestamp, price: 1, side: 'buy', count: 1, total: 100, orders: [order()],
+      t: data[10].timestamp, price: 1, side: 'buy', count: 1, total: 100, cross: false, orders: [order()],
     }];
     component.tradesLayer = false;
     component['placeTradeTip'](data[10].timestamp);
@@ -635,7 +635,7 @@ describe('ChartStackComponent · trade tooltip', () => {
   it('clears itself when the pointer leaves', () => {
     const data = candles();
     component.markers = [{
-      t: data[10].timestamp, price: 1, side: 'buy', count: 1, total: 100, orders: [order()],
+      t: data[10].timestamp, price: 1, side: 'buy', count: 1, total: 100, cross: false, orders: [order()],
     }];
     component['placeTradeTip'](data[10].timestamp);
     component.clearCrosshair();

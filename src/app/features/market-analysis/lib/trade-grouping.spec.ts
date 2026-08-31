@@ -1,5 +1,5 @@
-import { PairPosition, PairTrade } from '../../../core/services/transactions.service';
-import { collapseFills, groupTrades, markDust } from './trade-grouping';
+import { CrossTrade, PairPosition, PairTrade } from '../../../core/services/transactions.service';
+import { collapseFills, groupTrades, markDust, rowsFromCross } from './trade-grouping';
 
 const HOUR = 60 * 60 * 1000;
 const WEEK = 7 * 24 * HOUR;
@@ -183,5 +183,108 @@ describe('groupTrades', () => {
     const empty = groupTrades([], POSITION, WEEK);
     expect(empty.months).toEqual([]);
     expect(empty.orderCount).toBe(0);
+  });
+});
+
+describe('the asset on other pairs', () => {
+  // straight from the user's history: NEXO sold for BTC, booked by the P&L as
+  // a BTC lot at the historical BTC/USD price of that day
+  function cross(p: Partial<CrossTrade> & { timestamp: string; usdPrice?: number | null }): CrossTrade {
+    const amount = p.amount ?? 915.2;
+    const price = p.price ?? 0.0000122;
+    const usdPrice = p.usdPrice === undefined ? 63258.77 : p.usdPrice;
+    const baseAmount = amount * price;
+    return {
+      id: `x${++seq}`,
+      exchange: 'binance',
+      pair: 'NEXO/BTC',
+      asset: 'NEXO',
+      side: 'sell',
+      amount,
+      price,
+      priceAsset: 'BTC',
+      base: {
+        side: 'buy',
+        amount: baseAmount,
+        usdPrice,
+        usdTotal: usdPrice === null ? null : baseAmount * usdPrice,
+        source: usdPrice === null ? 'none' : 'lot',
+      },
+      ...p,
+      ...(p.base ? { base: p.base } : {}),
+    } as CrossTrade;
+  }
+
+  it('reads a sale for the base asset as a buy of it, at the USD price the P&L booked', () => {
+    const [row] = rowsFromCross([cross({ timestamp: '2026-03-10T10:00:00Z' })]);
+    expect(row.side).toBe('buy');
+    expect(row.amount).toBeCloseTo(915.2 * 0.0000122, 10);
+    expect(row.price).toBeCloseTo(63258.77, 2);
+    expect(row.via?.pair).toBe('NEXO/BTC');
+    expect(row.via?.asset).toBe('NEXO');
+    expect(row.via?.side).toBe('sell');
+    expect(row.via?.booked).toBe(true);
+  });
+
+  it('never merges a cross trade into a direct order, whatever the clock says', () => {
+    const orders = collapseFills(
+      [
+        trade({ amount: 0.01, price: 63000, timestamp: '2026-03-10T10:00:00Z' }),
+        ...rowsFromCross([cross({ timestamp: '2026-03-10T10:00:30Z' })]),
+      ],
+      HOUR,
+    );
+    expect(orders.length).toBe(2);
+    expect(orders[0].via).toBeNull();
+    expect(orders[1].via?.pair).toBe('NEXO/BTC');
+  });
+
+  it('collapses the fills of one cross order and keeps the other leg summed', () => {
+    const orders = collapseFills(
+      rowsFromCross([
+        cross({ amount: 500, timestamp: '2026-03-10T10:00:00Z' }),
+        cross({ amount: 415.2, timestamp: '2026-03-10T10:00:40Z' }),
+      ]),
+      HOUR,
+    );
+    expect(orders.length).toBe(1);
+    expect(orders[0].fills.length).toBe(2);
+    expect(orders[0].amount).toBeCloseTo(915.2 * 0.0000122, 10);
+    expect(orders[0].via?.amount).toBeCloseTo(915.2, 8);
+    expect(orders[0].via?.price).toBeCloseTo(0.0000122, 10);
+  });
+
+  it('lists a cross trade the P&L never priced, and never folds it into dust', () => {
+    const grouped = groupTrades(
+      [trade({ amount: 0.5, price: 80000, timestamp: '2026-03-01T10:00:00Z' })],
+      POSITION,
+      HOUR,
+      [cross({ amount: 1, timestamp: '2026-03-10T10:00:00Z', usdPrice: null })],
+    );
+    const orders = grouped.months.flatMap((m) => m.orders);
+    const unpriced = orders.find((o) => o.via);
+    expect(unpriced).toBeDefined();
+    expect(unpriced!.isDust).toBe(false);
+    expect(unpriced!.via?.booked).toBe(false);
+    expect(unpriced!.total).toBe(0);
+  });
+
+  it('counts them apart from the direct trades, in the month and overall', () => {
+    const grouped = groupTrades(
+      [trade({ amount: 0.5, price: 80000, timestamp: '2026-03-01T10:00:00Z' })],
+      POSITION,
+      HOUR,
+      [cross({ timestamp: '2026-03-10T10:00:00Z' }), cross({ timestamp: '2026-04-10T10:00:00Z' })],
+    );
+    expect(grouped.viaCount).toBe(2);
+    expect(grouped.orderCount).toBe(3);
+    const march = grouped.months.find((m) => m.key === '2026-03')!;
+    expect(march.via).toBe(1);
+    expect(march.buys).toBe(2);
+  });
+
+  it('leaves the list untouched when no cross trades are passed', () => {
+    const direct = [trade({ amount: 0.5, price: 80000, timestamp: '2026-03-01T10:00:00Z' })];
+    expect(groupTrades(direct, POSITION, HOUR)).toEqual(groupTrades(direct, POSITION, HOUR, []));
   });
 });

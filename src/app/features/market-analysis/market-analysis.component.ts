@@ -24,11 +24,12 @@ import { PriceSocketService } from '../../core/services/price-socket.service';
 import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-loader.component';
 import { InstrumentHeaderComponent, HeaderContext } from './instrument-header.component';
 import { ChartStackComponent } from './chart-stack.component';
-import { AnalysisRailComponent, RailFacet, RailPosition } from './analysis-rail.component';
+import { AnalysisRailComponent, AssetPosition, RailFacet, RailPosition } from './analysis-rail.component';
 import { CommandPaletteComponent, PaletteRow } from './command-palette.component';
 import { ChartAction } from './agent-chat.component';
 import { groupTrades } from './lib/trade-grouping';
 import { markersFromOrders } from './lib/chart-markers';
+import { DEFAULT_SERIES, SeriesConfig, parseSeries } from './lib/series';
 
 
 const TIMEFRAMES: MarketTimeframe[] = ['15m', '1h', '4h', '1d', '1w'];
@@ -36,6 +37,8 @@ const STATE_KEY = 'marketAnalysisChart';
 const LOG_KEY = 'marketAnalysisLog';
 const LAYER_KEY = 'marketAnalysisTradesLayer';
 const FACET_KEY = 'marketAnalysisFacet';
+const RAIL_KEY = 'marketAnalysisRail';
+const SERIES_KEY = 'marketAnalysisSeries';
 
 /** Matches the backend's candle cache TTL: asking faster just re-reads it. */
 const REFRESH_MS = 60_000;
@@ -79,12 +82,16 @@ const CANDLE_LIMIT = 500;
         [hasTrades]="hasTrades()"
         [tradeCount]="pairTrades()?.position?.tradeCount ?? 0"
         [socketConnected]="socketConnected()"
+        [railOpen]="railOpen()"
+        [series]="series()"
+        (railOpenChange)="setRailOpen($event)"
+        (seriesChange)="setSeries($event)"
         (timeframeChange)="setTimeframe($event)"
         (logChange)="setLog($event)"
         (tradesLayerChange)="setTradesLayer($event)"
         (openSwitcher)="paletteOpen.set(true)"></app-instrument-header>
 
-      <div class="canvas">
+      <div class="canvas" [class.solo]="!railOpen()">
         @if (detailLoading() && !indicators()) {
           <div class="loading">
             <app-logo-loader [size]="64" text="Cargando el par…" [showText]="true"></app-logo-loader>
@@ -95,6 +102,12 @@ const CANDLE_LIMIT = 500;
             [class.refreshing]="detailLoading()"
             [candles]="ind.candles"
             [rsi]="ind.rsi"
+            [sma20]="ind.sma20"
+            [sma50]="ind.sma50"
+            [ema20]="ind.ema20"
+            [bollinger]="ind.bollinger"
+            [macd]="ind.macd"
+            [series]="series()"
             [markers]="markers()"
             [avgEntry]="avgEntry()"
             [dustAt]="dustAt()"
@@ -113,20 +126,26 @@ const CANDLE_LIMIT = 500;
           }
         }
 
-        <div class="rail-slot">
-          <app-analysis-rail
-            [facet]="facet()"
-            [symbol]="selectedSymbol()"
-            [position]="railPosition()"
-            [data]="pairTrades()"
-            [candleSpanMs]="candleSpanMs()"
-            [highlightedId]="hoveredOrderId()"
-            [annotationCount]="annotations().length"
-            (facetChange)="setFacet($event)"
-            (hover)="hoveredOrderId.set($event)"
-            (chartAction)="onChartAction($event)"
-            (openFullscreen)="openAgentFullscreen()"></app-analysis-rail>
-        </div>
+        @if (railOpen()) {
+          <div class="rail-slot">
+            <app-analysis-rail
+              [facet]="facet()"
+              [symbol]="selectedSymbol()"
+              [position]="railPosition()"
+              [assetPosition]="assetPosition()"
+              [data]="pairTrades()"
+              [candleSpanMs]="candleSpanMs()"
+              [highlightedId]="hoveredOrderId()"
+              [annotationCount]="annotations().length"
+              [showCross]="showCross()"
+              (facetChange)="setFacet($event)"
+              (showCrossChange)="showCross.set($event)"
+              (hover)="hoveredOrderId.set($event)"
+              (chartAction)="onChartAction($event)"
+              (openFullscreen)="openAgentFullscreen()"
+              (close)="setRailOpen(false)"></app-analysis-rail>
+          </div>
+        }
       </div>
 
       @if (paletteOpen()) {
@@ -207,6 +226,11 @@ const CANDLE_LIMIT = 500;
         cursor: pointer;
       }
 
+      /* Rail closed: the chart takes the whole width. */
+      .canvas.solo {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
       @media (max-width: 1280px) {
         .canvas {
           grid-template-columns: minmax(0, 1fr);
@@ -229,6 +253,7 @@ const CANDLE_LIMIT = 500;
 })
 export class MarketAnalysisComponent implements OnInit {
   @ViewChild(AnalysisRailComponent) private rail?: AnalysisRailComponent;
+  @ViewChild(InstrumentHeaderComponent) private header?: InstrumentHeaderComponent;
   @ViewChild(ChartStackComponent) private chartStack?: ChartStackComponent;
 
   private readonly marketService = inject(MarketAnalysisService);
@@ -247,6 +272,9 @@ export class MarketAnalysisComponent implements OnInit {
   readonly log = signal(false);
   readonly tradesLayer = signal(true);
   readonly facet = signal<RailFacet>('position');
+  /** The rail is the margin of the screen, not the screen: it can be put away. */
+  readonly railOpen = signal(true);
+  readonly series = signal<SeriesConfig>({ ...DEFAULT_SERIES });
   readonly paletteOpen = signal(false);
   readonly hoveredOrderId = signal<string | null>(null);
   readonly annotations = signal<unknown[]>([]);
@@ -319,7 +347,13 @@ export class MarketAnalysisComponent implements OnInit {
     return Math.abs(candles[1].timestamp - candles[0].timestamp);
   });
 
-  readonly hasTrades = computed(() => (this.pairTrades()?.position.tradeCount ?? 0) > 0);
+  readonly hasTrades = computed(() => {
+    const data = this.pairTrades();
+    return (data?.position.tradeCount ?? 0) + (data?.crossTradeCount ?? 0) > 0;
+  });
+
+  /** Cross trades on the chart and in the list; the rail's chip toggles it. */
+  readonly showCross = signal(true);
 
   readonly baseAssetOf = computed(() => this.selectedSymbol()?.split('/')[0] ?? '');
 
@@ -328,9 +362,11 @@ export class MarketAnalysisComponent implements OnInit {
     () => `${this.selectedExchange()}:${this.selectedSymbol()}:${this.selectedTimeframe()}`,
   );
 
-  readonly grouped = computed(() =>
-    groupTrades(this.pairTrades()?.trades ?? [], this.pairTrades()?.position ?? null, this.candleSpanMs()),
-  );
+  readonly grouped = computed(() => {
+    const data = this.pairTrades();
+    const cross = this.showCross() ? data?.crossTrades ?? [] : [];
+    return groupTrades(data?.trades ?? [], data?.position ?? null, this.candleSpanMs(), cross);
+  });
 
   readonly markers = computed(() => {
     const candles = this.indicators()?.candles ?? [];
@@ -367,6 +403,25 @@ export class MarketAnalysisComponent implements OnInit {
       unrealizedPnl !== null && position.costBasis > 0 ? (unrealizedPnl / position.costBasis) * 100 : null;
 
     return { ...position, currentValue, unrealizedPnl, unrealizedPct };
+  });
+
+  /**
+   * The base asset across every pair, straight from the P&L module. It is
+   * the "Costo Prom." of the balances screen; showing it next to the pair's
+   * own average is what stops the two screens from contradicting each other.
+   */
+  readonly assetPosition = computed<AssetPosition | null>(() => {
+    const base = this.baseAssetOf();
+    const p = this.unrealized().find((x) => x.asset === base);
+    if (!p || p.amount <= 0 || p.costBasis <= 0) return null;
+    return {
+      amount: p.amount,
+      costBasis: p.costBasis,
+      avgCost: p.costBasis / p.amount,
+      currentValue: p.currentValue,
+      unrealizedPnl: p.unrealizedPnl,
+      unrealizedPct: p.unrealizedPnlPercent,
+    };
   });
 
   readonly headerPosition = computed(() => {
@@ -432,6 +487,8 @@ export class MarketAnalysisComponent implements OnInit {
     this.tradesLayer.set(this.readFlag(LAYER_KEY, true));
     const facet = localStorage.getItem(FACET_KEY) as RailFacet | null;
     if (facet) this.facet.set(facet);
+    this.railOpen.set(this.readFlag(RAIL_KEY, true));
+    this.series.set(this.readSeries());
 
     this.loadSummary();
     this.loadUnrealized();
@@ -558,6 +615,12 @@ export class MarketAnalysisComponent implements OnInit {
       case 'f':
         this.chartStack?.resetZoom();
         break;
+      case 'b':
+        this.setRailOpen(!this.railOpen());
+        break;
+      case 's':
+        this.header?.toggleSeriesMenu();
+        break;
     }
   }
 
@@ -586,6 +649,19 @@ export class MarketAnalysisComponent implements OnInit {
   setFacet(facet: RailFacet): void {
     this.facet.set(facet);
     this.write(FACET_KEY, facet);
+    // asking for a facet is asking for the rail: no silent no-op when it is away
+    if (!this.railOpen()) this.setRailOpen(true);
+  }
+
+  setSeries(value: SeriesConfig): void {
+    this.series.set(value);
+    this.write(SERIES_KEY, JSON.stringify(value));
+  }
+
+  setRailOpen(value: boolean): void {
+    this.railOpen.set(value);
+    if (!value) this.hoveredOrderId.set(null);
+    this.write(RAIL_KEY, value ? '1' : '0');
   }
 
   onHoveredMarker(marker: { orders: Array<{ id: string }> } | null): void {
@@ -637,6 +713,15 @@ export class MarketAnalysisComponent implements OnInit {
         `mi posición: ${position.netAmount} ${this.selectedSymbol()?.split('/')[0]}, ` +
           `PPC ${position.avgEntryPrice.toFixed(2)}, ` +
           `no realizado ${position.unrealizedPnl?.toFixed(2) ?? '—'}`,
+      );
+    }
+    const asset = this.assetPosition();
+    const cross = this.pairTrades()?.crossTradeCount ?? 0;
+    if (asset) {
+      parts.push(
+        `${this.baseAssetOf()} en todos los pares (FIFO del P&L): ${asset.amount}, ` +
+          `PPC ${asset.avgCost.toFixed(2)}` +
+          (cross ? `, ${cross} movimientos vía otros pares` : ''),
       );
     }
     return `[contexto de la pantalla: ${parts.join(' · ')}]`;
@@ -751,6 +836,14 @@ export class MarketAnalysisComponent implements OnInit {
         timeframe: this.selectedTimeframe(),
       }),
     );
+  }
+
+  private readSeries(): SeriesConfig {
+    try {
+      return parseSeries(localStorage.getItem(SERIES_KEY));
+    } catch {
+      return { ...DEFAULT_SERIES };
+    }
   }
 
   private readFlag(key: string, fallback: boolean): boolean {

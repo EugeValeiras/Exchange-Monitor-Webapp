@@ -78,12 +78,42 @@ export interface PairPosition {
   tradeCount: number;
 }
 
+/** The same trade read from the base asset's side, as the P&L booked it. */
+export interface CrossTradeBooking {
+  /** What it did to the base asset: selling NEXO for BTC is a buy of BTC */
+  side: 'buy' | 'sell';
+  amount: number;
+  /** USD per unit the P&L used (historical price). null when it booked nothing */
+  usdPrice: number | null;
+  usdTotal: number | null;
+  source: 'lot' | 'realized' | 'none';
+}
+
+/** A trade of the base asset that happened on another pair (NEXO/BTC). */
+export interface CrossTrade {
+  id: string;
+  exchange: string;
+  pair: string;
+  asset: string;
+  side: 'buy' | 'sell';
+  amount: number;
+  price: number;
+  priceAsset: string;
+  fee?: number;
+  feeAsset?: string;
+  timestamp: string;
+  base: CrossTradeBooking;
+}
+
 export interface PairTrades {
   pair: string;
   matchedPairs: string[];
   trades: PairTrade[];
   position: PairPosition;
   outsideRange: number;
+  /** In range; they never move `position` */
+  crossTrades: CrossTrade[];
+  crossTradeCount: number;
 }
 
 @Injectable({

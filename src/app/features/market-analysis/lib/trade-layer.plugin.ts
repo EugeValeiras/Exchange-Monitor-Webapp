@@ -35,8 +35,10 @@ function badge(ctx: CanvasRenderingContext2D, x: number, y: number, letter: 'B' 
   count: number;
   highlighted: boolean;
   surface: string;
+  /** Hollow: the movement came through another pair, at a historical price */
+  hollow: boolean;
 }): void {
-  const { radius, count, highlighted, surface } = opts;
+  const { radius, count, highlighted, surface, hollow } = opts;
 
   if (highlighted) {
     ctx.beginPath();
@@ -50,13 +52,15 @@ function badge(ctx: CanvasRenderingContext2D, x: number, y: number, letter: 'B' 
 
   ctx.beginPath();
   ctx.arc(x, y, radius, 0, Math.PI * 2);
-  ctx.fillStyle = color;
+  ctx.fillStyle = hollow ? surface : color;
   ctx.fill();
   ctx.lineWidth = 1.6;
-  ctx.strokeStyle = surface;
+  ctx.strokeStyle = hollow ? color : surface;
+  if (hollow) ctx.setLineDash([2.5, 2]);
   ctx.stroke();
+  ctx.setLineDash([]);
 
-  ctx.fillStyle = '#0b0e11';
+  ctx.fillStyle = hollow ? color : '#0b0e11';
   ctx.font = "700 9px Inter, sans-serif";
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
@@ -171,6 +175,7 @@ export const tradeLayerPlugin: Plugin = {
         count: marker.count,
         highlighted,
         surface,
+        hollow: marker.cross,
       });
     }
 

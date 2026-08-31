@@ -19,6 +19,39 @@ function order(p: Partial<TradeOrder> & { amount: number; price: number; timesta
 describe('markersFromOrders', () => {
   const times = [0, WEEK, 2 * WEEK, 3 * WEEK].map((t) => Date.UTC(2026, 0, 1) + t);
 
+  const via = {
+    pair: 'NEXO/BTC',
+    asset: 'NEXO',
+    side: 'sell' as const,
+    amount: 915.2,
+    price: 0.0000122,
+    priceAsset: 'BTC',
+    booked: true,
+    source: 'lot' as const,
+  };
+
+  it('keeps a cross trade as its own hollow marker, apart from the direct buy on the same candle', () => {
+    const markers = markersFromOrders(
+      [
+        order({ amount: 0.01, price: 63000, timestamp: new Date(times[1] + 1000).toISOString() }),
+        order({ amount: 0.0112, price: 63258.77, via, timestamp: new Date(times[1] + 5000).toISOString() }),
+      ],
+      times,
+      WEEK,
+    );
+    expect(markers.length).toBe(2);
+    expect(markers.map((m) => m.cross).sort()).toEqual([false, true]);
+  });
+
+  it('has nowhere to put a cross trade the P&L never priced', () => {
+    const markers = markersFromOrders(
+      [order({ amount: 0.0112, price: 0, via: { ...via, booked: false }, timestamp: new Date(times[1]).toISOString() })],
+      times,
+      WEEK,
+    );
+    expect(markers.length).toBe(0);
+  });
+
   it('collapses the orders of one candle into a single marker with a count', () => {
     const markers = markersFromOrders(
       [
@@ -63,7 +96,7 @@ describe('markersFromOrders', () => {
 
 describe('placeMarkers', () => {
   const at = (t: number, price: number, side: 'buy' | 'sell' = 'buy'): TradeMarker =>
-    ({ t, price, side, count: 1, total: 100, orders: [] });
+    ({ t, price, side, count: 1, total: 100, orders: [], cross: false });
 
   it('leaves markers alone when they do not collide', () => {
     const placed = placeMarkers([at(0, 100), at(1000, 200)], (t) => t, (p) => 500 - p);

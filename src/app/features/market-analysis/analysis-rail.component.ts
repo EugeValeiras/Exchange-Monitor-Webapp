@@ -24,6 +24,21 @@ export interface RailPosition extends PairPosition {
   currentValue: number | null;
 }
 
+/**
+ * The base asset across EVERY pair, as the P&L module keeps it: FIFO lots,
+ * so a sale consumes the oldest buys, and NEXO sold for BTC counts as BTC.
+ * This is the "Costo Prom." of the balances screen, shown here so the two
+ * numbers sit side by side instead of contradicting each other from afar.
+ */
+export interface AssetPosition {
+  amount: number;
+  costBasis: number;
+  avgCost: number;
+  currentValue: number;
+  unrealizedPnl: number;
+  unrealizedPct: number;
+}
+
 type SideFilter = 'all' | 'buy' | 'sell';
 
 /**
@@ -58,6 +73,15 @@ type SideFilter = 'all' | 'buy' | 'sell';
             </button>
           }
         </div>
+
+        <button
+          type="button"
+          class="collapse"
+          title="Ocultar el panel · B"
+          aria-label="Ocultar el panel"
+          (click)="close.emit()">
+          <mat-icon>close</mat-icon>
+        </button>
       </div>
 
       @switch (facet) {
@@ -75,7 +99,19 @@ type SideFilter = 'all' | 'buy' | 'sell';
 
               <dl class="metrics">
                 <div><dt>Tenencia</dt><dd class="num">{{ p.netAmount | emQty: baseAsset }}</dd></div>
-                <div><dt>PPC</dt><dd class="num em-mine">{{ p.avgEntryPrice | emMoney }}</dd></div>
+                <div>
+                  <dt>PPC ({{ symbol }})</dt>
+                  <dd class="num em-mine">{{ p.avgEntryPrice | emMoney }}</dd>
+                </div>
+                @if (assetPosition; as a) {
+                  <div>
+                    <dt>
+                      PPC ({{ baseAsset }})
+                      <mat-icon class="hint" [title]="assetHint()">info_outline</mat-icon>
+                    </dt>
+                    <dd class="num">{{ a.avgCost | emMoney }}</dd>
+                  </div>
+                }
                 <div><dt>Invertido</dt><dd class="num">{{ p.costBasis | emMoney }}</dd></div>
                 <div><dt>Valor hoy</dt><dd class="num">{{ p.currentValue | emMoney }}</dd></div>
               </dl>
@@ -88,6 +124,33 @@ type SideFilter = 'all' | 'buy' | 'sell';
                 <div><dt>Comprado</dt><dd class="num">{{ p.totalBought | emQty }}</dd></div>
                 <div><dt>Vendido</dt><dd class="num">{{ p.totalSold | emQty }}</dd></div>
               </dl>
+
+              @if (assetPosition; as a) {
+                <div class="asset">
+                  <span class="tag">{{ baseAsset }} en todos los pares · FIFO</span>
+                  <dl class="metrics">
+                    <div><dt>Tenencia</dt><dd class="num">{{ a.amount | emQty: baseAsset }}</dd></div>
+                    <div><dt>Invertido</dt><dd class="num">{{ a.costBasis | emMoney }}</dd></div>
+                    <div>
+                      <dt>No realizado</dt>
+                      <dd class="num" [class]="tone(a.unrealizedPnl)">
+                        {{ a.unrealizedPnl | emSigned }}
+                        <span class="pct-inline">{{ a.unrealizedPct | emPct }}</span>
+                      </dd>
+                    </div>
+                  </dl>
+                  <p class="note">
+                    Es el costo promedio de Balances. PPC ({{ symbol }}) promedia solo este par;
+                    PPC ({{ baseAsset }}) lleva lotes FIFO de todos los pares
+                    @if (data?.crossTradeCount) {
+                      e incluye
+                      <button type="button" class="link" (click)="facetChange.emit('trades')">
+                        {{ data!.crossTradeCount }} movimientos vía {{ crossPairs() || 'otros pares' }}
+                      </button>
+                    }.
+                  </p>
+                </div>
+              }
 
               <div class="foot">
                 <span>{{ p.tradeCount }} movimientos</span>
@@ -111,7 +174,10 @@ type SideFilter = 'all' | 'buy' | 'sell';
             <div class="trades-head">
               <span class="summary">
                 {{ data?.position?.tradeCount ?? 0 }} trades
-                @if (grouped().orderCount !== (data?.position?.tradeCount ?? 0)) {
+                @if (data?.crossTradeCount) {
+                  <span class="muted">· {{ data!.crossTradeCount }} vía otros pares</span>
+                }
+                @if (grouped().orderCount !== (data?.position?.tradeCount ?? 0) + grouped().viaCount) {
                   <span class="muted">· {{ grouped().orderCount }} órdenes</span>
                 }
               </span>
@@ -123,6 +189,16 @@ type SideFilter = 'all' | 'buy' | 'sell';
                     [class.active]="sideFilter() === f.value"
                     (click)="sideFilter.set(f.value)">
                     {{ f.label }}
+                  </button>
+                }
+                @if (data?.crossTradeCount) {
+                  <button
+                    type="button"
+                    class="chip"
+                    [class.active]="showCrossSignal()"
+                    [title]="'Movimientos de ' + baseAsset + ' en otros pares, como los contabiliza el P&L'"
+                    (click)="showCrossChange.emit(!showCrossSignal())">
+                    Otros pares: {{ showCrossSignal() ? 'on' : 'off' }}
                   </button>
                 }
                 @if (grouped().dustCount) {
@@ -151,6 +227,7 @@ type SideFilter = 'all' | 'buy' | 'sell';
                       class="order"
                       [class.buy]="order.side === 'buy'"
                       [class.sell]="order.side === 'sell'"
+                      [class.cross]="!!order.via"
                       [class.highlighted]="order.id === highlightedId"
                       (mouseenter)="hover.emit(order.id)"
                       (mouseleave)="hover.emit(null)">
@@ -161,14 +238,34 @@ type SideFilter = 'all' | 'buy' | 'sell';
                           <span class="asset">{{ baseAsset }}</span>
                         </span>
                         <span class="meta num">
-                          &#64; {{ order.price | emMoney }}
+                          @if (order.via && !order.via.booked) {
+                            &#64; sin precio
+                          } @else {
+                            &#64; {{ order.price | emMoney }}
+                          }
+                          @if (order.via; as via) {
+                            <span class="via">· vía {{ via.pair }}</span>
+                          }
                           @if (order.fills.length > 1) {
                             <span class="fills">· {{ order.fills.length }} fills</span>
                           }
                         </span>
+                        @if (order.via; as via) {
+                          <span class="calc">
+                            {{ viaWhat(order) }}
+                            @if (via.booked) {
+                              · {{ baseAsset }} a {{ order.price | emMoney }} ese día
+                              ({{ via.source === 'lot' ? 'abre un lote' : 'consume lotes FIFO' }})
+                            } @else {
+                              · sin precio histórico: el P&L no lo contabilizó
+                            }
+                          </span>
+                        }
                       </div>
                       <div class="side-info">
-                        <span class="total num">{{ order.total | emMoney }}</span>
+                        <span class="total num">
+                          {{ order.via && !order.via.booked ? '—' : (order.total | emMoney) }}
+                        </span>
                         <span class="date">{{ order.timestamp | date: 'dd MMM' }}</span>
                       </div>
                     </div>
@@ -234,9 +331,35 @@ type SideFilter = 'all' | 'buy' | 'sell';
       .facets {
         display: flex;
         align-items: center;
+        gap: var(--sp-3);
         padding: var(--sp-4) var(--sp-4) var(--sp-3);
         border-bottom: 1px solid var(--border-color);
         flex: none;
+      }
+
+      .collapse {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        margin-left: auto;
+        border: none;
+        border-radius: var(--r-2);
+        background: transparent;
+        color: var(--text-tertiary);
+        cursor: pointer;
+      }
+
+      .collapse:hover {
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+      }
+
+      .collapse mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
       }
 
       .segmented {
@@ -356,6 +479,59 @@ type SideFilter = 'all' | 'buy' | 'sell';
         font-size: 12.5px;
         font-weight: 500;
         color: var(--text-primary);
+      }
+
+      .metrics dt .hint {
+        font-size: 12px;
+        width: 12px;
+        height: 12px;
+        vertical-align: -2px;
+        margin-left: 2px;
+        color: var(--text-tertiary);
+        cursor: help;
+      }
+
+      .pct-inline {
+        margin-left: 4px;
+        font-size: var(--fs-11);
+        font-weight: 500;
+        opacity: 0.85;
+      }
+
+      /* The asset across every pair, the balances-screen number */
+      .asset {
+        display: flex;
+        flex-direction: column;
+        gap: var(--sp-3);
+        padding: var(--sp-3) var(--sp-3) var(--sp-3);
+        border: 1px dashed var(--border-light);
+        border-radius: var(--r-2);
+        background: rgba(255, 255, 255, 0.022);
+      }
+
+      .asset .metrics {
+        padding-top: 0;
+        border-top: none;
+      }
+
+      .asset .note {
+        margin: 0;
+        font-size: 10.5px;
+        line-height: 1.45;
+        color: var(--text-tertiary);
+      }
+
+      .link {
+        padding: 0;
+        border: none;
+        background: none;
+        color: var(--brand-accent);
+        font: inherit;
+        cursor: pointer;
+      }
+
+      .link:hover {
+        text-decoration: underline;
       }
 
       .foot {
@@ -513,6 +689,35 @@ type SideFilter = 'all' | 'buy' | 'sell';
         background: var(--chart-down);
       }
 
+      /* Came through another pair: hollow, like its marker on the chart */
+      .order.cross {
+        border-style: dashed;
+        border-color: var(--border-light);
+      }
+
+      .order.cross .side {
+        background: transparent;
+        border: 1.5px dashed currentColor;
+      }
+
+      .buy.cross .side {
+        color: var(--chart-up);
+      }
+
+      .sell.cross .side {
+        color: var(--chart-down);
+      }
+
+      .via {
+        color: var(--text-secondary);
+      }
+
+      .calc {
+        font-size: 10px;
+        line-height: 1.35;
+        color: var(--text-tertiary);
+      }
+
       .main {
         display: flex;
         flex-direction: column;
@@ -598,8 +803,13 @@ export class AnalysisRailComponent {
   @Input() facet: RailFacet = 'position';
   @Input() symbol: string | null = null;
   @Input() position: RailPosition | null = null;
+  @Input() assetPosition: AssetPosition | null = null;
   @Input() highlightedId: string | null = null;
   @Input() annotationCount = 0;
+
+  @Input() set showCross(value: boolean) {
+    this.showCrossSignal.set(value);
+  }
 
   @Input() set data(value: PairTrades | null) {
     this.dataSignal.set(value);
@@ -613,9 +823,11 @@ export class AnalysisRailComponent {
   }
 
   @Output() facetChange = new EventEmitter<RailFacet>();
+  @Output() showCrossChange = new EventEmitter<boolean>();
   @Output() hover = new EventEmitter<string | null>();
   @Output() chartAction = new EventEmitter<ChartAction>();
   @Output() openFullscreen = new EventEmitter<void>();
+  @Output() close = new EventEmitter<void>();
 
   readonly facets: Array<{ id: RailFacet; label: string; hint: string }> = [
     { id: 'position', label: 'Posición', hint: 'Atajo: P' },
@@ -631,6 +843,7 @@ export class AnalysisRailComponent {
 
   readonly sideFilter = signal<SideFilter>('all');
   readonly showDust = signal(false);
+  readonly showCrossSignal = signal(true);
 
   private readonly dataSignal = signal<PairTrades | null>(null);
   private readonly spanSignal = signal(60 * 60 * 1000);
@@ -643,8 +856,45 @@ export class AnalysisRailComponent {
 
   readonly grouped = computed(() => {
     const data = this.dataSignal();
-    return groupTrades(data?.trades ?? [], data?.position ?? null, this.spanSignal());
+    const cross = this.showCrossSignal() ? data?.crossTrades ?? [] : [];
+    return groupTrades(data?.trades ?? [], data?.position ?? null, this.spanSignal(), cross);
   });
+
+  /** `NEXO/BTC, BTC/ETH` — the other pairs the asset moved through, in range */
+  readonly crossPairs = computed(() => {
+    const pairs = new Set((this.dataSignal()?.crossTrades ?? []).map((c) => c.pair));
+    return [...pairs].join(', ');
+  });
+
+  assetHint(): string {
+    return (
+      `Costo promedio de ${this.baseAsset} en todos los pares, como lo lleva el P&L ` +
+      `(lotes FIFO: cada venta consume las compras más viejas). ` +
+      `PPC (${this.symbol}) es el promedio ponderado de este par nada más.`
+    );
+  }
+
+  /**
+   * What the cross trade really was, in the user's words:
+   * "Vendiste 915,2 NEXO por 0,0112 BTC". The USD side is rendered apart.
+   */
+  viaWhat(order: TradeOrder): string {
+    const via = order.via;
+    if (!via) return '';
+    const qty = (v: number) => v.toLocaleString('es-AR', { maximumFractionDigits: 6 });
+    const base = this.baseAsset;
+
+    if (via.asset === base) {
+      // BTC/ETH: the base asset is the one stored, the other leg is the quote
+      const verb = via.side === 'buy' ? 'Compraste' : 'Vendiste';
+      const link = via.side === 'buy' ? 'con' : 'por';
+      return `${verb} ${qty(order.amount)} ${base} ${link} ${qty(via.amount * via.price)} ${via.priceAsset}`;
+    }
+    // NEXO/BTC: the base asset is the quote, so the trade reads inverted
+    const verb = via.side === 'sell' ? 'Vendiste' : 'Compraste';
+    const link = via.side === 'sell' ? 'por' : 'con';
+    return `${verb} ${qty(via.amount)} ${via.asset} ${link} ${qty(order.amount)} ${base}`;
+  }
 
   readonly visibleMonths = computed<MonthGroup[]>(() => {
     const side = this.sideFilter();
@@ -664,6 +914,7 @@ export class AnalysisRailComponent {
     const parts: string[] = [];
     if (month.buys) parts.push(`${month.buys} ${month.buys === 1 ? 'compra' : 'compras'}`);
     if (month.sells) parts.push(`${month.sells} ${month.sells === 1 ? 'venta' : 'ventas'}`);
+    if (month.via) parts.push(`${month.via} vía otros pares`);
     const net = month.netAmount;
     const sign = net > 0 ? '+' : net < 0 ? '−' : '';
     const amount = Math.abs(net).toLocaleString('es-AR', { maximumFractionDigits: 6 });
