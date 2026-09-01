@@ -7,6 +7,9 @@ export interface NotificationSettings {
   priceChangeThreshold: number;
   quietHoursStart?: string;
   quietHoursEnd?: string;
+  /// Activos que generan aviso. La API devuelve la lista ya resuelta: si nunca
+  /// elegiste, manda el conjunto por defecto.
+  alertAssets?: string[];
 }
 
 @Injectable({

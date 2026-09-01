@@ -9,7 +9,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { NotificationsService } from '../../core/services/notifications.service';
+import { ConsolidatedBalanceService } from '../../core/services/consolidated-balance.service';
 
 @Component({
   selector: 'app-notifications-settings',
@@ -25,6 +27,7 @@ import { NotificationsService } from '../../core/services/notifications.service'
     MatSlideToggleModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
+    MatCheckboxModule,
   ],
   template: `
     <div class="notifications-page">
@@ -65,6 +68,39 @@ import { NotificationsService } from '../../core/services/notifications.service'
                   <mat-error>Ingresa un valor entre 1 y 50</mat-error>
                 }
               </mat-form-field>
+            </mat-card-content>
+          </mat-card>
+
+          <!-- Assets card -->
+          <mat-card class="settings-card">
+            <mat-card-header>
+              <mat-icon mat-card-avatar class="card-icon">tune</mat-icon>
+              <mat-card-title>Activos</mat-card-title>
+              <mat-card-subtitle>De cuáles querés que te avisen</mat-card-subtitle>
+            </mat-card-header>
+
+            <mat-card-content>
+              @if (assetRows().length === 0) {
+                <p class="assets-empty">Cuando cargue tu cartera vas a poder elegir acá.</p>
+              } @else {
+                <div class="assets-grid">
+                  @for (row of assetRows(); track row.asset) {
+                    <mat-checkbox
+                      [checked]="alertAssets.has(row.asset)"
+                      (change)="toggleAsset(row.asset, $event.checked)">
+                      <span class="asset-ticker">{{ row.asset }}</span>
+                      <span class="asset-value">{{ row.label }}</span>
+                    </mat-checkbox>
+                  }
+                </div>
+                <p class="assets-hint">
+                  @if (alertAssets.size === 0) {
+                    Sin ningún activo elegido no llega ningún aviso.
+                  } @else {
+                    Sólo avisamos de los activos marcados ({{ alertAssets.size }} de {{ assetRows().length }}).
+                  }
+                </p>
+              }
             </mat-card-content>
           </mat-card>
 
@@ -226,6 +262,29 @@ import { NotificationsService } from '../../core/services/notifications.service'
     button mat-icon {
       margin-right: 8px;
     }
+
+    .assets-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 8px 16px;
+    }
+
+    .asset-ticker {
+      font-weight: 500;
+    }
+
+    .asset-value {
+      margin-left: 8px;
+      opacity: 0.6;
+      font-size: 12px;
+    }
+
+    .assets-hint,
+    .assets-empty {
+      margin: 16px 0 0;
+      font-size: 12px;
+      opacity: 0.7;
+    }
   `]
 })
 export class NotificationsSettingsComponent implements OnInit {
@@ -233,9 +292,14 @@ export class NotificationsSettingsComponent implements OnInit {
   loading = true;
   saving = false;
 
+  /// Activos elegidos. Va aparte del form porque no es un control: es una
+  /// selección sobre una lista que sale de la cartera, no un campo fijo.
+  alertAssets = new Set<string>();
+
   constructor(
     private fb: FormBuilder,
     private notificationsService: NotificationsService,
+    private balanceService: ConsolidatedBalanceService,
     private snackBar: MatSnackBar
   ) {
     this.form = this.fb.group({
@@ -255,6 +319,9 @@ export class NotificationsSettingsComponent implements OnInit {
           quietHoursStart: settings.quietHoursStart ?? '',
           quietHoursEnd: settings.quietHoursEnd ?? '',
         });
+        this.alertAssets = new Set(
+          (settings.alertAssets ?? []).map((a) => a.toUpperCase()),
+        );
         this.loading = false;
       },
       error: (err) => {
@@ -277,6 +344,7 @@ export class NotificationsSettingsComponent implements OnInit {
       priceChangeThreshold: Number(raw.priceChangeThreshold),
       ...(raw.quietHoursStart ? { quietHoursStart: raw.quietHoursStart } : {}),
       ...(raw.quietHoursEnd ? { quietHoursEnd: raw.quietHoursEnd } : {}),
+      alertAssets: [...this.alertAssets],
     };
 
     this.notificationsService.updateSettings(payload).subscribe({
@@ -289,6 +357,43 @@ export class NotificationsSettingsComponent implements OnInit {
         this.saving = false;
         this.showError('Error al guardar las preferencias');
       }
+    });
+  }
+
+  /**
+   * Qué se puede elegir: tu cartera, más lo que ya estuviera elegido aunque hoy
+   * no tengas saldo. Sin esa segunda parte, vender todo de un activo borraría
+   * en silencio una elección tuya.
+   */
+  assetRows(): { asset: string; label: string }[] {
+    const held = this.balanceService.balance()?.byAsset ?? [];
+    const rows = held.map((a) => ({
+      asset: a.asset.toUpperCase(),
+      label: a.valueUsd == null ? '' : this.formatUsd(a.valueUsd),
+    }));
+
+    const tickers = new Set(rows.map((r) => r.asset));
+    const orphans = [...this.alertAssets]
+      .filter((a) => !tickers.has(a))
+      .sort()
+      .map((asset) => ({ asset, label: 'sin saldo' }));
+
+    return [...rows, ...orphans];
+  }
+
+  toggleAsset(asset: string, checked: boolean): void {
+    if (checked) {
+      this.alertAssets.add(asset);
+    } else {
+      this.alertAssets.delete(asset);
+    }
+  }
+
+  private formatUsd(value: number): string {
+    return value.toLocaleString('es-AR', {
+      style: 'currency',
+      currency: 'USD',
+      maximumFractionDigits: 2,
     });
   }
 
