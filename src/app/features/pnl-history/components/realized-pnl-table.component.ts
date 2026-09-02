@@ -34,7 +34,7 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
     } @else if (data().length === 0) {
       <div class="empty-state">
         <mat-icon>trending_up</mat-icon>
-        <h3>Sin Realizado</h3>
+        <h3>Sin realizado</h3>
         <p>No hay operaciones de venta registradas</p>
       </div>
     } @else {
@@ -83,7 +83,7 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
 
           <!-- Buy Price Column -->
           <ng-container matColumnDef="buyPrice">
-            <th mat-header-cell *matHeaderCellDef>Precio Compra</th>
+            <th mat-header-cell *matHeaderCellDef>Precio de compra</th>
             <td mat-cell *matCellDef="let row">
               {{ row.buyPrice | currency:'USD':'symbol':'1.2-4' }}
             </td>
@@ -91,7 +91,7 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
 
           <!-- Sell Price Column -->
           <ng-container matColumnDef="sellPrice">
-            <th mat-header-cell *matHeaderCellDef>Precio Venta</th>
+            <th mat-header-cell *matHeaderCellDef>Precio de venta</th>
             <td mat-cell *matCellDef="let row">
               {{ row.sellPrice | currency:'USD':'symbol':'1.2-4' }}
             </td>

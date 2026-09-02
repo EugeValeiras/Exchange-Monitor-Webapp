@@ -676,7 +676,7 @@ type SideFilter = 'all' | 'buy' | 'sell';
         height: 19px;
         flex: none;
         border-radius: 50%;
-        color: var(--bg-primary);
+        color: var(--text-primary);
         font-size: var(--fs-10);
         font-weight: 700;
       }

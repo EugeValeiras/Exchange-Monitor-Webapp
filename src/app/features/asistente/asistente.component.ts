@@ -233,7 +233,7 @@ interface Suggestion { icon: string; text: string; }
     .plan-toggle:hover { color: var(--text-primary); border-color: var(--text-tertiary); }
     .plan-toggle.active {
       background: var(--bg-selected); border-color: var(--border-strong);
-      color: var(--bg-primary);
+      color: var(--text-primary);
     }
     .plan-toggle mat-icon { font-size: 17px; width: 17px; height: 17px; line-height: 17px; }
 
@@ -254,7 +254,7 @@ interface Suggestion { icon: string; text: string; }
       color: var(--text-secondary); transition: all .15s;
     }
     .model-chip:hover { color: var(--text-primary); }
-    .model-chip.active { background: var(--bg-selected); color: var(--bg-primary); }
+    .model-chip.active { background: var(--bg-selected); color: var(--text-primary); }
 
     .ghost-icon {
       width: 36px; height: 36px; border-radius: 8px;
@@ -416,7 +416,7 @@ interface Suggestion { icon: string; text: string; }
     .usage-actions { display: flex; justify-content: flex-end; margin-top: 16px; }
     .usage-close {
       border: none; cursor: pointer; padding: 8px 18px; border-radius: 8px;
-      background: var(--bg-selected); color: var(--bg-primary);
+      background: var(--bg-selected); color: var(--text-primary);
       font-weight: 600; font-size: .85rem; transition: filter .15s;
     }
     .usage-close:hover { filter: brightness(1.1); }

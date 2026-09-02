@@ -114,7 +114,7 @@ import { WorkflowCardComponent } from './workflow-card.component';
     .avatar {
       position: absolute; top: 20px; left: 0;
       width: 28px; height: 28px; border-radius: 50%;
-      background: var(--bg-selected); color: var(--bg-primary);
+      background: var(--bg-selected); color: var(--text-primary);
       display: flex; align-items: center; justify-content: center;
     }
     .avatar mat-icon { font-size: 15px; width: 16px; height: 16px; line-height: 16px; }

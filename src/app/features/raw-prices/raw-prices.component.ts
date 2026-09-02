@@ -628,7 +628,7 @@ const DEFAULT_SYMBOL_BY_EXCHANGE: Record<RawExchange, string> = {
       .depth-chip.selected,
       .popular-chip.selected {
         background: var(--bg-selected) !important;
-        color: var(--bg-primary) !important;
+        color: var(--text-primary) !important;
         font-weight: 600;
       }
 

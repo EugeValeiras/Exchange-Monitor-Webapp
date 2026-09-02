@@ -487,7 +487,7 @@ const COMMON_ASSETS = [
       top: -10px;
       right: 16px;
       background: var(--bg-selected);
-      color: var(--bg-primary);
+      color: var(--text-primary);
       font-size: 11px;
       font-weight: 700;
       padding: 3px 10px;
@@ -596,8 +596,10 @@ const COMMON_ASSETS = [
       color: var(--text-primary);
     }
 
+    // Una comisión es un costo conocido de la operación, no una caída del
+    // precio. Va en el color del capital que se mueve, no en el de "baja".
     .detail-value.fee {
-      color: var(--color-error);
+      color: var(--chart-flow);
     }
 
     .fee-amount {
@@ -644,7 +646,7 @@ const COMMON_ASSETS = [
 
     .execute-btn.best {
       background: var(--bg-selected);
-      color: var(--bg-primary);
+      color: var(--text-primary);
       border: none;
     }
 

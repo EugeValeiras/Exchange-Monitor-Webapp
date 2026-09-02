@@ -309,6 +309,11 @@ export class NotificationsSettingsComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // La lista de activos sale de la cartera. Si entraste directo acá sin pasar
+    // por Posición, el servicio todavía no cargó y quedaban todos como "sin
+    // saldo": es idempotente, así que llamarlo siempre es lo correcto.
+    this.balanceService.initialize();
+
     this.notificationsService.getSettings().subscribe({
       next: (settings) => {
         this.form.patchValue({
@@ -387,10 +392,11 @@ export class NotificationsSettingsComponent implements OnInit {
     }
   }
 
+  // "$" a secas, como en el resto de la app: es-AR con currency USD imprime
+  // "US$" y ninguna otra pantalla lo hace.
   private formatUsd(value: number): string {
-    return value.toLocaleString('es-AR', {
-      style: 'currency',
-      currency: 'USD',
+    return '$' + value.toLocaleString('es-AR', {
+      minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
   }

@@ -322,13 +322,13 @@ interface TimeframeOption {
 
       ::ng-deep .mat-button-toggle-checked {
         background: var(--bg-selected) !important;
-        color: var(--bg-primary) !important;
+        color: var(--text-primary) !important;
         border-radius: 7px;
         box-shadow: 0 2px 8px rgba(217, 160, 91, 0.3);
       }
 
       ::ng-deep .mat-button-toggle-checked .mat-button-toggle-label-content {
-        color: var(--bg-primary) !important;
+        color: var(--text-primary) !important;
       }
 
       ::ng-deep .mat-button-toggle-focus-overlay {
@@ -424,7 +424,7 @@ interface TimeframeOption {
 
     .timeframe-badge {
       background: var(--bg-selected);
-      color: var(--bg-primary);
+      color: var(--text-primary);
     }
 
     .exchange-badge {

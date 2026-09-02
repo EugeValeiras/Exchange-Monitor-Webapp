@@ -33,7 +33,7 @@ export interface SymbolsSelectorDialogData {
     MatCheckboxModule
   ],
   template: `
-    <h2 mat-dialog-title>Configurar Pares</h2>
+    <h2 mat-dialog-title>Configurar pares</h2>
 
     <mat-dialog-content>
       <!-- Selected Chips -->
@@ -147,7 +147,7 @@ export interface SymbolsSelectorDialogData {
 
     .selected-chip {
       background: var(--bg-selected) !important;
-      color: var(--bg-primary) !important;
+      color: var(--text-primary) !important;
     }
 
     .quick-actions {

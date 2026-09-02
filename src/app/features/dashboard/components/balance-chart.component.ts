@@ -264,13 +264,13 @@ const ASSET_COLORS = [
 
       ::ng-deep .mat-button-toggle-checked {
         background: var(--bg-selected) !important;
-        color: var(--bg-primary) !important;
+        color: var(--text-primary) !important;
         border-radius: 7px;
         box-shadow: 0 2px 8px rgba(217, 160, 91, 0.3);
       }
 
       ::ng-deep .mat-button-toggle-checked .mat-button-toggle-label-content {
-        color: var(--bg-primary) !important;
+        color: var(--text-primary) !important;
       }
 
       ::ng-deep .mat-button-toggle-focus-overlay {
@@ -410,7 +410,7 @@ const ASSET_COLORS = [
       height: 18px;
       border-radius: 50%;
       background: var(--bg-selected);
-      color: var(--bg-primary);
+      color: var(--text-primary);
       display: flex;
       align-items: center;
       justify-content: center;

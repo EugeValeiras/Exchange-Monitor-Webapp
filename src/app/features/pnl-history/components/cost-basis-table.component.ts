@@ -52,7 +52,7 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
         <table mat-table [dataSource]="data()" class="lots-table">
           <!-- Date Column -->
           <ng-container matColumnDef="acquiredAt">
-            <th mat-header-cell *matHeaderCellDef>Fecha Adquisición</th>
+            <th mat-header-cell *matHeaderCellDef>Fecha de adquisición</th>
             <td mat-cell *matCellDef="let row">
               <div class="date-cell">
                 <span class="date">{{ formatDate(row.acquiredAt) }}</span>
@@ -122,7 +122,7 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
 
           <!-- Original Amount Column -->
           <ng-container matColumnDef="originalAmount">
-            <th mat-header-cell *matHeaderCellDef>Cantidad Original</th>
+            <th mat-header-cell *matHeaderCellDef>Cantidad original</th>
             <td mat-cell *matCellDef="let row">
               {{ row.originalAmount | number:'1.2-8' }}
             </td>
@@ -151,7 +151,7 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
 
           <!-- Total Cost Column -->
           <ng-container matColumnDef="totalCost">
-            <th mat-header-cell *matHeaderCellDef>Costo Total</th>
+            <th mat-header-cell *matHeaderCellDef>Costo total</th>
             <td mat-cell *matCellDef="let row">
               {{ row.totalCost | currency:'USD':'symbol':'1.2-2' }}
             </td>

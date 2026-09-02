@@ -56,7 +56,7 @@ import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.s
       <!-- Passkeys Section -->
       <div class="passkeys-section">
         <div class="section-header">
-          <h3>Tus Passkeys</h3>
+          <h3>Tus passkeys</h3>
           <span class="badge">{{ passkeyService.passkeys().length }}</span>
         </div>
 
@@ -101,7 +101,7 @@ import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.s
             <span>Registrando...</span>
           } @else {
             <mat-icon>add</mat-icon>
-            <span>Agregar Passkey</span>
+            <span>Agregar passkey</span>
           }
         </button>
       </div>
@@ -367,7 +367,7 @@ import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.s
       border: none;
       border-radius: 8px;
       background: var(--bg-selected);
-      color: var(--bg-primary);
+      color: var(--text-primary);
       font-size: 15px;
       font-weight: 600;
       cursor: pointer;

@@ -170,7 +170,7 @@ const POLL_INTERVAL_MS = 10_000;
 
             <div class="stat-card">
               <div class="stat-header">
-                <span class="stat-label">Fees Pagadas</span>
+                <span class="stat-label">Comisiones</span>
                 <mat-icon>receipt_long</mat-icon>
               </div>
               <span class="stat-value small">{{ perf.feesPaid | currency:'USD':'symbol':'1.2-2' }}</span>
@@ -179,7 +179,7 @@ const POLL_INTERVAL_MS = 10_000;
 
             <div class="stat-card">
               <div class="stat-header">
-                <span class="stat-label">Win Rate</span>
+                <span class="stat-label">Aciertos</span>
                 <mat-icon>emoji_events</mat-icon>
               </div>
               <span class="stat-value small">
@@ -194,7 +194,7 @@ const POLL_INTERVAL_MS = 10_000;
 
             <div class="stat-card">
               <div class="stat-header">
-                <span class="stat-label">Balance USDT</span>
+                <span class="stat-label">Saldo USDT</span>
                 <mat-icon>account_balance_wallet</mat-icon>
               </div>
               <span class="stat-value small">{{ usdtFree() | currency:'USD':'symbol':'1.2-2' }}</span>
@@ -206,7 +206,7 @@ const POLL_INTERVAL_MS = 10_000;
           <div class="section">
             <mat-card class="chart-card">
               <mat-card-header>
-                <mat-card-title>Evolución del Equity</mat-card-title>
+                <mat-card-title>Evolución</mat-card-title>
               </mat-card-header>
               <mat-card-content>
                 @if (perf.equityCurve.length > 0) {
@@ -232,7 +232,7 @@ const POLL_INTERVAL_MS = 10_000;
           <!-- Open positions -->
           <div class="section">
             <div class="section-header">
-              <h2>Posiciones Abiertas</h2>
+              <h2>Posiciones abiertas</h2>
             </div>
             <div class="table-container">
               @if (positions().length === 0) {
@@ -257,14 +257,14 @@ const POLL_INTERVAL_MS = 10_000;
                   </ng-container>
 
                   <ng-container matColumnDef="avgEntryPrice">
-                    <th mat-header-cell *matHeaderCellDef>Precio Entrada Prom.</th>
+                    <th mat-header-cell *matHeaderCellDef>Precio de entrada</th>
                     <td mat-cell *matCellDef="let row">
                       {{ row.avgEntryPrice | currency:'USD':'symbol':'1.2-4' }}
                     </td>
                   </ng-container>
 
                   <ng-container matColumnDef="currentPrice">
-                    <th mat-header-cell *matHeaderCellDef>Precio Actual</th>
+                    <th mat-header-cell *matHeaderCellDef>Precio actual</th>
                     <td mat-cell *matCellDef="let row">
                       {{ row.currentPrice | currency:'USD':'symbol':'1.2-4' }}
                     </td>
@@ -297,7 +297,7 @@ const POLL_INTERVAL_MS = 10_000;
           <!-- Open orders -->
           <div class="section">
             <div class="section-header">
-              <h2>Órdenes Abiertas</h2>
+              <h2>Órdenes abiertas</h2>
             </div>
             <div class="table-container">
               @if (openOrders().length === 0) {
@@ -411,7 +411,7 @@ const POLL_INTERVAL_MS = 10_000;
           <!-- Recent trades -->
           <div class="section">
             <div class="section-header">
-              <h2>Últimos Trades</h2>
+              <h2>Últimos trades</h2>
             </div>
             <div class="table-container">
               @if (trades().length === 0) {
@@ -944,7 +944,7 @@ export class PaperTradingComponent implements OnInit {
         },
         // Línea punteada de referencia en el balance inicial
         {
-          label: 'Balance inicial',
+          label: 'Saldo inicial',
           data: [
             { x: points[0].x, y: perf.initialBalance },
             { x: points[points.length - 1].x, y: perf.initialBalance },

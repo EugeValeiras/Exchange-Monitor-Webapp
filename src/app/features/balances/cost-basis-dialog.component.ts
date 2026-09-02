@@ -53,15 +53,15 @@ export interface CostBasisDialogData {
       <!-- Summary Cards -->
       <div class="summary-grid">
         <div class="summary-card">
-          <span class="card-label">Costo Promedio</span>
+          <span class="card-label">Costo promedio</span>
           <span class="card-value">{{ data.avgCostPerUnit | currency:'USD':'symbol':'1.2-4' }}</span>
         </div>
         <div class="summary-card">
-          <span class="card-label">Precio Actual</span>
+          <span class="card-label">Precio actual</span>
           <span class="card-value">{{ data.currentPrice | currency:'USD':'symbol':'1.2-4' }}</span>
         </div>
         <div class="summary-card">
-          <span class="card-label">Costo Total</span>
+          <span class="card-label">Costo total</span>
           <span class="card-value">{{ data.totalCostBasis | currency:'USD':'symbol':'1.2-2' }}</span>
         </div>
         <div class="summary-card">
@@ -149,7 +149,7 @@ export interface CostBasisDialogData {
 
             <!-- Total Cost Column -->
             <ng-container matColumnDef="totalCost">
-              <th mat-header-cell *matHeaderCellDef>Costo Total</th>
+              <th mat-header-cell *matHeaderCellDef>Costo total</th>
               <td mat-cell *matCellDef="let row">
                 {{ row.totalCost | currency:'USD':'symbol':'1.2-2' }}
               </td>

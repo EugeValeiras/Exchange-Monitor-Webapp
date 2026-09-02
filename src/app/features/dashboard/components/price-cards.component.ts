@@ -19,7 +19,7 @@ import { FavoriteButtonComponent } from '../../../shared/components/favorite-but
         @if (loading()) {
           <span class="skeleton-text skeleton-pulse" style="width: 180px; height: 20px;"></span>
         } @else {
-          <h3>Mercados Favoritos</h3>
+          <h3>Mercados favoritos</h3>
         }
         <a routerLink="/prices" class="view-all" [class.hidden]="loading()">
           Ver todos
@@ -206,7 +206,7 @@ import { FavoriteButtonComponent } from '../../../shared/components/favorite-but
       height: 36px;
       border-radius: 50%;
       background: var(--bg-selected);
-      color: var(--bg-primary);
+      color: var(--text-primary);
       display: flex;
       align-items: center;
       justify-content: center;

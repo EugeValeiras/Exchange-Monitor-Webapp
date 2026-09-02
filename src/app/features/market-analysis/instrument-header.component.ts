@@ -462,7 +462,7 @@ export interface HeaderContext {
 
       .toggle.active .count {
         background: var(--bg-selected);
-        color: var(--bg-primary);
+        color: var(--text-primary);
       }
 
       @media (max-width: 900px) {

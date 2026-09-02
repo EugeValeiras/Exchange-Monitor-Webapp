@@ -35,7 +35,7 @@ interface SymbolOption {
   template: `
     <div class="dialog-container">
       <div class="dialog-header">
-        <h2>Seleccionar Simbolo</h2>
+        <h2>Seleccionar símbolo</h2>
         <button mat-icon-button (click)="close()">
           <mat-icon>close</mat-icon>
         </button>

@@ -289,7 +289,7 @@ const COMMANDS: SlashCommand[] = [
     }
     .send-btn mat-icon { font-size: 20px; width: 20px; height: 20px; line-height: 20px; }
     .send-btn:not(:disabled):not(.stop) {
-      background: var(--bg-selected); color: var(--bg-primary);
+      background: var(--bg-selected); color: var(--text-primary);
     }
     .send-btn:not(:disabled):not(.stop):hover { transform: scale(1.05); }
     .send-btn:disabled { cursor: default; }

@@ -476,7 +476,9 @@ select:-webkit-autofill:active {
 // El encabezado de columna es el encabezado de sección del sistema: chico,
 // en mayúsculas y muy tenue. Rotula sin competir con los datos.
 .mat-mdc-header-cell {
-  color: var(--text-disabled) !important;
+  // Un escalón por encima del más tenue: a 10 px y en mayúsculas, el nivel
+  // "muted" da 2,4:1 contra la card y se pierde al proyectar.
+  color: var(--text-tertiary) !important;
   font-size: var(--fs-10) !important;
   font-weight: 600 !important;
   letter-spacing: var(--tr-section) !important;
@@ -517,27 +519,62 @@ select:-webkit-autofill:active {
   text-align: right;
 }
 
-// Chips
-.mat-mdc-chip {
+// ============================================================================
+// CHIPS. Un chip elegido sube un escalón de superficie y firma el borde; el
+// texto pasa a primario. Antes el seleccionado quedaba con el texto casi
+// invisible sobre su propio fondo — se veía el hueco, no la palabra.
+// ============================================================================
+.mat-mdc-chip,
+.mat-mdc-chip-option {
+  --mdc-chip-container-height: var(--ctl-h);
+  --mdc-chip-label-text-size: var(--fs-12);
+  border-radius: var(--r-3) !important;
+
+  &:not(.mat-mdc-chip-selected) {
+    --mdc-chip-elevated-container-color: var(--bg-tertiary);
+    --mdc-chip-label-text-color: var(--text-secondary);
+  }
+
+  &.mat-mdc-chip-selected,
+  &[aria-selected='true'] {
+    --mdc-chip-elevated-container-color: var(--bg-selected);
+    --mdc-chip-elevated-selected-container-color: var(--bg-selected);
+    --mdc-chip-label-text-color: var(--text-primary);
+    --mdc-chip-selected-label-text-color: var(--text-primary);
+    border: 1px solid var(--border-strong) !important;
+  }
+
+  // "Activo" es un estado de la conexión, no una suba de precio: por eso ya no
+  // es verde. El énfasis lo da el valor del texto.
+  &.active,
   &.success {
-    background-color: rgba(92, 190, 146, 0.15) !important;
-    color: var(--color-success) !important;
-  }
-
-  &.error {
-    background-color: rgba(224, 107, 98, 0.15) !important;
-    color: var(--color-error) !important;
-  }
-
-  &.active {
-    background-color: rgba(92, 190, 146, 0.15) !important;
-    color: var(--color-success) !important;
+    --mdc-chip-elevated-container-color: var(--bg-tertiary);
+    --mdc-chip-label-text-color: var(--text-primary);
   }
 
   &.inactive {
-    background-color: rgba(242, 243, 245, 0.15) !important;
-    color: var(--text-secondary) !important;
+    --mdc-chip-elevated-container-color: var(--bg-tertiary);
+    --mdc-chip-label-text-color: var(--text-tertiary);
   }
+
+  // El rojo se queda donde de verdad hay un problema.
+  &.error {
+    --mdc-chip-elevated-container-color: var(--wash-down);
+    --mdc-chip-label-text-color: var(--chart-down);
+  }
+}
+
+// Un badge de contexto (el timeframe junto al par) tiene que LEERSE.
+.exchange-badge,
+.timeframe-badge {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--r-2);
+  padding: 2px var(--sp-3);
+  font-size: var(--fs-11);
+  text-transform: uppercase;
+  letter-spacing: var(--tr-section);
 }
 
 // Dialogs
@@ -771,4 +808,51 @@ a {
     -webkit-overflow-scrolling: touch;
     width: 100%;
   }
+}
+
+// Material pinta el label del chip elegido con el "contrast" de la paleta
+// primary, que en este tema es el color del LIENZO: texto casi negro sobre
+// gris. Se apunta al label directamente porque las variables --mdc-chip-* no
+// alcanzan a ganarle al tema.
+.mat-mdc-chip.mat-mdc-chip-selected .mdc-evolution-chip__text-label,
+.mat-mdc-chip-option.mat-mdc-chip-selected .mdc-evolution-chip__text-label,
+.mat-mdc-chip-option[aria-selected='true'] .mdc-evolution-chip__text-label,
+.mat-mdc-chip-selected .mdc-evolution-chip__checkmark {
+  color: var(--text-primary) !important;
+}
+
+// El toggle de período: el elegido sube un escalón y firma el borde.
+.mat-button-toggle-group {
+  border-color: var(--border-color) !important;
+  border-radius: var(--r-3) !important;
+}
+
+.mat-button-toggle {
+  background: transparent !important;
+  color: var(--text-secondary) !important;
+  border-color: var(--border-color) !important;
+
+  .mat-button-toggle-label-content {
+    font-size: var(--fs-12) !important;
+    line-height: var(--ctl-h) !important;
+  }
+
+  &.mat-button-toggle-checked {
+    background: var(--bg-selected) !important;
+    color: var(--text-primary) !important;
+  }
+}
+
+// Todo lo que Material pinta con el "contrast" de la paleta primary hereda el
+// color del LIENZO. Eso es correcto sobre el botón claro y es ilegible sobre
+// cualquier superficie oscura, así que se fija explícitamente donde pasa.
+.mat-button-toggle-checked .mat-button-toggle-label-content,
+.mat-button-toggle-checked .mat-button-toggle-button {
+  color: var(--text-primary) !important;
+}
+
+.timeframe-badge,
+.exchange-badge {
+  color: var(--text-secondary) !important;
+  background: var(--bg-tertiary) !important;
 }
