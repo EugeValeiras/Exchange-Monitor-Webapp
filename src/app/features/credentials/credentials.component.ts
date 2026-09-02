@@ -50,7 +50,7 @@ import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-lo
             <mat-icon>vpn_key</mat-icon>
           </div>
           <h2>No hay exchanges conectados</h2>
-          <p>Agrega tu primer exchange para comenzar a sincronizar tus balances</p>
+          <p>Agregá tu primer exchange para comenzar a sincronizar tus balances</p>
           <button mat-raised-button color="primary" (click)="openAddDialog()">
             <mat-icon>add</mat-icon>
             Agregar Exchange

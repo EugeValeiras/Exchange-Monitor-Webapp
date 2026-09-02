@@ -67,8 +67,8 @@ import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.s
         } @else if (passkeyService.passkeys().length === 0) {
           <div class="empty-state">
             <mat-icon>key_off</mat-icon>
-            <p>No tienes passkeys registrados</p>
-            <span>Agrega uno para iniciar sesión sin contraseña</span>
+            <p>No tenés passkeys registrados</p>
+            <span>Agregá uno para iniciar sesión sin contraseña</span>
           </div>
         } @else {
           <div class="passkeys-list">

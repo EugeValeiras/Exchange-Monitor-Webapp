@@ -74,7 +74,7 @@ type AssetBalance = EnrichedAssetBalance;
             <mat-icon>account_balance_wallet</mat-icon>
           </div>
           <h2>No hay exchanges conectados</h2>
-          <p>Conecta tu primer exchange para comenzar a ver tus balances</p>
+          <p>Conectá tu primer exchange para comenzar a ver tus balances</p>
           <a mat-raised-button color="primary" routerLink="/exchanges">
             <mat-icon>add</mat-icon>
             Agregar Exchange

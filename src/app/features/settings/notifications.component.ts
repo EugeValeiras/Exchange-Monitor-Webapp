@@ -45,7 +45,7 @@ import { ConsolidatedBalanceService } from '../../core/services/consolidated-bal
             <mat-card-header>
               <mat-icon mat-card-avatar class="card-icon">notifications_active</mat-icon>
               <mat-card-title>Cambio de precio</mat-card-title>
-              <mat-card-subtitle>Recibe una push cuando un activo se mueve significativamente</mat-card-subtitle>
+              <mat-card-subtitle>Recibí una push cuando un activo se mueve significativamente</mat-card-subtitle>
             </mat-card-header>
 
             <mat-card-content>
@@ -63,7 +63,7 @@ import { ConsolidatedBalanceService } from '../../core/services/consolidated-bal
                 <span matTextSuffix>%</span>
                 <mat-hint>Aplica a alertas de tus activos favoritos (entre 1 y 50).</mat-hint>
                 @if (form.get('priceChangeThreshold')?.hasError('required') || form.get('priceChangeThreshold')?.hasError('min') || form.get('priceChangeThreshold')?.hasError('max')) {
-                  <mat-error>Ingresa un valor entre 1 y 50</mat-error>
+                  <mat-error>Ingresá un valor entre 1 y 50</mat-error>
                 }
               </mat-form-field>
             </mat-card-content>

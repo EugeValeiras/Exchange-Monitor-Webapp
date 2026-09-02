@@ -57,7 +57,7 @@ import { ExchangeLogoComponent } from '../../shared/components/exchange-logo/exc
             </div>
             <div class="selected-chips">
               @if (selectedBinanceSymbols.size === 0 && selectedKrakenSymbols.size === 0) {
-                <span class="no-selection">Ningun par seleccionado. Agrega pares para monitorear precios.</span>
+                <span class="no-selection">Ningun par seleccionado. Agregá pares para monitorear precios.</span>
               } @else {
                 @for (symbol of selectedBinanceSymbols; track symbol) {
                   <mat-chip class="selected-chip binance-chip" (removed)="removeBinanceSymbol(symbol)">

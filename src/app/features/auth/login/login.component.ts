@@ -100,7 +100,7 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
         </form>
 
         <div class="auth-footer">
-          <span>¿No tienes cuenta?</span>
+          <span>¿No tenés cuenta?</span>
           <a routerLink="/register">Regístrate aquí</a>
         </div>
       </div>
@@ -108,7 +108,7 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
       <div class="auth-decoration">
         <div class="decoration-content">
           <h2>Gestiona tus criptomonedas</h2>
-          <p>Conecta múltiples exchanges y visualiza todos tus activos en un solo lugar.</p>
+          <p>Conectá múltiples exchanges y visualiza todos tus activos en un solo lugar.</p>
           <div class="features">
             <div class="feature">
               <mat-icon>insights</mat-icon>

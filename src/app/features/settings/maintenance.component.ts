@@ -28,15 +28,15 @@ import { PriceHistoryService } from '../price-history/price-history.service';
       <mat-card class="maintenance-card">
         <mat-card-header>
           <mat-icon mat-card-avatar class="card-icon">history</mat-icon>
-          <mat-card-title>Historial de Balance</mat-card-title>
+          <mat-card-title>Historial de balances</mat-card-title>
           <mat-card-subtitle>Recalcula el historial de snapshots basado en las transacciones existentes</mat-card-subtitle>
         </mat-card-header>
 
         <mat-card-content>
           <div class="info-box">
             <mat-icon class="info-icon">info</mat-icon>
-            <p>Esta acción reconstruira el historial de balances usando las transacciones importadas.
-               Util si importaste transacciones historicas y quieres ver el grafico de balance completo.</p>
+            <p>Esta acción reconstruirá el historial de balances usando las transacciones importadas.
+               Útil si importaste transacciones históricas y querés ver el gráfico de balance completo.</p>
           </div>
         </mat-card-content>
 
@@ -55,16 +55,16 @@ import { PriceHistoryService } from '../price-history/price-history.service';
       <mat-card class="maintenance-card">
         <mat-card-header>
           <mat-icon mat-card-avatar class="card-icon">show_chart</mat-icon>
-          <mat-card-title>Historial de Precios</mat-card-title>
+          <mat-card-title>Historial de precios</mat-card-title>
           <mat-card-subtitle>Descarga el historial de precios de los símbolos configurados</mat-card-subtitle>
         </mat-card-header>
 
         <mat-card-content>
           <div class="info-box">
             <mat-icon class="info-icon">info</mat-icon>
-            <p>Esta accion descarga hasta 180 dias de historial de precios desde Binance y Kraken
-               para todos los simbolos configurados. Este historial se usa para calcular el P&L
-               historico sin depender de llamadas a APIs externas.</p>
+            <p>Esta acción descarga hasta 180 días de historial de precios desde Binance y Kraken
+               para todos los símbolos configurados. Este historial se usa para calcular el P&L
+               histórico sin depender de llamadas a APIs externas.</p>
           </div>
         </mat-card-content>
 
@@ -74,7 +74,7 @@ import { PriceHistoryService } from '../price-history/price-history.service';
               <mat-spinner diameter="20" class="button-spinner"></mat-spinner>
             }
             <mat-icon>cloud_download</mat-icon>
-            Descargar historial (180 dias)
+            Descargar historial (180 días)
           </button>
         </mat-card-actions>
       </mat-card>

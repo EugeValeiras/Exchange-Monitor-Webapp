@@ -35,7 +35,7 @@ import { FlipNumberComponent } from '../../shared/components/flip-number/flip-nu
             <mat-icon>dashboard</mat-icon>
           </div>
           <h2>Bienvenido a Exchange Monitor</h2>
-          <p>Conecta tu primer exchange para comenzar a ver tu portfolio</p>
+          <p>Conectá tu primer exchange para comenzar a ver tu portfolio</p>
           <a mat-raised-button color="primary" routerLink="/exchanges">
             <mat-icon>add</mat-icon>
             Agregar Exchange

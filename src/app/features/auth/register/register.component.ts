@@ -119,7 +119,7 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
         </form>
 
         <div class="auth-footer">
-          <span>¿Ya tienes cuenta?</span>
+          <span>¿Ya tenés cuenta?</span>
           <a routerLink="/login">Inicia sesión</a>
         </div>
       </div>

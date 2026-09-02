@@ -56,7 +56,7 @@ export interface CredentialDialogData {
             }
           </mat-select>
           @if (form.get('exchange')?.hasError('required') && form.get('exchange')?.touched) {
-            <mat-error>Selecciona un exchange</mat-error>
+            <mat-error>Seleccioná un exchange</mat-error>
           }
         </mat-form-field>
 
