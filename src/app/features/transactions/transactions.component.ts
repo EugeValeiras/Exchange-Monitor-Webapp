@@ -275,7 +275,7 @@ interface ExchangeStat {
         </div>
       } @else {
         <div class="table-container">
-          <table mat-table [dataSource]="transactions" class="transactions-table">
+          <table mat-table multiTemplateDataRows [dataSource]="transactions" class="transactions-table">
             <!-- Date Column -->
             <ng-container matColumnDef="timestamp">
               <th mat-header-cell *matHeaderCellDef>Fecha</th>
@@ -427,8 +427,41 @@ interface ExchangeStat {
               </td>
             </ng-container>
 
+            <!-- Detalle: los tramos en que el exchange partió la orden -->
+            <ng-container matColumnDef="fillsDetail">
+              <td mat-cell *matCellDef="let tx" [attr.colspan]="displayedColumns.length" class="fills-detail-cell">
+                @if (tx.orderId && tx.fills > 1 && expandedOrderId === tx.orderId) {
+                  <div class="fills-detail">
+                    @if (loadingFills) {
+                      <span class="fills-loading">Cargando ejecuciones…</span>
+                    } @else {
+                      <div class="fills-head">
+                        <span>HORA</span><span>CANTIDAD</span><span>PRECIO</span><span>COMISIÓN</span>
+                      </div>
+                      @for (f of orderFills; track f.id) {
+                        <div class="fills-row">
+                          <span class="fills-time">{{ f.timestamp | date:'dd/MM HH:mm:ss' }}</span>
+                          <span class="num">{{ f.side === 'sell' || f.type === 'withdrawal' || f.type === 'fee' ? '-' : '+' }}{{ f.amount | number:'1.2-8' }}</span>
+                          <span class="num">{{ f.price | number:'1.0-8' }}</span>
+                          <span class="num">{{ f.fee ? (f.fee | number:'1.0-8') : '—' }}</span>
+                        </div>
+                      }
+                      <p class="fills-foot">
+                        {{ orderFills.length }} ejecuciones · el precio de la fila es el promedio ponderado por cantidad
+                      </p>
+                    }
+                  </div>
+                }
+              </td>
+            </ng-container>
+
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+                class="tx-row"
+                [class.expandable]="row.fills > 1"
+                [class.expanded]="row.orderId && expandedOrderId === row.orderId"
+                (click)="toggleFills(row)"></tr>
+            <tr mat-row *matRowDef="let row; columns: ['fillsDetail'];" class="detail-row"></tr>
           </table>
 
           <mat-paginator
@@ -504,6 +537,41 @@ export class TransactionsComponent implements OnInit {
   pnlLoading = true;
 
   displayedColumns = ['timestamp', 'exchange', 'type', 'asset', 'amount', 'received', 'price', 'fee'];
+
+  /** Orden abierta en el acordeón, y sus ejecuciones. */
+  expandedOrderId: string | null = null;
+  orderFills: Transaction[] = [];
+  loadingFills = false;
+
+  /**
+   * Abre o cierra el detalle de una fila agrupada.
+   *
+   * Sólo las filas que resumen más de una ejecución se abren: las demás ya
+   * muestran todo lo que hay.
+   */
+  toggleFills(tx: Transaction): void {
+    if (!tx.orderId || !tx.fills || tx.fills < 2) return;
+
+    if (this.expandedOrderId === tx.orderId) {
+      this.expandedOrderId = null;
+      this.orderFills = [];
+      return;
+    }
+
+    this.expandedOrderId = tx.orderId;
+    this.orderFills = [];
+    this.loadingFills = true;
+    this.transactionsService.getOrderFills(tx.orderId).subscribe({
+      next: (res) => {
+        this.orderFills = res.data;
+        this.loadingFills = false;
+      },
+      error: () => {
+        this.loadingFills = false;
+        this.expandedOrderId = null;
+      },
+    });
+  }
 
   // Pagination
   totalItems = 0;

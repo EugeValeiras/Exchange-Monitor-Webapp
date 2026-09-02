@@ -216,8 +216,8 @@
   }
 
   &.interest {
-    background: rgba(92, 190, 146, 0.15);
-    color: var(--color-success);
+    background: var(--wash-up);
+    color: var(--chart-up);
   }
 
   &.pnl {
@@ -416,38 +416,31 @@
     padding: 0 !important;
   }
 
-  &.deposit {
-    --mdc-chip-elevated-container-color: rgba(217, 160, 91, 0.1) !important;
-    --mdc-chip-label-text-color: var(--chart-flow) !important;
-    --mdc-chip-elevated-selected-container-color: rgba(217, 160, 91, 0.15) !important;
+  // Trade, interés y comisión no llevan color propio: lo que los distingue es
+  // el ícono y el nombre, no un hue inventado para cada uno.
+  &.trade,
+  &.interest,
+  &.fee {
+    --mdc-chip-elevated-container-color: rgba(242, 243, 245, 0.1) !important;
+    --mdc-chip-label-text-color: var(--text-secondary) !important;
+    --mdc-chip-elevated-selected-container-color: rgba(242, 243, 245, 0.15) !important;
 
     &.mat-mdc-chip-selected {
-      border-color: var(--color-success);
-      box-shadow: 0 0 8px rgba(92, 190, 146, 0.5);
+      border-color: var(--border-strong);
     }
   }
 
+  &.deposit,
   &.withdrawal {
     --mdc-chip-elevated-container-color: rgba(217, 160, 91, 0.1) !important;
     --mdc-chip-label-text-color: var(--chart-flow) !important;
     --mdc-chip-elevated-selected-container-color: rgba(217, 160, 91, 0.15) !important;
 
     &.mat-mdc-chip-selected {
-      border-color: var(--color-error);
-      box-shadow: 0 0 8px rgba(224, 107, 98, 0.5);
+      border-color: var(--chart-flow);
     }
   }
 
-  &.trade {
-    --mdc-chip-elevated-container-color: rgba(242, 243, 245, 0.1) !important;
-    --mdc-chip-label-text-color: var(--text-secondary) !important;
-    --mdc-chip-elevated-selected-container-color: rgba(242, 243, 245, 0.15) !important;
-
-    &.mat-mdc-chip-selected {
-      border-color: var(--text-secondary);
-      box-shadow: 0 0 8px rgba(242, 243, 245, 0.5);
-    }
-  }
 
   &.interest {
     --mdc-chip-elevated-container-color: rgba(242, 243, 245, 0.1) !important;
@@ -456,20 +449,9 @@
 
     &.mat-mdc-chip-selected {
       border-color: var(--text-secondary);
-      box-shadow: 0 0 8px rgba(242, 243, 245, 0.5);
     }
   }
 
-  &.fee {
-    --mdc-chip-elevated-container-color: rgba(242, 243, 245, 0.1) !important;
-    --mdc-chip-label-text-color: var(--text-secondary) !important;
-    --mdc-chip-elevated-selected-container-color: rgba(242, 243, 245, 0.15) !important;
-
-    &.mat-mdc-chip-selected {
-      border-color: var(--text-secondary);
-      box-shadow: 0 0 8px rgba(242, 243, 245, 0.5);
-    }
-  }
 
   mat-icon {
     font-size: 16px !important;
@@ -576,7 +558,6 @@
 
   &.mat-mdc-chip-selected {
     border-color: var(--border-strong);
-    box-shadow: 0 0 8px rgba(242, 243, 245, 0.18);
   }
 
   .mdc-evolution-chip__text-label {
@@ -623,7 +604,6 @@
 
   &.mat-mdc-chip-selected {
     border-color: var(--border-color);
-    box-shadow: 0 0 8px rgba(242, 243, 245, 0.18);
   }
 
   .mdc-evolution-chip__text-label {
@@ -947,4 +927,62 @@
   font-size: var(--fs-11);
   color: var(--text-tertiary);
   cursor: help;
+}
+
+// ACORDEÓN DE EJECUCIONES. Una fila que resume varios tramos se abre y los
+// muestra: la lista queda legible sin perder con qué auditar.
+.tx-row.expandable { cursor: pointer; }
+.tx-row.expanded { background: var(--bg-tertiary); }
+
+// La fila de detalle existe siempre en el DOM; vacía no debe ocupar alto ni
+// dibujar su borde, o la tabla queda con renglones fantasma.
+.detail-row {
+  height: 0;
+  td { border-bottom: 0 !important; padding: 0 !important; }
+}
+
+.fills-detail {
+  padding: var(--sp-4) var(--sp-4) var(--sp-4) var(--sp-6);
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.fills-head,
+.fills-row {
+  display: grid;
+  grid-template-columns: 120px repeat(3, minmax(0, 1fr));
+  gap: var(--sp-4);
+  align-items: center;
+  border-bottom: 1px solid var(--border-light);
+
+  > span:not(:first-child) { text-align: right; }
+}
+
+.fills-head span {
+  font-size: var(--fs-10);
+  font-weight: 600;
+  letter-spacing: var(--tr-section);
+  color: var(--text-tertiary);
+  padding-bottom: var(--sp-2);
+}
+
+.fills-row {
+  height: var(--row-h);
+  &:last-of-type { border-bottom: 0; }
+
+  .num {
+    font-size: var(--fs-13);
+    font-weight: 600;
+    letter-spacing: var(--tr-data);
+    color: var(--text-secondary);
+  }
+}
+
+.fills-time { font-size: var(--fs-12); color: var(--text-tertiary); }
+
+.fills-foot,
+.fills-loading {
+  margin: var(--sp-3) 0 0;
+  font-size: var(--fs-11);
+  color: var(--text-tertiary);
 }

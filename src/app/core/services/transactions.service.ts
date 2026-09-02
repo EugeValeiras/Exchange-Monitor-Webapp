@@ -197,6 +197,16 @@ export class TransactionsService {
     return this.api.get<TransactionStats>(url);
   }
 
+  /**
+   * Las ejecuciones que componen una orden, para abrir una fila agrupada.
+   * Sin `groupFills`, así que vienen los tramos uno por uno.
+   */
+  getOrderFills(orderId: string): Observable<PaginatedTransactions> {
+    return this.api.get<PaginatedTransactions>(
+      `/transactions?orderId=${encodeURIComponent(orderId)}&limit=200`,
+    );
+  }
+
   getTypeLabel(type: TransactionType): string {
     const labels: Record<TransactionType, string> = {
       deposit: 'Depósito',

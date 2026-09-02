@@ -29,6 +29,10 @@ interface NavGroup {
 }
 
 // Ícono vendoreado de icons0.dev (material-symbols:candlestick-chart).
+// Ícono de velas (material-symbols:candlestick-chart), vendoreado igual que el
+// de paper trading: Material no trae uno de velas en la fuente estándar.
+const CANDLES_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M7 20v-2H5V6h2V4h2v2h2v12H9v2zm8 0v-5h-2V8h2V4h2v4h2v7h-2v5z"/></svg>`;
+
 const PAPER_TRADING_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M7 20v-2H5V6h2V4h2v2h2v12H9v2zm8 0v-5h-2V8h2V4h2v4h2v7h-2v5z"/></svg>`;
 
 @Component({
@@ -587,12 +591,11 @@ export class LayoutComponent {
           icon: 'show_chart',
           children: [
             { label: 'En vivo', route: '/prices' },
-            // "Precios Raw" no es otra pantalla: es el mismo dato sin procesar.
-            { label: 'Sin procesar', route: '/raw-prices' },
+            { label: 'Orderbook', route: '/raw-prices' },
           ],
         },
-        { label: 'Análisis', icon: 'insights', route: '/market-analysis' },
-        { label: 'Histórico', icon: 'timeline', route: '/price-history' },
+        { label: 'Trading view', svgIcon: 'candles', route: '/market-analysis' },
+        { label: 'Precio histórico', icon: 'timeline', route: '/price-history' },
       ],
     },
     {
@@ -629,6 +632,10 @@ export class LayoutComponent {
     iconRegistry.addSvgIconLiteral(
       'paper-trading',
       sanitizer.bypassSecurityTrustHtml(PAPER_TRADING_ICON_SVG)
+    );
+    iconRegistry.addSvgIconLiteral(
+      'candles',
+      sanitizer.bypassSecurityTrustHtml(CANDLES_ICON_SVG)
     );
   }
 
@@ -667,9 +674,9 @@ export class LayoutComponent {
     const titles: Record<string, string> = {
       '/dashboard': 'Posición',
       '/prices': 'Precios',
-      '/raw-prices': 'Precios sin procesar',
-      '/price-history': 'Histórico',
-      '/market-analysis': 'Análisis',
+      '/raw-prices': 'Orderbook',
+      '/price-history': 'Precio histórico',
+      '/market-analysis': 'Trading view',
       '/market-analysis/agent': 'Asistente',
       '/asistente': 'Asistente',
       '/balances': 'Activos',
