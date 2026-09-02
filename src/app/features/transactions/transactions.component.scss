@@ -932,3 +932,19 @@
   border-top: 1px solid var(--border-color);
   color: var(--text-secondary);
 }
+
+// Una fila puede resumir varias ejecuciones de la misma orden. El dato de
+// cuántas va abajo del tipo, en el tono de un metadato: importa para auditar,
+// no para leer la fila.
+.type-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-start;
+}
+
+.fills-note {
+  font-size: var(--fs-11);
+  color: var(--text-tertiary);
+  cursor: help;
+}

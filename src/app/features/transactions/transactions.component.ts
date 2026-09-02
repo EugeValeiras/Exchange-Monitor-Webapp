@@ -302,9 +302,17 @@ interface ExchangeStat {
             <ng-container matColumnDef="type">
               <th mat-header-cell *matHeaderCellDef>Tipo</th>
               <td mat-cell *matCellDef="let tx">
-                <div class="type-badge" [class]="tx.type">
-                  <mat-icon>{{ getTypeIcon(tx.type) }}</mat-icon>
-                  {{ getTypeLabel(tx.type) }}
+                <div class="type-cell">
+                  <div class="type-badge" [class]="tx.type">
+                    <mat-icon>{{ getTypeIcon(tx.type) }}</mat-icon>
+                    {{ getTypeLabel(tx.type) }}
+                  </div>
+                  @if (tx.fills > 1) {
+                    <span
+                      class="fills-note"
+                      [matTooltip]="'El exchange ejecutó esta orden en ' + tx.fills + ' tramos. La cantidad está sumada y el precio es el promedio ponderado.'"
+                      matTooltipPosition="above">{{ tx.fills }} ejecuciones</span>
+                  }
                 </div>
               </td>
             </ng-container>

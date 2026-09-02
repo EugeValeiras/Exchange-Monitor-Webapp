@@ -19,6 +19,14 @@ export interface Transaction {
   pair?: string;
   side?: 'buy' | 'sell';
   timestamp: string;
+
+  /**
+   * Cuántas ejecuciones hay detrás de la fila. Un exchange parte una orden
+   * grande contra varios niveles del libro y devuelve cada tramo por separado;
+   * la lista los junta y esto dice cuántos eran.
+   */
+  fills?: number;
+  orderId?: string;
 }
 
 export interface PaginatedTransactions {
@@ -140,6 +148,9 @@ export class TransactionsService {
     if (filter.pair) params.set('pair', filter.pair);
     if (filter.startDate) params.set('startDate', filter.startDate);
     if (filter.endDate) params.set('endDate', filter.endDate);
+    // Una orden, una fila. Sin esto la lista muestra cada tramo de ejecución
+    // por separado: 160 renglones para 62 operaciones.
+    params.set('groupFills', 'true');
 
     const queryString = params.toString();
     const url = queryString ? `/transactions?${queryString}` : '/transactions';
@@ -177,6 +188,9 @@ export class TransactionsService {
     if (filter?.assets && filter.assets.length > 0) {
       params.set('assets', filter.assets.join(','));
     }
+
+    // El contador tiene que contar lo mismo que la lista pagina.
+    params.set('groupFills', 'true');
 
     const queryString = params.toString();
     const url = queryString ? `/transactions/stats?${queryString}` : '/transactions/stats';
