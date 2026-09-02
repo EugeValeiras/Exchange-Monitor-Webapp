@@ -507,16 +507,61 @@ select:-webkit-autofill:active {
   white-space: nowrap;
 }
 
-// Una columna de números se compara de arriba abajo: alinear a la derecha es
-// lo que reemplaza a las cifras tabulares, que en esta familia separan la
-// puntuación y rompen el número.
+// ============================================================================
+// COLUMNAS NUMÉRICAS. Una columna de números se compara de arriba abajo: la
+// alineación a la derecha es lo que hace que los órdenes de magnitud queden
+// uno encima del otro. Es además lo que reemplaza a las cifras tabulares, que
+// en esta familia separan la puntuación y rompen el número.
+//
+// Se listan por nombre de columna Y por clase de celda porque la app usa las
+// dos convenciones; una tabla nueva que no aparezca acá se va a notar.
+// ============================================================================
 .mat-mdc-cell.num,
 .mat-mdc-header-cell.num,
-.mat-column-value,
-.mat-column-amount,
-.mat-column-total,
-.mat-column-price {
-  text-align: right;
+.mat-column-amount, .mat-column-avgCost, .mat-column-avgEntryPrice,
+.mat-column-buyPrice, .mat-column-costPerUnit, .mat-column-currentPrice,
+.mat-column-fee, .mat-column-filledPrice, .mat-column-limitPrice,
+.mat-column-originalAmount, .mat-column-pnl, .mat-column-price,
+.mat-column-realized, .mat-column-realizedPnl, .mat-column-received,
+.mat-column-remainingAmount, .mat-column-requestedPrice, .mat-column-sellPrice,
+.mat-column-total, .mat-column-totalCost, .mat-column-unrealized,
+.mat-column-avgCost, .mat-column-change, .mat-column-changes, .mat-column-quantity,
+.mat-column-unrealizedPnl, .mat-column-value, .mat-column-valueUsd {
+  text-align: right !important;
+
+  // El contenido de la celda también, no sólo el texto suelto.
+  > * { justify-content: flex-end; }
+}
+
+// Alinear el <span> no sirve: un inline no tiene ancho propio. El alineado lo
+// aplica la CELDA que lo contiene.
+.mat-mdc-cell:has(.quantity-cell),
+.mat-mdc-cell:has(.price-cell),
+.mat-mdc-cell:has(.value-cell),
+.mat-mdc-cell:has(.cost-cell),
+.mat-mdc-cell:has(.fee-cell),
+.mat-mdc-cell:has(.pnl-cell),
+.mat-mdc-cell:has(.amount-cell),
+.mat-mdc-cell:has(.change-cell),
+.mat-mdc-cell:has(.changes-cell),
+.mat-mdc-cell:has(.avg-cost-cell),
+.mat-mdc-cell:has(.total-cell),
+.mat-mdc-cell:has(.received-cell) {
+  text-align: right !important;
+}
+
+.quantity-cell, .price-cell, .value-cell, .cost-cell, .fee-cell,
+.pnl-cell, .amount-cell, .change-cell, .changes-cell,
+.avg-cost-cell, .total-cell, .received-cell {
+  text-align: right !important;
+  justify-content: flex-end;
+}
+
+.pnl-cell, .change-cell, .changes-cell {
+  .pnl-value, .pnl-percent, .change-value, .change-percent {
+    display: block;
+    text-align: right;
+  }
 }
 
 // ============================================================================

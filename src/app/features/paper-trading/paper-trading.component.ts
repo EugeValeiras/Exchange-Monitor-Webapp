@@ -120,7 +120,7 @@ const POLL_INTERVAL_MS = 10_000;
             </button>
             <button mat-stroked-button color="warn" (click)="confirmReset()" [disabled]="resetting()">
               <mat-icon>restart_alt</mat-icon>
-              Resetear Cuenta
+              Resetear cuenta
             </button>
           </div>
         </div>
@@ -139,7 +139,7 @@ const POLL_INTERVAL_MS = 10_000;
                 <mat-icon>account_balance</mat-icon>
               </div>
               <span class="stat-value">{{ perf.equity | currency:'USD':'symbol':'1.2-2' }}</span>
-              <span class="stat-hint">Balance inicial: {{ perf.initialBalance | currency:'USD':'symbol':'1.2-2' }}</span>
+              <span class="stat-hint">Saldo inicial: {{ perf.initialBalance | currency:'USD':'symbol':'1.2-2' }}</span>
             </div>
 
             <div class="stat-card">

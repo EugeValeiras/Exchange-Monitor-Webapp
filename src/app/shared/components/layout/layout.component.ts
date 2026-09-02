@@ -225,7 +225,7 @@ const PAPER_TRADING_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="2
     }
 
     .logo-text {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 600;
       color: var(--text-primary);
       letter-spacing: -0.3px;
