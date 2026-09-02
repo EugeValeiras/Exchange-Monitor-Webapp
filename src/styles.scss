@@ -344,10 +344,12 @@ body {
     background-color: #ffffff !important;
   }
 
-  // Deshabilitado tiene que LEERSE deshabilitado, no desaparecer.
+  // Deshabilitado tiene que LEERSE deshabilitado, no desaparecer: el nivel más
+  // tenue da 2,4:1 y el texto se pierde. Un escalón más arriba se entiende que
+  // no se puede tocar y aun así se lee qué dice.
   &[disabled] {
     background-color: var(--bg-tertiary) !important;
-    color: var(--text-disabled) !important;
+    color: var(--text-tertiary) !important;
   }
 }
 
@@ -908,4 +910,43 @@ a {
 .mat-date-range-input-separator {
   font-size: var(--fs-13) !important;
   color: var(--text-tertiary) !important;
+}
+
+// ============================================================================
+// FORMULARIOS. Material trae sus campos a 16 px: fuera de la escala y un
+// escalón por encima del texto que los rodea, así que la etiqueta pesaba más
+// que el dato que estaba pidiendo.
+// ============================================================================
+.mat-mdc-form-field {
+  --mat-form-field-container-text-size: var(--fs-13);
+  --mdc-outlined-text-field-label-text-size: var(--fs-13);
+  --mat-form-field-subscript-text-size: var(--fs-11);
+
+  .mdc-floating-label,
+  .mat-mdc-floating-label {
+    font-size: var(--fs-13) !important;
+  }
+
+  input.mat-mdc-input-element,
+  textarea.mat-mdc-input-element {
+    font-size: var(--fs-13) !important;
+  }
+
+  .mat-mdc-form-field-hint,
+  .mat-mdc-form-field-error {
+    font-size: var(--fs-11) !important;
+  }
+}
+
+// El checkbox y el radio comparten la misma escala que las filas de lista.
+.mat-mdc-checkbox label,
+.mat-mdc-radio-button label,
+.mat-mdc-slide-toggle label {
+  font-size: var(--fs-13) !important;
+}
+
+// El subscript de un campo (hint o error) se dibuja fuera de la caja: sin
+// reservarle el alto, la última línea se come el borde de la card.
+.mat-mdc-form-field-subscript-wrapper {
+  min-height: 18px;
 }

@@ -52,7 +52,7 @@ import { ConsolidatedBalanceService } from '../../core/services/consolidated-bal
               <div class="toggle-row">
                 <div class="toggle-text">
                   <span class="toggle-label">Notificaciones de cambio de precio</span>
-                  <span class="toggle-hint">Si lo desactivas, no recibiras ninguna alerta de precio.</span>
+                  <span class="toggle-hint">Si lo apagás no llega ningún aviso de precio.</span>
                 </div>
                 <mat-slide-toggle formControlName="enabled"></mat-slide-toggle>
               </div>
@@ -61,11 +61,11 @@ import { ConsolidatedBalanceService } from '../../core/services/consolidated-bal
                 <mat-label>Umbral de cambio (%)</mat-label>
                 <input matInput type="number" formControlName="priceChangeThreshold" min="1" max="50" step="1">
                 <span matTextSuffix>%</span>
-                <mat-hint>Aplica a alertas de tus activos favoritos (entre 1 y 50).</mat-hint>
                 @if (form.get('priceChangeThreshold')?.hasError('required') || form.get('priceChangeThreshold')?.hasError('min') || form.get('priceChangeThreshold')?.hasError('max')) {
                   <mat-error>Ingresá un valor entre 1 y 50</mat-error>
                 }
               </mat-form-field>
+              <p class="field-note">Por debajo de este movimiento en 24 h no te avisamos.</p>
             </mat-card-content>
           </mat-card>
 
@@ -225,6 +225,12 @@ import { ConsolidatedBalanceService } from '../../core/services/consolidated-bal
     .toggle-hint {
       color: var(--text-secondary);
       font-size: 13px;
+    }
+
+    .field-note {
+      margin: 0;
+      font-size: var(--fs-11);
+      color: var(--text-tertiary);
     }
 
     .threshold-field {
