@@ -151,7 +151,7 @@ interface PhaseGroup {
       width: 18px; height: 18px; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center;
     }
-    .status-slot mat-icon { font-size: 18px; width: 18px; height: 18px; line-height: 18px; }
+    .status-slot mat-icon { font-size: 17px; width: 18px; height: 18px; line-height: 18px; }
     .status-ok { color: var(--color-success); }
     .status-err { color: var(--color-error); }
 
@@ -241,7 +241,7 @@ interface PhaseGroup {
     .agent.pending-phase { opacity: .6; }
     .agent-chevron {
       flex-shrink: 0; color: var(--text-tertiary);
-      font-size: 16px; width: 16px; height: 16px; line-height: 16px;
+      font-size: 15px; width: 16px; height: 16px; line-height: 16px;
       transition: transform .2s;
     }
     .agent-chevron.open { transform: rotate(180deg); }

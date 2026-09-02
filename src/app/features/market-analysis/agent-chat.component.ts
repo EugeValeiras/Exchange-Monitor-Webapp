@@ -331,7 +331,6 @@ export interface ChartAction {
       .model-resolved {
         font-size: 11px;
         color: var(--text-secondary);
-        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
         white-space: nowrap;
         opacity: 0.85;
       }
@@ -445,7 +444,6 @@ export interface ChartAction {
       }
 
       .tool-name {
-        font-family: ui-monospace, monospace;
         font-size: 12px;
         word-break: break-word;
       }
@@ -492,8 +490,8 @@ export interface ChartAction {
         color: var(--text-primary);
         line-height: 1.25;
       }
-      .text h1 { font-size: 18px; }
-      .text h2 { font-size: 16px; }
+      .text h1 { font-size: 17px; }
+      .text h2 { font-size: 17px; }
       .text h3 { font-size: 15px; color: var(--text-primary); }
       .text h4 { font-size: 14px; }
 
@@ -527,7 +525,6 @@ export interface ChartAction {
         padding: 1px 5px;
         border-radius: 3px;
         font-size: 12px;
-        font-family: ui-monospace, monospace;
       }
 
       .text pre {
@@ -628,7 +625,7 @@ export interface ChartAction {
         border-radius: 6px;
         padding: 8px 10px;
         font-family: inherit;
-        font-size: 16px; /* >=16px evita que iOS Safari haga zoom al focusear */
+        font-size: 15px; /* >=16px evita que iOS Safari haga zoom al focusear */
         resize: vertical;
         min-height: 48px;
       }
@@ -680,7 +677,7 @@ export interface ChartAction {
 
       .thread-row.active {
         border-color: var(--border-strong);
-        background: rgba(217, 160, 91, 0.08);
+        background: var(--bg-selected);
       }
 
       .thread-btn {

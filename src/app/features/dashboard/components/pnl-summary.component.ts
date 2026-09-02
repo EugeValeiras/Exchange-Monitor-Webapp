@@ -194,7 +194,7 @@ import {
 
     .section-header h2 {
       margin: 0;
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 600;
       color: var(--text-primary);
     }
@@ -304,12 +304,11 @@ import {
     .pnl-value {
       font-size: 24px;
       font-weight: 700;
-      font-family: 'SF Mono', monospace;
       color: var(--text-primary);
     }
 
     .pnl-card.total .pnl-value {
-      font-size: 28px;
+      font-size: 24px;
     }
 
     .pnl-hint {
@@ -344,7 +343,6 @@ import {
     .period-value {
       font-size: 14px;
       font-weight: 600;
-      font-family: 'SF Mono', monospace;
     }
 
     .period-item.positive .period-value {

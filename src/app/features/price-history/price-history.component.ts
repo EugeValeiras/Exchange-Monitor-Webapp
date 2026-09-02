@@ -155,7 +155,7 @@ interface TimeframeOption {
       }
 
       .header-content h1 {
-        font-size: 22px !important;
+        font-size: 17px !important;
       }
     }
 
@@ -170,7 +170,7 @@ interface TimeframeOption {
 
     .header-content h1 {
       margin: 0;
-      font-size: 28px;
+      font-size: 17px;
       font-weight: 600;
       color: var(--text-primary);
     }
@@ -261,7 +261,6 @@ interface TimeframeOption {
     .symbol-btn-price {
       font-size: 13px;
       color: var(--text-secondary);
-      font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
       display: flex;
       align-items: center;
       gap: 6px;
@@ -414,7 +413,7 @@ interface TimeframeOption {
       display: flex;
       align-items: center;
       gap: 10px;
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 600;
       color: var(--text-primary);
     }

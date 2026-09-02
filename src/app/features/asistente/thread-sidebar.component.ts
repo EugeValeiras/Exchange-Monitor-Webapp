@@ -97,7 +97,7 @@ import { ChatService, ThreadSummary } from './chat.service';
       transition: all .15s;
     }
     .new-btn:hover { border-color: var(--border-strong); background: var(--bg-hover); }
-    .new-btn mat-icon { color: var(--text-primary); font-size: 18px; width: 18px; height: 18px; line-height: 18px; }
+    .new-btn mat-icon { color: var(--text-primary); font-size: 17px; width: 18px; height: 18px; line-height: 18px; }
 
     .section-label {
       font-size: .7rem; font-weight: 700; letter-spacing: .08em;
@@ -159,7 +159,7 @@ import { ChatService, ThreadSummary } from './chat.service';
       display: flex; align-items: center; justify-content: center;
       opacity: 0; transition: opacity .15s, background .15s;
     }
-    .kebab mat-icon { font-size: 18px; width: 18px; height: 18px; line-height: 18px; }
+    .kebab mat-icon { font-size: 17px; width: 18px; height: 18px; line-height: 18px; }
     .thread-item:hover .kebab, .thread-item.active .kebab { opacity: 1; }
     .kebab:hover { background: var(--bg-tertiary); color: var(--text-primary); }
 
@@ -178,7 +178,7 @@ import { ChatService, ThreadSummary } from './chat.service';
     }
     .menu-item:hover { background: var(--bg-hover); }
     .menu-item.danger { color: var(--color-error); }
-    .menu-item mat-icon { font-size: 16px; width: 16px; height: 16px; line-height: 16px; }
+    .menu-item mat-icon { font-size: 15px; width: 16px; height: 16px; line-height: 16px; }
 
     @keyframes spin { to { transform: rotate(360deg); } }
     @media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }

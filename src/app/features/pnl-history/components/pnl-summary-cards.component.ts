@@ -140,7 +140,6 @@ import { PnlSummaryResponse } from '../../../core/services/pnl.service';
     .card-value {
       font-size: 28px;
       font-weight: 700;
-      font-family: 'SF Mono', monospace;
       color: var(--text-primary);
     }
 
@@ -214,7 +213,6 @@ import { PnlSummaryResponse } from '../../../core/services/pnl.service';
     .period-value {
       font-size: 14px;
       font-weight: 600;
-      font-family: 'SF Mono', monospace;
     }
 
     .period-item.positive .period-value {

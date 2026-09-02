@@ -93,7 +93,7 @@ import { FavoriteButtonComponent } from '../../../shared/components/favorite-but
 
     .section-header h3 {
       margin: 0;
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 600;
       color: var(--text-primary);
     }
@@ -146,7 +146,7 @@ import { FavoriteButtonComponent } from '../../../shared/components/favorite-but
 
       p {
         margin: 0 0 8px 0;
-        font-size: 16px;
+        font-size: 15px;
         font-weight: 500;
         color: var(--text-primary);
       }
@@ -220,7 +220,7 @@ import { FavoriteButtonComponent } from '../../../shared/components/favorite-but
     }
 
     .crypto-symbol {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 600;
       color: var(--text-primary);
     }
@@ -236,7 +236,6 @@ import { FavoriteButtonComponent } from '../../../shared/components/favorite-but
       font-size: 20px;
       font-weight: 700;
       color: var(--text-primary);
-      font-family: 'SF Mono', monospace;
     }
 
     .price-change {

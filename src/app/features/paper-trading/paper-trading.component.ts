@@ -591,7 +591,7 @@ const POLL_INTERVAL_MS = 10_000;
       display: flex;
       align-items: center;
       gap: 10px;
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 600;
       color: var(--text-primary);
     }
@@ -671,14 +671,14 @@ const POLL_INTERVAL_MS = 10_000;
     }
 
     .stat-value {
-      font-size: 26px;
+      font-size: 24px;
       font-weight: 600;
       color: var(--text-primary);
       margin-bottom: 4px;
     }
 
     .stat-value.small {
-      font-size: 22px;
+      font-size: 20px;
     }
 
     .stat-sub {
@@ -713,13 +713,13 @@ const POLL_INTERVAL_MS = 10_000;
 
     .section-header h2 {
       margin: 0;
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 600;
       color: var(--text-primary);
     }
 
     .chart-card mat-card-title {
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 600;
       color: var(--text-primary);
     }
@@ -804,7 +804,6 @@ const POLL_INTERVAL_MS = 10_000;
     }
 
     .mono-cell {
-      font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
       color: var(--text-secondary);
       font-weight: 500;
     }

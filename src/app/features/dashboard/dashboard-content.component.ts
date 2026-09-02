@@ -50,7 +50,7 @@ import { FlipNumberComponent } from '../../shared/components/flip-number/flip-nu
                 @if (balanceService.loading()) {
                   <span class="skeleton-text skeleton-pulse" style="width: 100px; height: 14px;"></span>
                 } @else {
-                  <span class="stat-label">Balance Total</span>
+                  <span class="stat-label">Posición total</span>
                 }
                 <mat-icon>account_balance_wallet</mat-icon>
               </div>
@@ -191,7 +191,7 @@ import { FlipNumberComponent } from '../../shared/components/flip-number/flip-nu
       }
 
       .quick-stat-card .stat-value {
-        font-size: 28px !important;
+        font-size: 32px !important;
       }
     }
 
@@ -228,7 +228,7 @@ import { FlipNumberComponent } from '../../shared/components/flip-number/flip-nu
     }
 
     .quick-stat-card .stat-value {
-      font-size: 36px;
+      font-size: 32px;
       font-weight: 700;
       color: white;
       margin-bottom: 4px;
@@ -236,28 +236,17 @@ import { FlipNumberComponent } from '../../shared/components/flip-number/flip-nu
 
     .stat-change {
       display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 8px;
-      padding: 6px 12px;
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.1);
+      align-items: baseline;
+      gap: var(--sp-3);
+      margin-bottom: var(--sp-3);
       width: fit-content;
     }
 
-    .stat-change.positive {
-      background: rgba(92, 190, 146, 0.2);
-    }
-
-    .stat-change.negative {
-      background: rgba(224, 107, 98, 0.2);
-    }
-
     .stat-change .change-value {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 600;
-      color: white;
-      font-family: 'SF Mono', monospace;
+      letter-spacing: var(--tr-data);
+      color: var(--text-secondary);
     }
 
     .stat-change.positive .change-value,

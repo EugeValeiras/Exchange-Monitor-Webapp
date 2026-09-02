@@ -117,7 +117,7 @@ import { WorkflowCardComponent } from './workflow-card.component';
       background: var(--bg-selected); color: var(--bg-primary);
       display: flex; align-items: center; justify-content: center;
     }
-    .avatar mat-icon { font-size: 16px; width: 16px; height: 16px; line-height: 16px; }
+    .avatar mat-icon { font-size: 15px; width: 16px; height: 16px; line-height: 16px; }
     .body { padding-left: 40px; }
 
     .md {
@@ -153,7 +153,7 @@ import { WorkflowCardComponent } from './workflow-card.component';
       padding: 10px 12px;
       color: var(--color-error); font-size: .85rem;
     }
-    .error-callout mat-icon { font-size: 18px; width: 18px; height: 18px; line-height: 18px; flex-shrink: 0; }
+    .error-callout mat-icon { font-size: 17px; width: 18px; height: 18px; line-height: 18px; flex-shrink: 0; }
     .error-text { flex: 1; }
     .retry-btn {
       background: transparent; border: none; cursor: pointer;

@@ -224,7 +224,7 @@ type ImportType = 'deposits' | 'withdrawals' | 'transactions';
 
     .drop-zone:hover:not(.uploading) {
       border-color: var(--border-color);
-      background: rgba(217, 160, 91, 0.05);
+      background: var(--bg-tertiary);
     }
 
     .drop-zone.dragover {
@@ -240,7 +240,7 @@ type ImportType = 'deposits' | 'withdrawals' | 'transactions';
 
       &:hover:not(.uploading) {
         border-color: var(--border-color);
-        background: rgba(217, 160, 91, 0.05);
+        background: var(--bg-tertiary);
       }
     }
 
@@ -266,7 +266,7 @@ type ImportType = 'deposits' | 'withdrawals' | 'transactions';
     }
 
     .drop-text {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 500;
       color: var(--text-primary);
       margin: 0 0 4px 0;

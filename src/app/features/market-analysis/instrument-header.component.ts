@@ -257,7 +257,7 @@ export interface HeaderContext {
       }
 
       .price {
-        font-size: 38px;
+        font-size: 32px;
         font-weight: 600;
         line-height: 1;
         letter-spacing: -0.02em;
@@ -431,7 +431,7 @@ export interface HeaderContext {
       }
 
       .toggle.active {
-        border-color: rgba(217, 160, 91, 0.42);
+        border-color: var(--border-strong);
         background: rgba(217, 160, 91, 0.13);
         color: var(--text-primary);
       }
@@ -472,7 +472,7 @@ export interface HeaderContext {
         }
 
         .price {
-          font-size: 30px;
+          font-size: 32px;
         }
 
         .controls {

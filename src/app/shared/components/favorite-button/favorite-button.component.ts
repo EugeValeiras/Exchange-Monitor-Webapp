@@ -32,7 +32,7 @@ import { FavoritesService } from '../../../core/services/favorites.service';
     }
 
     .favorite-btn.is-favorite {
-      color: var(--color-warning);
+      color: var(--text-primary);
     }
 
     .favorite-btn.is-favorite mat-icon {

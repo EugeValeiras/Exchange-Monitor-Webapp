@@ -165,7 +165,7 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
 
     .empty-state h3 {
       margin: 0 0 8px;
-      font-size: 18px;
+      font-size: 17px;
     }
 
     .empty-state p {
@@ -224,12 +224,10 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
 
     .pnl-value {
       font-weight: 600;
-      font-family: 'SF Mono', monospace;
     }
 
     .pnl-percent {
       font-size: 12px;
-      font-family: 'SF Mono', monospace;
     }
 
     .positive {

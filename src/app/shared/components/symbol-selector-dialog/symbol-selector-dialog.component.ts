@@ -259,7 +259,6 @@ interface SymbolOption {
       font-size: 15px;
       font-weight: 600;
       color: var(--text-primary);
-      font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
     }
 
     .change {

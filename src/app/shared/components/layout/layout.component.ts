@@ -373,7 +373,7 @@ const PAPER_TRADING_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="2
 
     .page-title {
       margin: 0;
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 600;
       color: var(--text-primary);
     }
@@ -509,7 +509,7 @@ const PAPER_TRADING_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="2
       }
 
       .page-title {
-        font-size: 16px;
+        font-size: 15px;
         flex: 1;
         min-width: 0;
         overflow: hidden;
@@ -661,24 +661,28 @@ export class LayoutComponent {
 
   getPageTitle(): string {
     const path = window.location.pathname;
+    // El título de la pantalla dice lo MISMO que la entrada del menú que la
+    // abre. Decían cosas distintas —el menú "Posición", la barra "Dashboard"—
+    // y eso hace dudar de si uno llegó adonde quería.
     const titles: Record<string, string> = {
-      '/dashboard': 'Dashboard',
-      '/prices': 'Precios en Tiempo Real',
-      '/price-history': 'Historico de Precios',
-      '/market-analysis': 'Analisis de Mercado',
-      '/market-analysis/agent': 'Asistente IA',
-      '/asistente': 'Asistente IA',
-      '/balances': 'Balances',
-      '/transactions': 'Transacciones',
-      '/pnl-history': 'Historial P&L',
-      '/paper-trading': 'Paper Trading',
-      '/swap-preview': 'Swap Preview',
+      '/dashboard': 'Posición',
+      '/prices': 'Precios',
+      '/raw-prices': 'Precios sin procesar',
+      '/price-history': 'Histórico',
+      '/market-analysis': 'Análisis',
+      '/market-analysis/agent': 'Asistente',
+      '/asistente': 'Asistente',
+      '/balances': 'Activos',
+      '/transactions': 'Movimientos',
+      '/pnl-history': 'Resultado',
+      '/paper-trading': 'Paper trading',
+      '/swap-preview': 'Simular swap',
       '/exchanges': 'Exchanges',
       '/security': 'Seguridad',
       '/security/passkeys': 'Passkeys',
-      '/settings': 'Configuracion',
-      '/settings/symbols': 'Pares de Precios',
-      '/settings/notifications': 'Notificaciones',
+      '/settings': 'Ajustes',
+      '/settings/symbols': 'Pares de precios',
+      '/settings/notifications': 'Avisos',
       '/settings/maintenance': 'Mantenimiento'
     };
     return titles[path] || 'Exchange Monitor';

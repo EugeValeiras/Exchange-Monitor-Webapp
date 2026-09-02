@@ -557,7 +557,7 @@ interface QuoteStat {
 
     .section-header h2 {
       margin: 0;
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 600;
       color: var(--text-primary);
     }
@@ -706,7 +706,6 @@ interface QuoteStat {
 
     .price-cell {
       font-weight: 700;
-      font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
       color: var(--text-primary);
     }
 
@@ -735,7 +734,6 @@ interface QuoteStat {
       align-items: center;
       gap: 4px;
       font-size: 12px;
-      font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
     }
 
     .range-low {

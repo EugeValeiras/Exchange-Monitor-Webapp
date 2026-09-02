@@ -893,7 +893,6 @@
 
   .amount {
     font-weight: 600;
-    font-family: 'SF Mono', monospace;
   }
 
   .asset {
@@ -919,7 +918,6 @@
 }
 
 .price-cell {
-  font-family: 'SF Mono', monospace;
 
   .price-asset {
     font-size: 11px;
@@ -932,7 +930,6 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-family: 'SF Mono', monospace;
 
   .fee-amount { color: var(--text-secondary); }
 

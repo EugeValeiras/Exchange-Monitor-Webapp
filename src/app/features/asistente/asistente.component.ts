@@ -214,7 +214,7 @@ interface Suggestion { icon: string; text: string; }
       align-items: center; justify-content: center;
     }
     .hamburger:hover { background: var(--bg-hover); }
-    .hamburger mat-icon { font-size: 22px; width: 22px; height: 22px; line-height: 22px; }
+    .hamburger mat-icon { font-size: 20px; width: 22px; height: 22px; line-height: 22px; }
     .topbar-title {
       flex: 1; min-width: 0;
       font-weight: 600; color: var(--text-primary);
@@ -320,7 +320,7 @@ interface Suggestion { icon: string; text: string; }
       border-color: var(--border-strong); background: var(--bg-hover);
       transform: translateY(-1px);
     }
-    .chip mat-icon { font-size: 16px; width: 16px; height: 16px; line-height: 16px; color: var(--text-primary); }
+    .chip mat-icon { font-size: 15px; width: 16px; height: 16px; line-height: 16px; color: var(--text-primary); }
 
     /* To-bottom pill */
     .to-bottom {

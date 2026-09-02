@@ -331,7 +331,7 @@ const COMMON_ASSETS = [
     }
 
     .picker-arrow {
-      font-size: 18px;
+      font-size: 17px;
       width: 18px;
       height: 18px;
       color: var(--text-tertiary);
@@ -392,7 +392,6 @@ const COMMON_ASSETS = [
       color: var(--text-primary);
       font-size: 15px;
       font-weight: 600;
-      font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
       padding: 9px 0;
       width: 100%;
     }
@@ -511,7 +510,7 @@ const COMMON_ASSETS = [
     }
 
     .exchange-name {
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 600;
       color: var(--text-primary);
     }
@@ -519,7 +518,6 @@ const COMMON_ASSETS = [
     .exchange-balance {
       font-size: 12px;
       color: var(--text-secondary);
-      font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
     }
 
     .exchange-balance.insufficient {
@@ -552,7 +550,6 @@ const COMMON_ASSETS = [
       font-size: 14px;
       font-weight: 500;
       color: var(--text-tertiary);
-      font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
     }
 
     .net-label {
@@ -561,10 +558,9 @@ const COMMON_ASSETS = [
     }
 
     .net-value {
-      font-size: 28px;
+      font-size: 24px;
       font-weight: 700;
       color: var(--text-primary);
-      font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
     }
 
     .result-card.best .net-value {
@@ -572,7 +568,7 @@ const COMMON_ASSETS = [
     }
 
     .net-asset {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 600;
       color: var(--text-secondary);
     }
@@ -598,7 +594,6 @@ const COMMON_ASSETS = [
       font-size: 13px;
       font-weight: 500;
       color: var(--text-primary);
-      font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
     }
 
     .detail-value.fee {
@@ -621,7 +616,6 @@ const COMMON_ASSETS = [
       border-radius: 8px;
       font-size: 12px;
       font-weight: 600;
-      font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
       text-align: center;
     }
 
@@ -734,7 +728,7 @@ const COMMON_ASSETS = [
       }
 
       .net-value {
-        font-size: 22px;
+        font-size: 20px;
       }
     }
   `],

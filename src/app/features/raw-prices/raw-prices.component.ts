@@ -459,7 +459,7 @@ const DEFAULT_SYMBOL_BY_EXCHANGE: Record<RawExchange, string> = {
         }
 
         .title-block h1 {
-          font-size: 22px !important;
+          font-size: 17px !important;
         }
 
         .title-block h1 mat-icon {
@@ -481,7 +481,7 @@ const DEFAULT_SYMBOL_BY_EXCHANGE: Record<RawExchange, string> = {
         display: flex;
         align-items: center;
         gap: 8px;
-        font-size: 28px;
+        font-size: 17px;
         font-weight: 600;
         margin: 0;
         color: var(--text-primary);
@@ -541,7 +541,7 @@ const DEFAULT_SYMBOL_BY_EXCHANGE: Record<RawExchange, string> = {
         color: var(--text-primary);
       }
       .mode-option.active.authenticated {
-        background: rgba(217, 160, 91, 0.18);
+        background: var(--bg-selected);
         color: var(--text-primary);
       }
 
@@ -774,7 +774,7 @@ const DEFAULT_SYMBOL_BY_EXCHANGE: Record<RawExchange, string> = {
         padding: 8px 0 20px;
       }
       .last-price {
-        font-size: 44px;
+        font-size: 32px;
         font-weight: 700;
         color: var(--text-primary);
         font-variant-numeric: tabular-nums;

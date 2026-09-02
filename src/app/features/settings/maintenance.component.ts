@@ -101,7 +101,7 @@ import { PriceHistoryService } from '../price-history/price-history.service';
 
     .page-header h1 {
       margin: 0;
-      font-size: 28px;
+      font-size: 17px;
       font-weight: 600;
       color: var(--text-primary);
     }

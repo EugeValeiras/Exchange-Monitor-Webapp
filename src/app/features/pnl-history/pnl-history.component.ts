@@ -168,7 +168,7 @@ import { PnlEvolutionChartComponent } from './components/pnl-evolution-chart.com
 
     .header-content h1 {
       margin: 0;
-      font-size: 28px;
+      font-size: 17px;
       font-weight: 600;
       color: var(--text-primary);
     }

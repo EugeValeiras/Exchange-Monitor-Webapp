@@ -294,7 +294,7 @@ import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-lo
       align-items: center;
       justify-content: center;
       font-weight: 700;
-      font-size: 18px;
+      font-size: 17px;
       flex-shrink: 0;
     }
 
@@ -323,7 +323,7 @@ import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-lo
     .exchange-name {
       font-weight: 600;
       color: var(--text-primary);
-      font-size: 16px;
+      font-size: 15px;
     }
 
     .exchange-label {
@@ -355,12 +355,12 @@ import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-lo
     }
 
     .status-badge.active {
-      background: rgba(92, 190, 146, 0.15);
+      background: var(--bg-tertiary);
       color: var(--color-success);
     }
 
     .status-badge.active:hover:not(:disabled) {
-      background: rgba(92, 190, 146, 0.25);
+      background: var(--bg-selected);
     }
 
     .status-badge.inactive {
@@ -427,7 +427,6 @@ import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-lo
 
     .error-message {
       font-size: 11px;
-      font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
       color: var(--text-secondary);
       background: rgba(0, 0, 0, 0.25);
       border-radius: 6px;
@@ -476,12 +475,12 @@ import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-lo
 
       &.sync:hover:not(:disabled) {
         color: var(--color-success);
-        background: rgba(92, 190, 146, 0.1);
+        background: var(--bg-tertiary);
       }
 
       &.test:hover:not(:disabled) {
         color: var(--text-primary);
-        background: rgba(217, 160, 91, 0.1);
+        background: var(--bg-tertiary);
       }
 
       &.import:hover:not(:disabled) {
@@ -491,7 +490,7 @@ import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-lo
 
       &.edit:hover:not(:disabled) {
         color: var(--text-primary);
-        background: rgba(217, 160, 91, 0.1);
+        background: var(--bg-tertiary);
       }
 
       &.delete:hover:not(:disabled) {

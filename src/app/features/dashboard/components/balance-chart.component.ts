@@ -92,7 +92,7 @@ const ASSET_COLORS = [
           </div>
         } @else {
           @if (!supportsMultiAsset()) {
-            <mat-card-title>Balance History</mat-card-title>
+            <mat-card-title>Evolución</mat-card-title>
           }
           <div class="header-actions">
             <mat-button-toggle-group
@@ -120,7 +120,7 @@ const ASSET_COLORS = [
         </div>
       } @else if (supportsMultiAsset()) {
         <div class="asset-filter-section">
-          <span class="filter-label">Balance History</span>
+          <span class="filter-label">Evolución</span>
           <div class="asset-chips-wrapper">
             <mat-chip-listbox multiple (change)="onAssetFilterChange($event)" class="asset-chips">
               @for (asset of visibleAssets(); track asset) {
@@ -193,7 +193,7 @@ const ASSET_COLORS = [
     }
 
     mat-card-title {
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 600;
       color: var(--text-primary);
     }
@@ -312,7 +312,7 @@ const ASSET_COLORS = [
     }
 
     .filter-label {
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 600;
       color: var(--text-primary);
       white-space: nowrap;
@@ -415,7 +415,7 @@ const ASSET_COLORS = [
       align-items: center;
       justify-content: center;
       font-weight: 600;
-      font-size: 9px;
+      font-size: 10px;
     }
 
     .asset-value {
@@ -544,9 +544,8 @@ const ASSET_COLORS = [
     }
 
     .change-value {
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 700;
-      font-family: 'SF Mono', monospace;
     }
 
     .change-percent {

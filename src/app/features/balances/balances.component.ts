@@ -126,7 +126,7 @@ type AssetBalance = EnrichedAssetBalance;
                 @if (loading()) {
                   <span class="skeleton-text skeleton-pulse" style="width: 100px; height: 14px;"></span>
                 } @else {
-                  <span class="stat-label">Balance Total</span>
+                  <span class="stat-label">Valor total</span>
                 }
                 <mat-icon>trending_up</mat-icon>
               </div>
@@ -167,7 +167,7 @@ type AssetBalance = EnrichedAssetBalance;
                 @if (loading()) {
                   <span class="skeleton-text skeleton-pulse" style="width: 120px; height: 14px;"></span>
                 } @else {
-                  <span class="stat-label">Intereses Ganados</span>
+                  <span class="stat-label">Intereses ganados</span>
                 }
                 <mat-icon>percent</mat-icon>
               </div>
@@ -623,8 +623,7 @@ type AssetBalance = EnrichedAssetBalance;
     }
 
     .stat-card.primary {
-      background: linear-gradient(135deg, var(--bg-selected) 0%, var(--bg-tertiary) 100%);
-      border: none;
+      background: var(--bg-card);
     }
 
     .stat-content {
@@ -645,7 +644,7 @@ type AssetBalance = EnrichedAssetBalance;
     }
 
     .stat-card.primary .stat-label {
-      color: rgba(255, 255, 255, 0.8);
+      color: var(--text-secondary);
     }
 
     .stat-header mat-icon {
@@ -657,36 +656,33 @@ type AssetBalance = EnrichedAssetBalance;
     }
 
     .stat-card.interest {
-      background: linear-gradient(135deg, var(--wash-up) 0%, rgba(92,190,146,0.08) 100%);
-      border: none;
+      background: var(--bg-card);
     }
 
     .stat-card.interest .stat-label {
-      color: rgba(255, 255, 255, 0.8);
+      color: var(--text-secondary);
     }
 
     .stat-card.interest .stat-header mat-icon {
-      color: var(--chart-up);
+      color: var(--text-tertiary);
     }
 
     .stat-card.interest .stat-value {
-      color: white;
+      color: var(--text-primary);
     }
 
     .stat-card.interest .stat-hint {
-      color: rgba(255, 255, 255, 0.6);
+      color: var(--text-tertiary);
     }
 
-    .stat-card.interest .stat-change {
-      background: rgba(92, 190, 146, 0.2);
-    }
+    
 
     .stat-card.interest .stat-change .change-value {
       color: var(--chart-up);
     }
 
     .stat-card.interest .stat-change .change-label {
-      color: rgba(255, 255, 255, 0.6);
+      color: var(--text-tertiary);
     }
 
     .stat-card.interest .skeleton-pulse {
@@ -733,25 +729,23 @@ type AssetBalance = EnrichedAssetBalance;
       align-items: center;
       gap: 6px;
       margin-bottom: 8px;
-      padding: 6px 12px;
-      border-radius: 8px;
+      padding: 0;
       background: rgba(255, 255, 255, 0.1);
       width: fit-content;
     }
 
     .stat-change.positive {
-      background: rgba(92, 190, 146, 0.2);
+      background: transparent;
     }
 
     .stat-change.negative {
-      background: rgba(224, 107, 98, 0.2);
+      background: transparent;
     }
 
     .stat-change .change-value {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 600;
       color: white;
-      font-family: 'SF Mono', monospace;
     }
 
     .stat-change.positive .change-value,
@@ -803,7 +797,7 @@ type AssetBalance = EnrichedAssetBalance;
 
     .section-header h2 {
       margin: 0;
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 600;
       color: var(--text-primary);
     }
@@ -981,7 +975,6 @@ type AssetBalance = EnrichedAssetBalance;
 
     .quantity-cell {
       font-weight: 500;
-      font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
       color: var(--text-secondary);
     }
 
@@ -1003,7 +996,7 @@ type AssetBalance = EnrichedAssetBalance;
     }
 
     .cost-detail-btn {
-      font-size: 16px;
+      font-size: 15px;
       width: 16px;
       height: 16px;
       cursor: pointer;
@@ -1073,7 +1066,7 @@ type AssetBalance = EnrichedAssetBalance;
 
     .exchange-card.selected {
       border-color: var(--border-color);
-      box-shadow: 0 0 12px rgba(217, 160, 91, 0.3);
+      border-color: var(--border-strong);
     }
 
     .exchange-card.dimmed {
@@ -1177,7 +1170,7 @@ type AssetBalance = EnrichedAssetBalance;
     }
 
     .top-asset-name {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 600;
       color: var(--text-primary);
     }
@@ -1185,7 +1178,6 @@ type AssetBalance = EnrichedAssetBalance;
     .top-asset-amount {
       font-size: 12px;
       color: var(--text-secondary);
-      font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
     }
 
     .top-asset-right {
@@ -1196,7 +1188,7 @@ type AssetBalance = EnrichedAssetBalance;
     }
 
     .top-asset-value {
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 600;
       color: var(--text-primary);
     }

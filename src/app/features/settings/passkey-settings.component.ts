@@ -151,7 +151,7 @@ import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.s
 
     .info-content h3 {
       margin: 0 0 8px 0;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 600;
       color: var(--text-primary);
     }
@@ -225,7 +225,7 @@ import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.s
 
     .section-header h3 {
       margin: 0;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 600;
       color: var(--text-primary);
     }
@@ -260,7 +260,7 @@ import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.s
 
     .empty-state p {
       margin: 0;
-      font-size: 16px;
+      font-size: 15px;
       color: var(--text-secondary);
     }
 

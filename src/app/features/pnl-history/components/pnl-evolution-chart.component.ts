@@ -105,7 +105,7 @@ type PnlTimeframe = '1m' | '3m' | '6m' | '1y' | 'all';
     }
 
     mat-card-title {
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 600;
       color: var(--text-primary);
     }

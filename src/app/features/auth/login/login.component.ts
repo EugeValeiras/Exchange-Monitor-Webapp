@@ -154,7 +154,7 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
 
     .auth-header h1 {
       margin: 0 0 8px 0;
-      font-size: 28px;
+      font-size: 17px;
       font-weight: 600;
       color: var(--text-primary);
     }
@@ -162,7 +162,7 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
     .auth-header p {
       margin: 0;
       color: var(--text-secondary);
-      font-size: 16px;
+      font-size: 15px;
     }
 
     .auth-form {
@@ -196,7 +196,7 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
 
     .submit-btn {
       height: 48px;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 500;
       margin-top: 8px;
       display: flex;
@@ -233,7 +233,7 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
 
     .passkey-btn {
       height: 48px;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 500;
       width: 100%;
       display: flex;
@@ -249,7 +249,7 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
     }
 
     .passkey-btn:hover:not(:disabled) {
-      background: rgba(217, 160, 91, 0.1);
+      background: var(--bg-tertiary);
     }
 
     .passkey-btn:disabled {
@@ -300,7 +300,7 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
     }
 
     .decoration-content p {
-      font-size: 16px;
+      font-size: 15px;
       opacity: 0.9;
       margin: 0 0 32px 0;
       line-height: 1.6;

@@ -43,30 +43,32 @@ interface FlipDigit {
   styles: [`
     :host {
       display: inline-block;
-      --flip-bg-top: rgba(0, 0, 0, 0.25);
-      --flip-bg-bottom: rgba(0, 0, 0, 0.35);
+      --flip-bg-top: transparent;
+      --flip-bg-bottom: transparent;
       --flip-text: var(--text-primary);
-      --flip-text-dim: rgba(255, 255, 255, 0.85);
-      --flip-shadow: rgba(0, 0, 0, 0.3);
-      --flip-line: rgba(0, 0, 0, 0.5);
+      --flip-text-dim: var(--text-primary);
+      --flip-shadow: transparent;
+      --flip-line: transparent;
     }
 
     .flip-container {
       display: inline-flex;
       align-items: center;
-      gap: 2px;
-      font-family: 'SF Mono', 'Roboto Mono', 'Consolas', monospace;
+      gap: 0;
       font-size: 24px;
+      letter-spacing: var(--tr-title);
     }
 
     .flip-container.small {
-      gap: 1px;
-      font-size: 18px;
+      gap: 0;
+      font-size: 17px;
     }
 
+    // El número protagonista de la pantalla.
     .flip-container.large {
-      gap: 2px;
-      font-size: 28px;
+      gap: 0;
+      font-size: 32px;
+      letter-spacing: var(--tr-tight);
     }
 
     .flip-digit {
@@ -82,20 +84,16 @@ interface FlipDigit {
       font-size: inherit;
       font-weight: 600;
       color: var(--flip-text);
-      padding: 0 1px;
-      opacity: 0.9;
     }
 
     .flip-card {
       position: relative;
-      width: 0.65em;
+      width: 0.6em;
       height: 1.2em;
-      border-radius: 3px;
-      box-shadow: 0 2px 4px var(--flip-shadow);
     }
 
     .flip-card.symbol {
-      width: 0.55em;
+      width: 0.32em;
     }
 
     .flip-container.small .flip-card {
@@ -105,17 +103,16 @@ interface FlipDigit {
     }
 
     .flip-container.small .flip-card.symbol {
-      width: 0.5em;
+      width: 0.3em;
     }
 
     .flip-container.large .flip-card {
-      width: 0.68em;
+      width: 0.6em;
       height: 1.25em;
-      border-radius: 4px;
     }
 
     .flip-container.large .flip-card.symbol {
-      width: 0.58em;
+      width: 0.34em;
     }
 
     .flip-panel {
@@ -132,29 +129,23 @@ interface FlipDigit {
     .flip-panel.top {
       top: 0;
       background: var(--flip-bg-top);
-      border-radius: 3px 3px 0 0;
     }
 
     .flip-panel.bottom {
       bottom: 0;
       background: var(--flip-bg-bottom);
-      border-radius: 0 0 3px 3px;
     }
 
     .flip-container.small .flip-panel.top {
-      border-radius: 2px 2px 0 0;
     }
 
     .flip-container.small .flip-panel.bottom {
-      border-radius: 0 0 2px 2px;
     }
 
     .flip-container.large .flip-panel.top {
-      border-radius: 4px 4px 0 0;
     }
 
     .flip-container.large .flip-panel.bottom {
-      border-radius: 0 0 4px 4px;
     }
 
     .flip-panel.top span {

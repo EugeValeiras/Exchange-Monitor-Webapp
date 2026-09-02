@@ -51,7 +51,7 @@ import { CommonModule } from '@angular/common';
       background: var(--bg-tertiary);
       border-radius: 10px;
       font-weight: 700;
-      font-size: 18px;
+      font-size: 17px;
       color: var(--text-primary);
     }
   `]
