@@ -313,7 +313,7 @@ const COMMON_ASSETS = [
     }
 
     .asset-picker:hover {
-      border-color: var(--brand-accent);
+      border-color: var(--border-strong);
       background: var(--bg-tertiary);
     }
 
@@ -354,8 +354,8 @@ const COMMON_ASSETS = [
     }
 
     .flip-btn:hover {
-      color: var(--brand-accent);
-      border-color: var(--brand-accent);
+      color: var(--text-primary);
+      border-color: var(--border-strong);
       transform: rotate(180deg);
     }
 
@@ -381,7 +381,7 @@ const COMMON_ASSETS = [
     }
 
     .amount-input-wrap:focus-within {
-      border-color: var(--brand-accent);
+      border-color: var(--border-strong);
     }
 
     .amount-input {
@@ -426,8 +426,8 @@ const COMMON_ASSETS = [
     }
 
     .refresh-btn:hover:not(:disabled) {
-      color: var(--brand-accent);
-      border-color: var(--brand-accent);
+      color: var(--text-primary);
+      border-color: var(--border-strong);
     }
 
     .refresh-btn:disabled {
@@ -479,16 +479,16 @@ const COMMON_ASSETS = [
     }
 
     .result-card.best {
-      border-color: var(--brand-accent);
-      box-shadow: 0 0 20px rgba(0, 188, 212, 0.15);
+      border-color: var(--border-strong);
+      box-shadow: 0 0 20px rgba(217, 160, 91, 0.15);
     }
 
     .best-badge {
       position: absolute;
       top: -10px;
       right: 16px;
-      background: var(--brand-accent);
-      color: #000;
+      background: var(--bg-selected);
+      color: var(--bg-primary);
       font-size: 11px;
       font-weight: 700;
       padding: 3px 10px;
@@ -568,7 +568,7 @@ const COMMON_ASSETS = [
     }
 
     .result-card.best .net-value {
-      color: var(--brand-accent);
+      color: var(--text-primary);
     }
 
     .net-asset {
@@ -626,12 +626,12 @@ const COMMON_ASSETS = [
     }
 
     .diff-row.positive {
-      background: rgba(0, 188, 212, 0.1);
-      color: var(--brand-accent);
+      background: rgba(217, 160, 91, 0.1);
+      color: var(--text-primary);
     }
 
     .diff-row.negative {
-      background: rgba(246, 70, 93, 0.1);
+      background: rgba(224, 107, 98, 0.1);
       color: var(--color-error);
     }
 
@@ -649,8 +649,8 @@ const COMMON_ASSETS = [
     }
 
     .execute-btn.best {
-      background: var(--brand-accent);
-      color: #000;
+      background: var(--bg-selected);
+      color: var(--bg-primary);
       border: none;
     }
 

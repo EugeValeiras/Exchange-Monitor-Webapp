@@ -16,6 +16,18 @@ interface NavItem {
   children?: { label: string; route: string }[];
 }
 
+/**
+ * El menú agrupado por lo que venís a hacer.
+ *
+ * Eran catorce entradas al mismo nivel, que es la lista de lo que la API sabe
+ * hacer y no la de las tareas de alguien: cuatro hablaban de precios y tres de
+ * tu plata, sin nada que dijera cuál era cuál.
+ */
+interface NavGroup {
+  title: string;
+  items: NavItem[];
+}
+
 // Ícono vendoreado de icons0.dev (material-symbols:candlestick-chart).
 const PAPER_TRADING_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M7 20v-2H5V6h2V4h2v2h2v12H9v2zm8 0v-5h-2V8h2V4h2v4h2v7h-2v5z"/></svg>`;
 
@@ -57,7 +69,10 @@ const PAPER_TRADING_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="2
         </div>
 
         <nav class="sidebar-nav">
-          @for (item of navItems; track item.label) {
+          @for (group of navGroups; track group.title) {
+          <div class="nav-group-block">
+            <span class="nav-group-title">{{ group.title }}</span>
+          @for (item of group.items; track item.label) {
             @if (item.children) {
               <!-- Expandable item -->
               <div class="nav-group" [class.expanded]="expandedItem() === item.label">
@@ -89,6 +104,8 @@ const PAPER_TRADING_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="2
                 <span class="nav-label">{{ item.label }}</span>
               </a>
             }
+          }
+          </div>
           }
         </nav>
 
@@ -163,7 +180,7 @@ const PAPER_TRADING_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="2
     .sidebar {
       width: 240px;
       min-width: 240px;
-      background: #181a20;
+      background: var(--bg-card);
       display: flex;
       flex-direction: column;
       border-right: 1px solid var(--border-color);
@@ -225,6 +242,23 @@ const PAPER_TRADING_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="2
       margin-bottom: 4px;
     }
 
+    // Los cuatro bloques del menú. El rótulo es el encabezado de sección del
+    // sistema: 10 px, mayúsculas y muy tenue — tiene que ordenar sin competir
+    // con las entradas que rotula.
+    .nav-group-block + .nav-group-block {
+      margin-top: var(--sp-5);
+    }
+
+    .nav-group-title {
+      display: block;
+      padding: 0 var(--sp-3) var(--sp-2);
+      font-size: var(--fs-10);
+      font-weight: 600;
+      letter-spacing: var(--tr-section);
+      text-transform: uppercase;
+      color: var(--text-tertiary);
+    }
+
     .nav-item {
       display: flex;
       align-items: center;
@@ -251,7 +285,7 @@ const PAPER_TRADING_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="2
         color: var(--text-primary);
 
         .nav-icon {
-          color: var(--brand-accent);
+          color: var(--text-primary);
         }
       }
     }
@@ -311,7 +345,7 @@ const PAPER_TRADING_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="2
 
       &:hover {
         color: var(--color-error);
-        background: rgba(246, 70, 93, 0.1);
+        background: rgba(224, 107, 98, 0.1);
 
         .nav-icon {
           color: var(--color-error);
@@ -371,7 +405,7 @@ const PAPER_TRADING_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="2
       width: 36px;
       height: 36px;
       border-radius: 50%;
-      background: var(--brand-primary);
+      background: var(--bg-selected);
       color: white;
       display: flex;
       align-items: center;
@@ -412,6 +446,18 @@ const PAPER_TRADING_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="2
       .layout.collapsed .expand-icon,
       .layout.collapsed .nav-children {
         display: none;
+      }
+
+      // Colapsado no hay ancho para el rótulo, pero la separación entre
+      // bloques tiene que sobrevivir: es lo único que sigue agrupando.
+      .layout.collapsed .nav-group-title {
+        display: none;
+      }
+
+      .layout.collapsed .nav-group-block + .nav-group-block {
+        margin-top: var(--sp-4);
+        padding-top: var(--sp-4);
+        border-top: 1px solid var(--border-light);
       }
     }
 
@@ -523,35 +569,56 @@ export class LayoutComponent {
     if (next) this.expandedItem.set(null);
   }
 
-  navItems: NavItem[] = [
-    { label: 'Dashboard', icon: 'space_dashboard', route: '/dashboard' },
-    { label: 'Precios', icon: 'show_chart', route: '/prices' },
-    { label: 'Precios Raw', icon: 'bolt', route: '/raw-prices' },
-    { label: 'Historico Precios', icon: 'timeline', route: '/price-history' },
-    { label: 'Analisis de Mercado', icon: 'insights', route: '/market-analysis' },
-    { label: 'Asistente', icon: 'smart_toy', route: '/asistente' },
-    { label: 'Balances', icon: 'account_balance_wallet', route: '/balances' },
-    { label: 'Transacciones', icon: 'swap_horiz', route: '/transactions' },
-    { label: 'Historial P&L', icon: 'analytics', route: '/pnl-history' },
-    { label: 'Paper Trading', svgIcon: 'paper-trading', route: '/paper-trading' },
-    { label: 'Swap Preview', icon: 'compare_arrows', route: '/swap-preview' },
-    { label: 'Exchanges', icon: 'currency_exchange', route: '/exchanges' },
+  navGroups: NavGroup[] = [
     {
-      label: 'Seguridad',
-      icon: 'security',
-      children: [
-        { label: 'Passkeys', route: '/security/passkeys' }
-      ]
+      title: 'Tu plata',
+      items: [
+        { label: 'Posición', icon: 'show_chart', route: '/dashboard' },
+        { label: 'Activos', icon: 'account_balance_wallet', route: '/balances' },
+        { label: 'Movimientos', icon: 'swap_horiz', route: '/transactions' },
+        { label: 'Resultado', icon: 'analytics', route: '/pnl-history' },
+      ],
     },
     {
-      label: 'Configuracion',
-      icon: 'settings',
-      children: [
-        { label: 'Pares de Precios', route: '/settings/symbols' },
-        { label: 'Notificaciones', route: '/settings/notifications' },
-        { label: 'Mantenimiento', route: '/settings/maintenance' }
-      ]
-    }
+      title: 'Mercado',
+      items: [
+        {
+          label: 'Precios',
+          icon: 'show_chart',
+          children: [
+            { label: 'En vivo', route: '/prices' },
+            // "Precios Raw" no es otra pantalla: es el mismo dato sin procesar.
+            { label: 'Sin procesar', route: '/raw-prices' },
+          ],
+        },
+        { label: 'Análisis', icon: 'insights', route: '/market-analysis' },
+        { label: 'Histórico', icon: 'timeline', route: '/price-history' },
+      ],
+    },
+    {
+      title: 'Laboratorio',
+      items: [
+        { label: 'Paper trading', svgIcon: 'paper-trading', route: '/paper-trading' },
+        { label: 'Simular swap', icon: 'compare_arrows', route: '/swap-preview' },
+        { label: 'Asistente', icon: 'smart_toy', route: '/asistente' },
+      ],
+    },
+    {
+      title: 'Sistema',
+      items: [
+        { label: 'Exchanges', icon: 'currency_exchange', route: '/exchanges' },
+        { label: 'Avisos', icon: 'notifications_none', route: '/settings/notifications' },
+        { label: 'Seguridad', icon: 'security', route: '/security/passkeys' },
+        {
+          label: 'Ajustes',
+          icon: 'settings',
+          children: [
+            { label: 'Pares de precios', route: '/settings/symbols' },
+            { label: 'Mantenimiento', route: '/settings/maintenance' },
+          ],
+        },
+      ],
+    },
   ];
 
   constructor(

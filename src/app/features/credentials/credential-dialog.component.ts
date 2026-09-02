@@ -143,7 +143,7 @@ export interface CredentialDialogData {
     }
 
     .error-message {
-      color: #f44336;
+      color: var(--chart-down);
       margin: 8px 0;
       text-align: center;
     }
@@ -178,14 +178,14 @@ export interface CredentialDialogData {
       align-items: flex-start;
       gap: 8px;
       padding: 12px;
-      background: rgba(13, 115, 119, 0.1);
+      background: var(--wash-up);
       border-radius: 8px;
       margin-bottom: 16px;
       font-size: 13px;
       color: var(--text-secondary);
 
       mat-icon {
-        color: #0D7377;
+        color: var(--chart-up);
         flex-shrink: 0;
         font-size: 20px;
         width: 20px;

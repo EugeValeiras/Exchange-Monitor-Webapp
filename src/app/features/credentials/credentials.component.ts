@@ -299,17 +299,17 @@ import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-lo
     }
 
     .exchange-icon.binance {
-      background: #f3ba2f;
-      color: #1e2026;
+      background: var(--brand-binance);
+      color: var(--bg-primary);
     }
 
     .exchange-icon.kraken {
-      background: #5741d9;
+      background: var(--brand-kraken);
       color: white;
     }
 
     .exchange-icon.nexo-pro {
-      background: #1a4bff;
+      background: var(--brand-nexo);
       color: white;
     }
 
@@ -355,21 +355,21 @@ import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-lo
     }
 
     .status-badge.active {
-      background: rgba(14, 203, 129, 0.15);
+      background: rgba(92, 190, 146, 0.15);
       color: var(--color-success);
     }
 
     .status-badge.active:hover:not(:disabled) {
-      background: rgba(14, 203, 129, 0.25);
+      background: rgba(92, 190, 146, 0.25);
     }
 
     .status-badge.inactive {
-      background: rgba(132, 142, 156, 0.15);
+      background: rgba(242, 243, 245, 0.15);
       color: var(--text-secondary);
     }
 
     .status-badge.inactive:hover:not(:disabled) {
-      background: rgba(132, 142, 156, 0.25);
+      background: rgba(242, 243, 245, 0.25);
     }
 
     .card-content {
@@ -402,8 +402,8 @@ import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-lo
     }
 
     .error-container {
-      background: rgba(246, 70, 93, 0.08);
-      border: 1px solid rgba(246, 70, 93, 0.2);
+      background: rgba(224, 107, 98, 0.08);
+      border: 1px solid rgba(224, 107, 98, 0.2);
       border-radius: 8px;
       padding: 12px;
       margin-top: 8px;
@@ -476,27 +476,27 @@ import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-lo
 
       &.sync:hover:not(:disabled) {
         color: var(--color-success);
-        background: rgba(14, 203, 129, 0.1);
+        background: rgba(92, 190, 146, 0.1);
       }
 
       &.test:hover:not(:disabled) {
-        color: var(--brand-accent);
-        background: rgba(0, 188, 212, 0.1);
+        color: var(--text-primary);
+        background: rgba(217, 160, 91, 0.1);
       }
 
       &.import:hover:not(:disabled) {
-        color: #a78bfa;
-        background: rgba(167, 139, 250, 0.1);
+        color: var(--text-secondary);
+        background: rgba(242, 243, 245, 0.06);
       }
 
       &.edit:hover:not(:disabled) {
-        color: var(--brand-accent);
-        background: rgba(0, 188, 212, 0.1);
+        color: var(--text-primary);
+        background: rgba(217, 160, 91, 0.1);
       }
 
       &.delete:hover:not(:disabled) {
         color: var(--color-error);
-        background: rgba(246, 70, 93, 0.1);
+        background: rgba(224, 107, 98, 0.1);
       }
     }
   `]

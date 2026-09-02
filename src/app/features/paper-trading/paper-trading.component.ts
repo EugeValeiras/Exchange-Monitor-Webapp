@@ -597,7 +597,7 @@ const POLL_INTERVAL_MS = 10_000;
     }
 
     .account-name mat-icon {
-      color: var(--brand-accent);
+      color: var(--text-primary);
     }
 
     .toolbar-actions {
@@ -631,7 +631,7 @@ const POLL_INTERVAL_MS = 10_000;
     }
 
     .stat-card.primary {
-      background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-primary-dark) 100%);
+      background: linear-gradient(135deg, var(--bg-selected) 0%, var(--bg-tertiary) 100%);
       border: none;
     }
 
@@ -648,7 +648,7 @@ const POLL_INTERVAL_MS = 10_000;
     }
 
     .stat-card.primary .stat-header mat-icon {
-      color: var(--brand-accent);
+      color: var(--text-primary);
     }
 
     .stat-header {
@@ -848,12 +848,12 @@ const POLL_INTERVAL_MS = 10_000;
     }
 
     .side-badge.buy {
-      background: rgba(14, 203, 129, 0.12);
+      background: rgba(92, 190, 146, 0.12);
       color: var(--color-success);
     }
 
     .side-badge.sell {
-      background: rgba(246, 70, 93, 0.12);
+      background: rgba(224, 107, 98, 0.12);
       color: var(--color-error);
     }
 
@@ -920,7 +920,7 @@ export class PaperTradingComponent implements OnInit {
     }
 
     const isPositive = perf.totalPnl >= 0;
-    const color = isPositive ? '#0ecb81' : '#f6465d';
+    const color = isPositive ? '#5cbe92' : '#e06b62';
 
     const points = perf.equityCurve.map(p => ({
       x: new Date(p.timestamp).getTime(),
@@ -939,7 +939,7 @@ export class PaperTradingComponent implements OnInit {
           pointRadius: 0,
           pointHoverRadius: 6,
           pointHoverBackgroundColor: color,
-          pointHoverBorderColor: '#fff',
+          pointHoverBorderColor: '#f2f3f5',
           pointHoverBorderWidth: 2,
           borderWidth: 2,
         },
@@ -974,8 +974,8 @@ export class PaperTradingComponent implements OnInit {
       },
       tooltip: {
         backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        titleColor: '#fff',
-        bodyColor: '#fff',
+        titleColor: '#f2f3f5',
+        bodyColor: '#f2f3f5',
         padding: 12,
         filter: (item) => item.datasetIndex === 0,
         callbacks: {

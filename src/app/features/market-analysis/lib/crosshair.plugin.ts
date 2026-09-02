@@ -82,9 +82,9 @@ export const crosshairPlugin: Plugin = {
         ctx.font = "600 10.5px Inter, sans-serif";
         const width = ctx.measureText(text).width + 12;
         const left = labelLeft(chartArea.right, chart.width, width);
-        ctx.fillStyle = '#2b3139';
+        ctx.fillStyle = '#1c1e22';
         ctx.fillRect(left, py - 9, width, 18);
-        ctx.fillStyle = '#eaecef';
+        ctx.fillStyle = '#f2f3f5';
         ctx.textAlign = 'left';
         ctx.textBaseline = 'middle';
         ctx.fillText(text, left + 6, py + 0.5);

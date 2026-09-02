@@ -279,8 +279,8 @@ import { ExchangeLogoComponent } from '../../shared/components/exchange-logo/exc
 
     .unsaved-badge {
       font-size: 11px;
-      background: #ff9800;
-      color: #1e2026;
+      background: var(--color-warning);
+      color: var(--bg-primary);
       padding: 2px 8px;
       border-radius: 10px;
       font-weight: 600;
@@ -311,11 +311,11 @@ import { ExchangeLogoComponent } from '../../shared/components/exchange-logo/exc
     }
 
     .binance-chip {
-      border-color: #F0B90B !important;
+      border-color: var(--brand-binance) !important;
     }
 
     .kraken-chip {
-      border-color: #5741D9 !important;
+      border-color: var(--brand-kraken) !important;
     }
 
     .chip-content {

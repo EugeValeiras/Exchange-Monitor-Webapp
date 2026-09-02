@@ -180,8 +180,8 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
       align-items: center;
       gap: 8px;
       padding: 12px 16px;
-      background: rgba(246, 70, 93, 0.1);
-      border: 1px solid rgba(246, 70, 93, 0.3);
+      background: rgba(224, 107, 98, 0.1);
+      border: 1px solid rgba(224, 107, 98, 0.3);
       border-radius: 8px;
       color: var(--color-error);
       margin-bottom: 16px;
@@ -241,15 +241,15 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
       justify-content: center;
       gap: 8px;
       background: transparent;
-      border: 1px solid var(--brand-accent);
+      border: 1px solid var(--border-strong);
       border-radius: 4px;
-      color: var(--brand-accent);
+      color: var(--text-primary);
       cursor: pointer;
       transition: all 0.15s ease;
     }
 
     .passkey-btn:hover:not(:disabled) {
-      background: rgba(0, 184, 212, 0.1);
+      background: rgba(217, 160, 91, 0.1);
     }
 
     .passkey-btn:disabled {
@@ -264,7 +264,7 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
     }
 
     ::ng-deep .passkey-btn .button-spinner circle {
-      stroke: var(--brand-accent) !important;
+      stroke: var(--text-primary) !important;
     }
 
     .auth-footer {
@@ -274,14 +274,14 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
     }
 
     .auth-footer a {
-      color: var(--brand-accent);
+      color: var(--text-primary);
       margin-left: 4px;
       font-weight: 500;
     }
 
     .auth-decoration {
       flex: 1;
-      background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-primary-dark) 100%);
+      background: linear-gradient(135deg, var(--bg-selected) 0%, var(--bg-tertiary) 100%);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -322,7 +322,7 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
     .feature mat-icon {
       width: 24px;
       height: 24px;
-      color: var(--brand-accent);
+      color: var(--text-primary);
     }
 
     @media (max-width: 900px) {

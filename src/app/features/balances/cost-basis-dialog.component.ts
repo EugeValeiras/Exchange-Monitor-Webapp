@@ -322,18 +322,18 @@ export interface CostBasisDialogData {
     }
 
     .source-badge.trade {
-      background: rgba(33, 150, 243, 0.15);
-      color: #2196F3;
+      background: rgba(242, 243, 245, 0.15);
+      color: var(--text-secondary);
     }
 
     .source-badge.deposit {
-      background: rgba(76, 175, 80, 0.15);
-      color: #4CAF50;
+      background: rgba(92, 190, 146, 0.15);
+      color: var(--chart-up);
     }
 
     .source-badge.interest {
-      background: rgba(255, 193, 7, 0.15);
-      color: #FFC107;
+      background: rgba(217, 160, 91, 0.15);
+      color: var(--color-warning);
     }
 
     .remaining-cell {
@@ -453,7 +453,7 @@ export class CostBasisDialogComponent implements OnInit {
       const fallback = document.createElement('div');
       fallback.className = 'asset-fallback';
       fallback.textContent = this.data.asset.substring(0, 2).toUpperCase();
-      fallback.style.cssText = 'width: 40px; height: 40px; border-radius: 50%; background: var(--brand-primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px;';
+      fallback.style.cssText = 'width: 40px; height: 40px; border-radius: 50%; background: var(--bg-selected); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px;';
       parent.insertBefore(fallback, img);
     }
   }

@@ -194,8 +194,8 @@ const COMMANDS: SlashCommand[] = [
       transition: border-color .15s, box-shadow .15s;
     }
     .composer:focus-within {
-      border-color: var(--brand-accent);
-      box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-accent) 25%, transparent);
+      border-color: var(--border-strong);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--border-strong) 25%, transparent);
     }
 
     /* ===== Slash command palette (estilo CLI) ===== */
@@ -218,11 +218,11 @@ const COMMANDS: SlashCommand[] = [
       border-radius: 9px; cursor: pointer;
       transition: background .1s;
     }
-    .cmd-row.active { background: color-mix(in srgb, var(--brand-accent) 16%, transparent); }
+    .cmd-row.active { background: color-mix(in srgb, var(--bg-selected) 16%, transparent); }
     .cmd-name {
       font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
       font-size: .82rem; font-weight: 600;
-      color: var(--brand-accent); white-space: nowrap; flex-shrink: 0;
+      color: var(--text-primary); white-space: nowrap; flex-shrink: 0;
     }
     .cmd-args { color: var(--text-tertiary); font-weight: 400; }
     .cmd-desc {
@@ -248,7 +248,7 @@ const COMMANDS: SlashCommand[] = [
       position: absolute; top: -6px; right: -6px;
       width: 18px; height: 18px; border-radius: 50%;
       background: rgba(0,0,0,.7); border: none; cursor: pointer;
-      color: #fff; display: flex; align-items: center; justify-content: center;
+      color: var(--text-primary); display: flex; align-items: center; justify-content: center;
       padding: 0;
     }
     .rm mat-icon { font-size: 12px; width: 12px; height: 12px; line-height: 12px; }
@@ -289,11 +289,11 @@ const COMMANDS: SlashCommand[] = [
     }
     .send-btn mat-icon { font-size: 20px; width: 20px; height: 20px; line-height: 20px; }
     .send-btn:not(:disabled):not(.stop) {
-      background: var(--brand-accent); color: var(--bg-primary);
+      background: var(--bg-selected); color: var(--bg-primary);
     }
     .send-btn:not(:disabled):not(.stop):hover { transform: scale(1.05); }
     .send-btn:disabled { cursor: default; }
-    .send-btn.stop { background: var(--color-error); color: #fff; }
+    .send-btn.stop { background: var(--color-error); color: var(--text-primary); }
     .send-btn:active { transform: scale(.95); }
 
     .hint {

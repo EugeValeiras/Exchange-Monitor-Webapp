@@ -485,12 +485,12 @@ type AssetBalance = EnrichedAssetBalance;
       padding: 8px 16px;
       border-radius: 20px;
       font-size: 12px;
-      background: rgba(33, 150, 243, 0.1);
-      color: #2196f3;
+      background: rgba(242, 243, 245, 0.1);
+      color: var(--text-secondary);
     }
 
     .sync-indicator.cached {
-      background: rgba(156, 163, 175, 0.1);
+      background: rgba(242, 243, 245, 0.1);
       color: var(--text-secondary);
     }
 
@@ -511,13 +511,13 @@ type AssetBalance = EnrichedAssetBalance;
     }
 
     .realtime-indicator.connected {
-      background: rgba(14, 203, 129, 0.1);
+      background: rgba(92, 190, 146, 0.1);
       color: var(--color-success);
     }
 
     .realtime-indicator.disconnected {
-      background: rgba(255, 152, 0, 0.1);
-      color: #ff9800;
+      background: rgba(217, 160, 91, 0.1);
+      color: var(--color-warning);
     }
 
     .realtime-indicator.skeleton {
@@ -623,7 +623,7 @@ type AssetBalance = EnrichedAssetBalance;
     }
 
     .stat-card.primary {
-      background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-primary-dark) 100%);
+      background: linear-gradient(135deg, var(--bg-selected) 0%, var(--bg-tertiary) 100%);
       border: none;
     }
 
@@ -653,11 +653,11 @@ type AssetBalance = EnrichedAssetBalance;
     }
 
     .stat-card.primary .stat-header mat-icon {
-      color: var(--brand-accent);
+      color: var(--text-primary);
     }
 
     .stat-card.interest {
-      background: linear-gradient(135deg, #0a3d2a 0%, #0d4f35 50%, #064a2d 100%);
+      background: linear-gradient(135deg, var(--wash-up) 0%, rgba(92,190,146,0.08) 100%);
       border: none;
     }
 
@@ -666,7 +666,7 @@ type AssetBalance = EnrichedAssetBalance;
     }
 
     .stat-card.interest .stat-header mat-icon {
-      color: #0ecb81;
+      color: var(--chart-up);
     }
 
     .stat-card.interest .stat-value {
@@ -678,11 +678,11 @@ type AssetBalance = EnrichedAssetBalance;
     }
 
     .stat-card.interest .stat-change {
-      background: rgba(14, 203, 129, 0.2);
+      background: rgba(92, 190, 146, 0.2);
     }
 
     .stat-card.interest .stat-change .change-value {
-      color: #0ecb81;
+      color: var(--chart-up);
     }
 
     .stat-card.interest .stat-change .change-label {
@@ -701,7 +701,7 @@ type AssetBalance = EnrichedAssetBalance;
     }
 
     .icon-orange {
-      color: #ff9800 !important;
+      color: var(--color-warning) !important;
     }
 
     .icon-green {
@@ -740,11 +740,11 @@ type AssetBalance = EnrichedAssetBalance;
     }
 
     .stat-change.positive {
-      background: rgba(14, 203, 129, 0.2);
+      background: rgba(92, 190, 146, 0.2);
     }
 
     .stat-change.negative {
-      background: rgba(246, 70, 93, 0.2);
+      background: rgba(224, 107, 98, 0.2);
     }
 
     .stat-change .change-value {
@@ -756,12 +756,12 @@ type AssetBalance = EnrichedAssetBalance;
 
     .stat-change.positive .change-value,
     .stat-change.positive .change-percent {
-      color: #0ecb81;
+      color: var(--chart-up);
     }
 
     .stat-change.negative .change-value,
     .stat-change.negative .change-percent {
-      color: #f6465d;
+      color: var(--chart-down);
     }
 
     .stat-change .change-percent {
@@ -1014,7 +1014,7 @@ type AssetBalance = EnrichedAssetBalance;
 
     .cost-detail-btn:hover {
       opacity: 1;
-      color: var(--brand-primary);
+      color: var(--text-primary);
     }
 
     .pnl-cell {
@@ -1067,13 +1067,13 @@ type AssetBalance = EnrichedAssetBalance;
     }
 
     .exchange-card:hover {
-      border-color: var(--brand-primary);
+      border-color: var(--border-color);
       transform: translateY(-2px);
     }
 
     .exchange-card.selected {
-      border-color: var(--brand-primary);
-      box-shadow: 0 0 12px rgba(240, 185, 11, 0.3);
+      border-color: var(--border-color);
+      box-shadow: 0 0 12px rgba(217, 160, 91, 0.3);
     }
 
     .exchange-card.dimmed {
@@ -1770,7 +1770,7 @@ export class BalancesComponent implements OnInit, AfterViewInit, OnDestroy {
         width: 32px;
         height: 32px;
         border-radius: 50%;
-        background: var(--brand-primary);
+        background: var(--bg-selected);
         color: white;
         display: flex;
         align-items: center;

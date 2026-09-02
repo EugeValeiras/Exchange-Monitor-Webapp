@@ -313,13 +313,13 @@ interface QuoteStat {
     }
 
     .realtime-indicator.connected {
-      background: rgba(14, 203, 129, 0.1);
+      background: rgba(92, 190, 146, 0.1);
       color: var(--color-success);
     }
 
     .realtime-indicator.disconnected {
-      background: rgba(255, 152, 0, 0.1);
-      color: #ff9800;
+      background: rgba(217, 160, 91, 0.1);
+      color: var(--color-warning);
     }
 
     .realtime-indicator mat-icon {
@@ -448,8 +448,8 @@ interface QuoteStat {
       }
 
       &.mat-mdc-chip-selected {
-        border-color: var(--brand-primary) !important;
-        box-shadow: 0 0 8px rgba(240, 185, 11, 0.3);
+        border-color: var(--border-color) !important;
+        box-shadow: 0 0 8px rgba(217, 160, 91, 0.3);
       }
 
       .mdc-evolution-chip__text-label {
@@ -500,7 +500,7 @@ interface QuoteStat {
       transition: all 0.2s ease;
 
       &:hover {
-        border-color: var(--brand-accent);
+        border-color: var(--border-strong);
         background: var(--bg-elevated);
       }
     }
@@ -1145,7 +1145,7 @@ export class PricesComponent implements OnInit, OnDestroy, AfterViewInit {
         width: 36px;
         height: 36px;
         border-radius: 50%;
-        background: var(--brand-primary);
+        background: var(--bg-selected);
         color: white;
         display: flex;
         align-items: center;

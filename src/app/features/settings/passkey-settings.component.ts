@@ -135,7 +135,7 @@ import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.s
       width: 48px;
       height: 48px;
       border-radius: 12px;
-      background: rgba(0, 184, 212, 0.1);
+      background: rgba(217, 160, 91, 0.1);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -146,7 +146,7 @@ import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.s
       font-size: 28px;
       width: 28px;
       height: 28px;
-      color: var(--brand-accent);
+      color: var(--text-primary);
     }
 
     .info-content h3 {
@@ -181,15 +181,15 @@ import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.s
     }
 
     .alert-warning {
-      background: rgba(255, 193, 7, 0.1);
-      border: 1px solid rgba(255, 193, 7, 0.3);
-      color: #ffc107;
+      background: rgba(217, 160, 91, 0.1);
+      border: 1px solid rgba(217, 160, 91, 0.3);
+      color: var(--color-warning);
     }
 
     .alert-error {
-      background: rgba(246, 70, 93, 0.1);
-      border: 1px solid rgba(246, 70, 93, 0.3);
-      color: #f6465d;
+      background: rgba(224, 107, 98, 0.1);
+      border: 1px solid rgba(224, 107, 98, 0.3);
+      color: var(--chart-down);
     }
 
     .alert-close {
@@ -291,7 +291,7 @@ import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.s
       width: 40px;
       height: 40px;
       border-radius: 10px;
-      background: rgba(0, 184, 212, 0.1);
+      background: rgba(217, 160, 91, 0.1);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -302,7 +302,7 @@ import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.s
       font-size: 20px;
       width: 20px;
       height: 20px;
-      color: var(--brand-accent);
+      color: var(--text-primary);
     }
 
     .passkey-info {
@@ -340,8 +340,8 @@ import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.s
     }
 
     .delete-btn:hover:not(:disabled) {
-      background: rgba(246, 70, 93, 0.1);
-      color: #f6465d;
+      background: rgba(224, 107, 98, 0.1);
+      color: var(--chart-down);
     }
 
     .delete-btn:disabled {
@@ -366,8 +366,8 @@ import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.s
       padding: 12px 24px;
       border: none;
       border-radius: 8px;
-      background: var(--brand-accent);
-      color: #000;
+      background: var(--bg-selected);
+      color: var(--bg-primary);
       font-size: 15px;
       font-weight: 600;
       cursor: pointer;
@@ -375,7 +375,7 @@ import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.s
     }
 
     .add-passkey-btn:hover:not(:disabled) {
-      background: #00d4ff;
+      background: var(--text-primary);
     }
 
     .add-passkey-btn:disabled {
@@ -394,7 +394,7 @@ import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.s
     }
 
     ::ng-deep .add-passkey-btn mat-spinner circle {
-      stroke: #000 !important;
+      stroke: var(--bg-primary) !important;
     }
   `]
 })

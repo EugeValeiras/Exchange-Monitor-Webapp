@@ -152,7 +152,7 @@ type ToolState = 'pending' | 'success' | 'error';
     .more-btn {
       align-self: flex-start; margin-top: 4px;
       background: transparent; border: none; cursor: pointer;
-      color: var(--brand-accent); font-size: .72rem; font-weight: 600;
+      color: var(--text-primary); font-size: .72rem; font-weight: 600;
       padding: 0;
     }
     .more-btn:hover { text-decoration: underline; }

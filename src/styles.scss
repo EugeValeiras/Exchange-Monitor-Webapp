@@ -1,62 +1,61 @@
 @use '@angular/material' as mat;
 
-// Custom dark theme colors - Binance style with blue accent
-$dark-primary: (
-  50: #e3e8f0,
-  100: #b9c4d9,
-  200: #8b9dc0,
-  300: #5d75a6,
-  400: #3a5793,
-  500: #122562,  // Main brand color
-  600: #0f2159,
-  700: #0c1b4e,
-  800: #091644,
-  900: #040d33,
+// ============================================================================
+// TEMA — Exchange Monitor
+//
+// El sistema es el mismo que el de la app móvil (docs/11-SISTEMA-DE-DISENO-APP.md)
+// con una escala propia, más densa: la app se lee de reojo en la calle, esto se
+// usa sentado y por un rato. Lo que viaja es el SIGNIFICADO —qué quiere decir
+// cada color, qué se puede seleccionar—; lo que se recalcula son las medidas.
+//
+// Antes de esto había 50 hex escritos a mano en los componentes, con cuatro
+// verdes distintos para decir "sube".
+// ============================================================================
+
+// El "primario" de Material NO es un color de marca: es una superficie clara.
+// En este sistema seleccionar es ACLARAR, nunca teñir — eso deja el hue libre
+// para lo único que puede tener color, que es el dinero.
+$em-light: (
+  50:  #ffffff,
+  100: #fbfbfc,
+  200: #f7f8f9,
+  300: #f4f5f7,
+  400: #f3f4f6,
+  500: #f2f3f5,
+  600: #dddfe4,
+  700: #c4c7ce,
+  800: #a9adb6,
+  900: #8a8f99,
   contrast: (
-    50: rgba(0, 0, 0, 0.87),
-    100: rgba(0, 0, 0, 0.87),
-    200: rgba(0, 0, 0, 0.87),
-    300: white,
-    400: white,
-    500: white,
-    600: white,
-    700: white,
-    800: white,
-    900: white,
+    50: #0c0d0f, 100: #0c0d0f, 200: #0c0d0f, 300: #0c0d0f, 400: #0c0d0f,
+    500: #0c0d0f, 600: #0c0d0f, 700: #0c0d0f, 800: #0c0d0f, 900: #0c0d0f,
   )
 );
 
-$dark-accent: (
-  50: #e0f7fa,
-  100: #b2ebf2,
-  200: #80deea,
-  300: #4dd0e1,
-  400: #26c6da,
-  500: #00bcd4,  // Cyan accent
-  600: #00acc1,
-  700: #0097a7,
-  800: #00838f,
-  900: #006064,
+// El rojo del sistema es el mismo que dice "baja". Material lo usa para error,
+// que es el único caso donde un rojo de UI y el del dinero coinciden en
+// intención: algo salió mal.
+$em-down: (
+  50:  #fbeceb,
+  100: #f4cfcc,
+  200: #ecafab,
+  300: #e48f89,
+  400: #e27d76,
+  500: #e06b62,
+  600: #c85a52,
+  700: #a94842,
+  800: #8a3833,
+  900: #612522,
   contrast: (
-    50: rgba(0, 0, 0, 0.87),
-    100: rgba(0, 0, 0, 0.87),
-    200: rgba(0, 0, 0, 0.87),
-    300: rgba(0, 0, 0, 0.87),
-    400: rgba(0, 0, 0, 0.87),
-    500: white,
-    600: white,
-    700: white,
-    800: white,
-    900: white,
+    50: #0c0d0f, 100: #0c0d0f, 200: #0c0d0f, 300: #0c0d0f, 400: #0c0d0f,
+    500: #ffffff, 600: #ffffff, 700: #ffffff, 800: #ffffff, 900: #ffffff,
   )
 );
 
-// Define palettes
-$primary-palette: mat.m2-define-palette($dark-primary);
-$accent-palette: mat.m2-define-palette($dark-accent);
-$warn-palette: mat.m2-define-palette(mat.$m2-red-palette);
+$primary-palette: mat.m2-define-palette($em-light);
+$accent-palette: mat.m2-define-palette($em-light);
+$warn-palette: mat.m2-define-palette($em-down);
 
-// Create dark theme
 $dark-theme: mat.m2-define-dark-theme((
   color: (
     primary: $primary-palette,
@@ -64,63 +63,106 @@ $dark-theme: mat.m2-define-dark-theme((
     warn: $warn-palette,
   ),
   // Sin esto Material impone Roboto en toda tabla, chip, botón y tooltip,
-  // que convive con Inter dentro de la misma celda.
+  // que convive con la familia de la app dentro de la misma celda.
   typography: mat.m2-define-typography-config(
-    $font-family: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
+    $font-family: "'Schibsted Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
   ),
   density: 0,
 ));
 
-// Include core and theme styles
 @include mat.core();
 @include mat.all-component-themes($dark-theme);
 
-// ============================================
-// CSS Variables for consistent theming
-// ============================================
 :root {
-  // Background colors (Binance-like dark palette)
-  --bg-primary: #0b0e11;
-  --bg-secondary: #1e2329;
-  --bg-tertiary: #2b3139;
-  --bg-elevated: #181a20;
-  --bg-hover: #2b3139;
-  --bg-card: #1e2329;
-
-  // Brand colors
-  --brand-primary: #122562;
-  --brand-primary-light: #1a3a8f;
-  --brand-primary-dark: #0c1b4e;
-  --brand-accent: #00bcd4;
-  --brand-accent-light: #4dd0e1;
-
-  // Text colors
-  --text-primary: #eaecef;
-  --text-secondary: #848e9c;
-  --text-tertiary: #5e6673;
-  --text-disabled: #474d57;
-
-  // Status colors
-  --color-success: #0ecb81;
-  --color-error: #f6465d;
-  --color-warning: #f0b90b;
-  --color-info: #00bcd4;
-
-  // Border colors
-  --border-color: #2b3139;
-  --border-light: #363c45;
-
-  // Shadows
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+  // ==========================================================
+  // SUPERFICIES. Una sola escala de elevación, neutra FRÍA.
+  // Cada escalón son unos pocos puntos de luminosidad: se
+  // siente, no se ve. La profundidad la dan los escalones y
+  // los hairlines — las sombras quedan sólo para lo que de
+  // verdad flota (diálogos, menús).
+  // ==========================================================
+  --bg-primary: #0c0d0f;    // L0 · lienzo. TODAS las pantallas.
+  --bg-card: #141518;       // L1 · cards, tablas, barras.
+  --bg-secondary: #141518;  // L1 (alias histórico)
+  --bg-elevated: #141518;   // L1 (alias histórico)
+  --bg-tertiary: #1c1e22;   // L2 · inputs, chips, hover.
+  --bg-hover: #1c1e22;      // L2
+  --bg-selected: #24272c;   // L3 · lo seleccionado, menús.
+  --bg-sunken: #08090a;     // hundido: tracks vacíos, huecos.
 
   // ==========================================================
-  // Escalas. Hasta acá los únicos tokens eran color y sombras:
-  // cada pantalla elegía sus paddings, radios y tamaños a mano.
+  // HAIRLINES. Un borde no debe verse; debe encontrarse
+  // cuando se lo busca.
   // ==========================================================
+  --border-light: rgba(255, 255, 255, 0.039);   // entre filas
+  --border-color: rgba(255, 255, 255, 0.078);   // card, chip, control
+  --border-strong: rgba(255, 255, 255, 0.18);   // lo seleccionado, foco
 
-  // Spacing
+  // ==========================================================
+  // TEXTO. Cuatro niveles, un solo tono.
+  // ==========================================================
+  --text-primary: #f2f3f5;
+  --text-secondary: rgba(242, 243, 245, 0.678);
+  --text-tertiary: rgba(242, 243, 245, 0.451);
+  --text-disabled: rgba(242, 243, 245, 0.278);
+
+  // ==========================================================
+  // COLOR. Tres, y los tres significan algo. Desaturados: sobre
+  // un lienzo casi negro un verde puro vibra y ensucia.
+  //
+  // REGLA SEMÁNTICA, no negociable:
+  //   up / down  → dirección de mercado o resultado económico.
+  //                Nunca éxito/error de UI, nunca estado activo,
+  //                nunca "más grande / más chico".
+  //   flow       → capital que entra o sale POR MANO DEL USUARIO:
+  //                depósitos, retiros, transferencias. Un depósito
+  //                no es una ganancia.
+  // Ningún botón, ícono, badge o marca puede usar estos tres.
+  // ==========================================================
+  --chart-up: #5cbe92;
+  --chart-down: #e06b62;
+  --chart-flow: #d9a05b;
+
+  // Alias histórico: "mine" (PPC, tus marcadores) es capital tuyo.
+  --chart-mine: #d9a05b;
+  --chart-agent: rgba(242, 243, 245, 0.451);
+
+  --chart-grid: rgba(255, 255, 255, 0.039);
+  --chart-axis: rgba(242, 243, 245, 0.451);
+  --chart-crosshair: rgba(242, 243, 245, 0.278);
+  --chart-band: rgba(255, 255, 255, 0.025);
+
+  // Series de ANÁLISIS (medias, bandas): no son dinero, así que no
+  // llevan color semántico. Se distinguen por valor, no por hue.
+  --chart-ma-1: rgba(242, 243, 245, 0.85);
+  --chart-ma-2: rgba(242, 243, 245, 0.55);
+  --chart-ma-3: rgba(242, 243, 245, 0.32);
+
+  // Fill al 14 % de un semántico, para el cuadradito de ícono.
+  --wash-up: rgba(92, 190, 146, 0.14);
+  --wash-down: rgba(224, 107, 98, 0.14);
+  --wash-flow: rgba(217, 160, 91, 0.14);
+
+  // ==========================================================
+  // ESTADO DE UI. Separado del dinero a propósito: un guardado
+  // exitoso no es una suba.
+  // ==========================================================
+  --color-success: #f2f3f5;
+  --color-error: #e06b62;
+  --color-warning: #d9a05b;
+  --color-info: rgba(242, 243, 245, 0.678);
+
+  // ==========================================================
+  // SOMBRAS. Sólo para lo que flota sobre el contenido.
+  // ==========================================================
+  --shadow-sm: none;
+  --shadow-md: 0 8px 20px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 10px 28px rgba(0, 0, 0, 0.35);
+
+  // ==========================================================
+  // ESCALAS. Base 4: los valores intermedios (3, 5, 7, 22…) son
+  // lo que hace que una interfaz se vea "casi alineada".
+  // ==========================================================
   --sp-1: 2px;
   --sp-2: 4px;
   --sp-3: 8px;
@@ -128,21 +170,33 @@ $dark-theme: mat.m2-define-dark-theme((
   --sp-5: 16px;
   --sp-6: 24px;
 
-  // Radii
+  // Radios más cerrados que los de una app de consumo: un
+  // instrumento de lectura se lee mejor con cantos firmes.
   --r-1: 4px;
   --r-2: 6px;
   --r-3: 8px;
-  --r-4: 12px;
+  --r-4: 12px;   // card
 
-  // Type scale
-  --fs-10: 10px;
-  --fs-11: 11px;
-  --fs-12: 12px;
-  --fs-13: 13px;
-  --fs-16: 16px;
-  --fs-18: 18px;
-  --fs-24: 24px;
-  --fs-40: 40px;
+  // Tipografía. La escala del dashboard: todo un escalón por
+  // debajo de la app, porque acá se compara y se busca.
+  --fs-10: 10px;   // encabezado de sección (SIEMPRE en mayúsculas)
+  --fs-11: 11px;   // metadato
+  --fs-12: 12px;   // etiqueta de control
+  --fs-13: 13px;   // el DATO de una fila, y su etiqueta
+  --fs-14: 14px;   // encabezado de bloque
+  --fs-15: 15px;   // texto corrido
+  --fs-16: 15px;   // (alias histórico → texto corrido)
+  --fs-17: 17px;   // título de pantalla
+  --fs-18: 17px;   // (alias histórico → título)
+  --fs-20: 20px;
+  --fs-24: 24px;   // número protagonista de un bloque
+  --fs-32: 32px;   // número protagonista de la pantalla
+  --fs-40: 32px;   // (alias histórico → protagonista)
+
+  --tr-tight: -1.1px;   // 32 px
+  --tr-title: -0.4px;   // 17-20 px
+  --tr-data: -0.2px;    // el dato de una fila
+  --tr-section: 1.1px;  // encabezado de sección
 
   // Motion
   --dur-fast: 120ms;
@@ -155,52 +209,79 @@ $dark-theme: mat.m2-define-dark-theme((
   --z-modal: 1000;
 
   // ==========================================================
-  // Chart tokens. Antes cada gráfico repetía los mismos hex a
-  // mano: cambiar la identidad eran 40 ediciones sueltas.
+  // IDENTIDAD DE SERIE. Sólo dentro de un gráfico que compara
+  // ENTIDADES (un activo por línea), donde el color no dice
+  // cuánto sino cuál. Ahí no conviven con los semánticos —no hay
+  // nada que suba o baje en color—, y por eso la regla se
+  // sostiene. Orden FIJO: la serie 4 es siempre el mismo hue,
+  // filtrar no repinta a las que quedan.
   //
-  // REGLA SEMÁNTICA, no negociable:
-  //   up / down  → dirección de mercado o resultado económico.
-  //                Nunca éxito/error de UI, nunca estado activo.
-  //   mine       → "esto es tuyo": PPC, tus marcadores, selección.
-  //   agent      → lo que dibujó el agente.
+  // Validada con el script de la guía de visualización sobre el
+  // fondo de card (#141518): banda de luminosidad, piso de croma,
+  // separación para daltonismo y contraste. NO reordenar sin
+  // volver a validarla: probé un orden más "seguro" y falla.
+  //
+  // Pasando la tercera serie hay que plegar el resto en "Otros":
+  // sólo las tres primeras se distinguen entre sí en cualquier
+  // combinación. Y como el verde y el rojo de esta familia se
+  // pueden confundir con los del dinero, cada línea lleva ADEMÁS
+  // su etiqueta: el color nunca es la única pista.
   // ==========================================================
-  --chart-up: #0ecb81;
-  --chart-down: #f6465d;
-  --chart-mine: #00bcd4;
-  --chart-agent: #f0b90b;
-  --chart-grid: rgba(255, 255, 255, 0.055);
-  --chart-axis: rgba(255, 255, 255, 0.42);
-  --chart-crosshair: rgba(255, 255, 255, 0.28);
-  --chart-band: rgba(255, 255, 255, 0.025);
-  --chart-ma-1: #f0b90b;
-  --chart-ma-2: #a78bfa;
-  --chart-ma-3: #8ab4f8;
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --series-4: #c98500;
+  --series-5: #d55181;
+  --series-6: #008300;
+  --series-7: #9085e9;
+  --series-8: #e66767;
 
-  // Density. Two modes, so density travels as a token instead of
-  // being copied by imitation from whichever screen looked good.
-  --row-h: 52px;
-  --ctl-h: 36px;
+  // ==========================================================
+  // MARCAS DE TERCEROS. El color de un exchange o de una moneda
+  // SÍ existe: es lo que permite reconocer una fila de un
+  // vistazo. Lo que no puede pasar es que ese color se meta en
+  // el resto de la fila —el dato, el porcentaje, el fondo—: ahí
+  // manda el color del dinero. La marca ocupa su disco y nada más.
+  // ==========================================================
+  --brand-binance: #f0b90b;
+  --brand-kraken: #5741d9;
+  --brand-nexo: #1a4bff;
+  --brand-bitso: #00c853;
+
+  // Densidad. Viaja como token en vez de copiarse por imitación
+  // de la pantalla que quedó bien.
+  --row-h: 34px;        // una línea
+  --row-h-2: 40px;      // dos líneas (etiqueta + metadato)
+  --ctl-h: 30px;
   --fs-body: 13px;
 }
 
 [data-density='compact'] {
-  --row-h: 44px;
-  --ctl-h: 28px;
+  --row-h: 30px;
+  --row-h-2: 36px;
+  --ctl-h: 26px;
   --fs-body: 12px;
 }
 
-// Tone of a signed number, so colour is never decided ad hoc.
+// El tono de un número con signo, para que el color nunca se decida al paso.
 .em-up { color: var(--chart-up); }
 .em-down { color: var(--chart-down); }
-.em-flat { color: var(--text-secondary); }
-.em-mine { color: var(--chart-mine); }
+.em-flat { color: var(--text-tertiary); }
+.em-flow { color: var(--chart-flow); }
+.em-mine { color: var(--chart-flow); }
 
-// Every figure that can be compared vertically gets tabular numerals.
+// SIN cifras tabulares, y es deliberado: en Schibsted Grotesk el juego tabular
+// lleva la coma y el punto al mismo ancho que un dígito, y "105.160,54" termina
+// leyéndose con los separadores sueltos — "105 . 160 , 54". Se probó en la app
+// y se descartó. Lo que resuelve el baile de un número que cambia en vivo es la
+// alineación a la derecha de la columna, que es como están todas las tablas.
 .num,
 .em-up,
 .em-down,
-.em-flat {
-  font-variant-numeric: tabular-nums;
+.em-flat,
+.em-flow {
+  letter-spacing: var(--tr-data);
+  font-weight: 600;
 }
 
 // ============================================
@@ -213,7 +294,8 @@ html, body {
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Schibsted Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: var(--fs-body);
   background-color: var(--bg-primary);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
@@ -247,17 +329,17 @@ body {
 
 // Buttons
 .mat-mdc-raised-button.mat-primary {
-  background-color: var(--brand-accent) !important;
+  background-color: var(--bg-selected) !important;
   color: var(--bg-primary) !important;
   font-weight: 500 !important;
 
   &:hover:not([disabled]) {
-    background-color: var(--brand-accent-light) !important;
+    background-color: var(--bg-selected) !important;
   }
 }
 
 .mat-mdc-raised-button.mat-accent {
-  background-color: var(--brand-accent) !important;
+  background-color: var(--bg-selected) !important;
   color: var(--bg-primary) !important;
 }
 
@@ -270,17 +352,17 @@ body {
   .mdc-text-field--outlined {
     --mdc-outlined-text-field-outline-color: var(--border-color);
     --mdc-outlined-text-field-hover-outline-color: var(--border-light);
-    --mdc-outlined-text-field-focus-outline-color: var(--brand-accent);
-    --mdc-outlined-text-field-focus-label-text-color: var(--brand-accent);
+    --mdc-outlined-text-field-focus-outline-color: var(--text-primary);
+    --mdc-outlined-text-field-focus-label-text-color: var(--text-primary);
     --mdc-outlined-text-field-label-text-color: var(--text-secondary);
     --mdc-outlined-text-field-input-text-color: var(--text-primary);
-    --mdc-outlined-text-field-caret-color: var(--brand-accent);
+    --mdc-outlined-text-field-caret-color: var(--text-primary);
   }
 }
 
 // Fix floating label color when focused
 .mat-mdc-form-field.mat-focused .mdc-floating-label {
-  color: var(--brand-accent) !important;
+  color: var(--text-primary) !important;
 }
 
 // Override browser autofill styles
@@ -299,7 +381,7 @@ select:-webkit-autofill:active {
   -webkit-box-shadow: 0 0 0 1000px var(--bg-primary) inset !important;
   -webkit-text-fill-color: var(--text-primary) !important;
   transition: background-color 5000s ease-in-out 0s;
-  caret-color: var(--brand-accent) !important;
+  caret-color: var(--text-primary) !important;
 }
 
 .mat-mdc-form-field-hint {
@@ -336,11 +418,11 @@ select:-webkit-autofill:active {
   }
 
   &.active {
-    background-color: rgba(0, 188, 212, 0.12) !important;
+    background-color: rgba(217, 160, 91, 0.12) !important;
     color: var(--text-primary) !important;
 
     .mat-icon {
-      color: var(--brand-accent) !important;
+      color: var(--text-primary) !important;
     }
   }
 }
@@ -354,17 +436,43 @@ select:-webkit-autofill:active {
   background-color: transparent !important;
 }
 
-.mat-mdc-header-row {
-  background-color: var(--bg-tertiary) !important;
+// ============================================================================
+// TABLAS — donde se nota que esto no es un teléfono.
+//
+// La fila medía 52 px y traía el ancho de una app táctil. Acá hay teclado y
+// pantalla: se compara de un barrido vertical, así que entran 18 filas donde
+// entraban 6. La densidad NO sale de achicar el dato —sigue en 13 px— sino del
+// alto de la fila y de pasar a una línea por fila.
+// ============================================================================
+.mat-mdc-table {
+  background: transparent !important;
 }
 
+.mat-mdc-header-row {
+  background-color: transparent !important;
+  min-height: 0 !important;
+  height: 28px !important;
+}
+
+// El encabezado de columna es el encabezado de sección del sistema: chico,
+// en mayúsculas y muy tenue. Rotula sin competir con los datos.
 .mat-mdc-header-cell {
-  color: var(--text-secondary) !important;
-  font-weight: 500 !important;
+  color: var(--text-disabled) !important;
+  font-size: var(--fs-10) !important;
+  font-weight: 600 !important;
+  letter-spacing: var(--tr-section) !important;
+  text-transform: uppercase !important;
+  padding: 0 var(--sp-4) var(--sp-2) !important;
   border-bottom-color: var(--border-color) !important;
+  white-space: nowrap;
 }
 
 .mat-mdc-row {
+  min-height: 0 !important;
+  height: var(--row-h) !important;
+
+  // Hover un escalón por encima de la card, no del mismo color: pintarlo
+  // igual que el fondo es no tener hover.
   &:hover {
     background-color: var(--bg-hover) !important;
   }
@@ -372,28 +480,43 @@ select:-webkit-autofill:active {
 
 .mat-mdc-cell {
   color: var(--text-primary) !important;
-  border-bottom-color: var(--border-color) !important;
+  font-size: var(--fs-13) !important;
+  padding: 0 var(--sp-4) !important;
+  border-bottom-color: var(--border-light) !important;
+  white-space: nowrap;
+}
+
+// Una columna de números se compara de arriba abajo: alinear a la derecha es
+// lo que reemplaza a las cifras tabulares, que en esta familia separan la
+// puntuación y rompen el número.
+.mat-mdc-cell.num,
+.mat-mdc-header-cell.num,
+.mat-column-value,
+.mat-column-amount,
+.mat-column-total,
+.mat-column-price {
+  text-align: right;
 }
 
 // Chips
 .mat-mdc-chip {
   &.success {
-    background-color: rgba(14, 203, 129, 0.15) !important;
+    background-color: rgba(92, 190, 146, 0.15) !important;
     color: var(--color-success) !important;
   }
 
   &.error {
-    background-color: rgba(246, 70, 93, 0.15) !important;
+    background-color: rgba(224, 107, 98, 0.15) !important;
     color: var(--color-error) !important;
   }
 
   &.active {
-    background-color: rgba(14, 203, 129, 0.15) !important;
+    background-color: rgba(92, 190, 146, 0.15) !important;
     color: var(--color-success) !important;
   }
 
   &.inactive {
-    background-color: rgba(132, 142, 156, 0.15) !important;
+    background-color: rgba(242, 243, 245, 0.15) !important;
     color: var(--text-secondary) !important;
   }
 }
@@ -430,11 +553,11 @@ select:-webkit-autofill:active {
   --mdc-snackbar-supporting-text-color: var(--text-primary);
 
   &.success-snackbar {
-    --mdc-snackbar-container-color: rgba(14, 203, 129, 0.9);
+    --mdc-snackbar-container-color: rgba(92, 190, 146, 0.9);
   }
 
   &.error-snackbar {
-    --mdc-snackbar-container-color: rgba(246, 70, 93, 0.9);
+    --mdc-snackbar-container-color: rgba(224, 107, 98, 0.9);
   }
 }
 
@@ -448,7 +571,7 @@ select:-webkit-autofill:active {
 }
 
 .mat-mdc-form-field.mat-focused .mat-mdc-select-arrow {
-  color: var(--brand-accent) !important;
+  color: var(--text-primary) !important;
 }
 
 .mat-mdc-select-panel {
@@ -464,10 +587,10 @@ select:-webkit-autofill:active {
   }
 
   &.mdc-list-item--selected {
-    background-color: rgba(0, 188, 212, 0.15) !important;
+    background-color: rgba(217, 160, 91, 0.15) !important;
 
     .mdc-list-item__primary-text {
-      color: var(--brand-accent) !important;
+      color: var(--text-primary) !important;
     }
 
     .mat-pseudo-checkbox-checked {
@@ -480,7 +603,7 @@ select:-webkit-autofill:active {
     }
 
     mat-icon {
-      color: var(--brand-accent) !important;
+      color: var(--text-primary) !important;
     }
   }
 
@@ -506,7 +629,7 @@ select:-webkit-autofill:active {
 
 // Progress spinner
 .mat-mdc-progress-spinner circle {
-  stroke: var(--brand-accent) !important;
+  stroke: var(--text-primary) !important;
 }
 
 // Tooltip
@@ -548,11 +671,11 @@ select:-webkit-autofill:active {
 
 // Links
 a {
-  color: var(--brand-accent);
+  color: var(--text-primary);
   text-decoration: none;
 
   &:hover {
-    color: var(--brand-accent-light);
+    color: var(--text-primary);
   }
 }
 

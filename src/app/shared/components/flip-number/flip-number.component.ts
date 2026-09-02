@@ -45,7 +45,7 @@ interface FlipDigit {
       display: inline-block;
       --flip-bg-top: rgba(0, 0, 0, 0.25);
       --flip-bg-bottom: rgba(0, 0, 0, 0.35);
-      --flip-text: #ffffff;
+      --flip-text: var(--text-primary);
       --flip-text-dim: rgba(255, 255, 255, 0.85);
       --flip-shadow: rgba(0, 0, 0, 0.3);
       --flip-line: rgba(0, 0, 0, 0.5);

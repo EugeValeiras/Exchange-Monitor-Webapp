@@ -129,7 +129,7 @@ interface PhaseGroup {
     .wf-card {
       background: var(--bg-tertiary);
       border: 1px solid var(--border-color);
-      border-left: 3px solid var(--brand-accent);
+      border-left: 3px solid var(--border-strong);
       border-radius: 10px;
       margin: 6px 0;
       overflow: hidden;
@@ -160,7 +160,7 @@ interface PhaseGroup {
       font-weight: 600; flex: 1; min-width: 0;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .wf-name { color: var(--brand-accent); }
+    .wf-name { color: var(--text-primary); }
 
     .agent-count {
       flex-shrink: 0; font-variant-numeric: tabular-nums;
@@ -209,7 +209,7 @@ interface PhaseGroup {
     }
     .wf-progress-fill {
       height: 100%; border-radius: 4px;
-      background: var(--brand-accent); transition: width .3s ease;
+      background: var(--bg-selected); transition: width .3s ease;
     }
 
     .phase {

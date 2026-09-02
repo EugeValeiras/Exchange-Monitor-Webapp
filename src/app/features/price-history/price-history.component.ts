@@ -223,7 +223,7 @@ interface TimeframeOption {
       transition: all 0.2s ease;
 
       &:hover {
-        border-color: var(--brand-accent);
+        border-color: var(--border-strong);
         background: var(--bg-tertiary);
       }
 
@@ -326,10 +326,10 @@ interface TimeframeOption {
       }
 
       ::ng-deep .mat-button-toggle-checked {
-        background: var(--brand-accent) !important;
+        background: var(--bg-selected) !important;
         color: var(--bg-primary) !important;
         border-radius: 7px;
-        box-shadow: 0 2px 8px rgba(0, 188, 212, 0.3);
+        box-shadow: 0 2px 8px rgba(217, 160, 91, 0.3);
       }
 
       ::ng-deep .mat-button-toggle-checked .mat-button-toggle-label-content {
@@ -386,8 +386,8 @@ interface TimeframeOption {
       }
 
       &.mat-mdc-chip-selected {
-        border-color: var(--brand-accent);
-        box-shadow: 0 0 8px rgba(0, 188, 212, 0.4);
+        border-color: var(--border-strong);
+        box-shadow: 0 0 8px rgba(217, 160, 91, 0.4);
       }
 
       .mdc-evolution-chip__text-label {
@@ -428,7 +428,7 @@ interface TimeframeOption {
     }
 
     .timeframe-badge {
-      background: var(--brand-accent);
+      background: var(--bg-selected);
       color: var(--bg-primary);
     }
 

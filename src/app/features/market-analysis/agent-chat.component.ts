@@ -392,8 +392,8 @@ export interface ChartAction {
       }
 
       .message.user .bubble {
-        background: var(--brand-primary, #0ecb81);
-        color: #fff;
+        background: var(--bg-selected);
+        color: var(--text-primary);
         max-width: 80%;
       }
 
@@ -428,8 +428,8 @@ export interface ChartAction {
       }
 
       .tool.error {
-        border-color: #f6465d;
-        background: rgba(246, 70, 93, 0.08);
+        border-color: var(--chart-down);
+        background: rgba(224, 107, 98, 0.08);
       }
 
       .tool mat-icon {
@@ -494,7 +494,7 @@ export interface ChartAction {
       }
       .text h1 { font-size: 18px; }
       .text h2 { font-size: 16px; }
-      .text h3 { font-size: 15px; color: var(--brand-accent); }
+      .text h3 { font-size: 15px; color: var(--text-primary); }
       .text h4 { font-size: 14px; }
 
       .text hr {
@@ -506,8 +506,8 @@ export interface ChartAction {
       .text blockquote {
         margin: 8px 0;
         padding: 8px 12px;
-        border-left: 3px solid var(--brand-accent);
-        background: rgba(0, 188, 212, 0.06);
+        border-left: 3px solid var(--border-strong);
+        background: rgba(217, 160, 91, 0.06);
         border-radius: 4px;
         color: var(--text-secondary);
         font-size: 13px;
@@ -566,7 +566,7 @@ export interface ChartAction {
       }
 
       .text a {
-        color: var(--brand-accent);
+        color: var(--text-primary);
         text-decoration: underline;
       }
 
@@ -581,7 +581,7 @@ export interface ChartAction {
            icono tiene que quedar alineado con la primera. */
         align-items: flex-start;
         gap: 6px;
-        color: #f6465d;
+        color: var(--chart-down);
         font-size: 13px;
         margin-top: 6px;
       }
@@ -679,8 +679,8 @@ export interface ChartAction {
       }
 
       .thread-row.active {
-        border-color: var(--brand-accent);
-        background: rgba(0, 188, 212, 0.08);
+        border-color: var(--border-strong);
+        background: rgba(217, 160, 91, 0.08);
       }
 
       .thread-btn {
@@ -728,8 +728,8 @@ export interface ChartAction {
       }
 
       .thread-delete:hover {
-        color: var(--color-error, #f6465d);
-        background: rgba(246, 70, 93, 0.08);
+        color: var(--color-error, var(--chart-down));
+        background: rgba(224, 107, 98, 0.08);
       }
 
       .thread-delete mat-icon {

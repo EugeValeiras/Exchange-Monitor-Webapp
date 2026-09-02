@@ -451,9 +451,9 @@ interface ExchangeStat {
         gap: 10px;
         margin-bottom: 12px;
         padding: 10px 14px;
-        border: 1px solid rgba(0, 188, 212, 0.28);
+        border: 1px solid rgba(217, 160, 91, 0.28);
         border-radius: 8px;
-        background: rgba(0, 188, 212, 0.08);
+        background: rgba(217, 160, 91, 0.08);
         font-size: 13px;
         color: var(--text-secondary);
       }
@@ -462,7 +462,7 @@ interface ExchangeStat {
         font-size: 18px;
         width: 18px;
         height: 18px;
-        color: var(--brand-accent);
+        color: var(--text-primary);
       }
 
       .pair-filter b {

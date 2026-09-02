@@ -40,18 +40,28 @@ import {
   ChartDataByAssetResponse,
 } from '../../../core/services/chart.service';
 
-// Color palette for multi-asset chart
+/**
+ * Identidad de serie del gráfico por activo.
+ *
+ * Acá el color dice CUÁL, no cuánto, así que sale de la familia de series y
+ * nunca de los tres del dinero: pintar un activo de verde y que verde también
+ * signifique "sube" es la clase de ambigüedad que este sistema existe para
+ * evitar.
+ *
+ * Orden fijo y validado (ver --series-* en styles.scss): la posición de un
+ * activo no cambia su color cuando se filtra otro. Las líneas van con etiqueta
+ * directa porque el verde y el rojo de esta familia se pueden confundir con los
+ * del dinero: el color nunca es la única pista.
+ */
 const ASSET_COLORS = [
-  '#00bcd4', // cyan
-  '#f0b90b', // yellow (binance)
-  '#0ecb81', // green
-  '#f6465d', // red
-  '#9c27b0', // purple
-  '#ff9800', // orange
-  '#2196f3', // blue
-  '#e91e63', // pink
-  '#4caf50', // light green
-  '#ff5722', // deep orange
+  '#3987e5', // azul
+  '#d95926', // naranja
+  '#199e70', // aqua
+  '#c98500', // amarillo
+  '#d55181', // magenta
+  '#008300', // verde
+  '#9085e9', // violeta
+  '#e66767', // rojo
 ];
 
 @Component({
@@ -253,10 +263,10 @@ const ASSET_COLORS = [
       }
 
       ::ng-deep .mat-button-toggle-checked {
-        background: var(--brand-accent) !important;
+        background: var(--bg-selected) !important;
         color: var(--bg-primary) !important;
         border-radius: 7px;
-        box-shadow: 0 2px 8px rgba(0, 188, 212, 0.3);
+        box-shadow: 0 2px 8px rgba(217, 160, 91, 0.3);
       }
 
       ::ng-deep .mat-button-toggle-checked .mat-button-toggle-label-content {
@@ -399,8 +409,8 @@ const ASSET_COLORS = [
       width: 18px;
       height: 18px;
       border-radius: 50%;
-      background: var(--brand-primary);
-      color: #1e2026;
+      background: var(--bg-selected);
+      color: var(--bg-primary);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -410,7 +420,7 @@ const ASSET_COLORS = [
 
     .asset-value {
       font-size: 11px;
-      color: var(--brand-accent);
+      color: var(--text-primary);
       font-weight: 600;
       margin-left: 4px;
       opacity: 0.9;
@@ -438,7 +448,7 @@ const ASSET_COLORS = [
       &:hover {
         background: var(--bg-elevated);
         color: var(--text-primary);
-        border-color: var(--brand-accent);
+        border-color: var(--border-strong);
       }
 
       mat-icon {
@@ -449,8 +459,8 @@ const ASSET_COLORS = [
     }
 
     ::ng-deep .mat-mdc-chip.mat-mdc-chip-selected {
-      border: 1px solid var(--chip-color, var(--brand-accent)) !important;
-      box-shadow: 0 0 8px color-mix(in srgb, var(--chip-color, var(--brand-accent)) 50%, transparent);
+      border: 1px solid var(--chip-color, var(--border-strong)) !important;
+      box-shadow: 0 0 8px color-mix(in srgb, var(--chip-color, var(--border-strong)) 50%, transparent);
 
       .mdc-evolution-chip__graphic {
         width: 0 !important;
@@ -665,8 +675,8 @@ export class BalanceChartComponent implements OnInit {
         },
         tooltip: {
           backgroundColor: 'rgba(0, 0, 0, 0.8)',
-          titleColor: '#fff',
-          bodyColor: '#fff',
+          titleColor: '#f2f3f5',
+          bodyColor: '#f2f3f5',
           padding: 12,
           displayColors: hasMultipleAssets,
           callbacks: {
@@ -870,7 +880,7 @@ export class BalanceChartComponent implements OnInit {
     }
 
     const isPositive = data.changeUsd >= 0;
-    const color = isPositive ? '#0ecb81' : '#f6465d';
+    const color = isPositive ? '#5cbe92' : '#e06b62';
 
     return {
       labels: this.formatLabels(data.labels),
@@ -885,7 +895,7 @@ export class BalanceChartComponent implements OnInit {
           pointRadius: 0,
           pointHoverRadius: 6,
           pointHoverBackgroundColor: color,
-          pointHoverBorderColor: '#fff',
+          pointHoverBorderColor: '#f2f3f5',
           pointHoverBorderWidth: 2,
         },
       ],
@@ -916,7 +926,7 @@ export class BalanceChartComponent implements OnInit {
           pointRadius: 0,
           pointHoverRadius: 6,
           pointHoverBackgroundColor: color,
-          pointHoverBorderColor: '#fff',
+          pointHoverBorderColor: '#f2f3f5',
           pointHoverBorderWidth: 2,
           borderWidth: 2,
         });

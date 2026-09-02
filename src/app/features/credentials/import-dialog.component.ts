@@ -202,7 +202,7 @@ type ImportType = 'deposits' | 'withdrawals' | 'transactions';
       height: 28px;
       border: none;
       border-radius: 50%;
-      background: rgba(246, 70, 93, 0.15);
+      background: rgba(224, 107, 98, 0.15);
       color: var(--color-error);
       cursor: pointer;
       display: flex;
@@ -217,30 +217,30 @@ type ImportType = 'deposits' | 'withdrawals' | 'transactions';
       }
 
       &:hover {
-        background: rgba(246, 70, 93, 0.25);
+        background: rgba(224, 107, 98, 0.25);
         transform: scale(1.1);
       }
     }
 
     .drop-zone:hover:not(.uploading) {
-      border-color: var(--brand-primary);
-      background: rgba(240, 185, 11, 0.05);
+      border-color: var(--border-color);
+      background: rgba(217, 160, 91, 0.05);
     }
 
     .drop-zone.dragover {
-      border-color: var(--brand-primary);
-      background: rgba(240, 185, 11, 0.1);
+      border-color: var(--border-color);
+      background: rgba(217, 160, 91, 0.1);
       transform: scale(1.02);
     }
 
     .drop-zone.has-file {
       border-color: var(--color-success);
       border-style: solid;
-      background: rgba(14, 203, 129, 0.05);
+      background: rgba(92, 190, 146, 0.05);
 
       &:hover:not(.uploading) {
-        border-color: var(--brand-primary);
-        background: rgba(240, 185, 11, 0.05);
+        border-color: var(--border-color);
+        background: rgba(217, 160, 91, 0.05);
       }
     }
 
@@ -328,8 +328,8 @@ type ImportType = 'deposits' | 'withdrawals' | 'transactions';
     }
 
     .result-container.success {
-      background: rgba(14, 203, 129, 0.1);
-      border: 1px solid rgba(14, 203, 129, 0.3);
+      background: rgba(92, 190, 146, 0.1);
+      border: 1px solid rgba(92, 190, 146, 0.3);
     }
 
     .result-container.success mat-icon {
@@ -337,12 +337,12 @@ type ImportType = 'deposits' | 'withdrawals' | 'transactions';
     }
 
     .result-container.warning {
-      background: rgba(240, 185, 11, 0.1);
-      border: 1px solid rgba(240, 185, 11, 0.3);
+      background: rgba(217, 160, 91, 0.1);
+      border: 1px solid rgba(217, 160, 91, 0.3);
     }
 
     .result-container.warning mat-icon {
-      color: var(--brand-primary);
+      color: var(--text-primary);
     }
 
     .result-text {
@@ -368,8 +368,8 @@ type ImportType = 'deposits' | 'withdrawals' | 'transactions';
       padding: 12px;
       border-radius: 8px;
       margin-top: 16px;
-      background: rgba(246, 70, 93, 0.1);
-      border: 1px solid rgba(246, 70, 93, 0.3);
+      background: rgba(224, 107, 98, 0.1);
+      border: 1px solid rgba(224, 107, 98, 0.3);
       color: var(--color-error);
       font-size: 13px;
     }

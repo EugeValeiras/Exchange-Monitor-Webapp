@@ -96,8 +96,8 @@ import { ChatService, ThreadSummary } from './chat.service';
       font-size: .85rem; font-weight: 600; cursor: pointer;
       transition: all .15s;
     }
-    .new-btn:hover { border-color: var(--brand-accent); background: var(--bg-hover); }
-    .new-btn mat-icon { color: var(--brand-accent); font-size: 18px; width: 18px; height: 18px; line-height: 18px; }
+    .new-btn:hover { border-color: var(--border-strong); background: var(--bg-hover); }
+    .new-btn mat-icon { color: var(--text-primary); font-size: 18px; width: 18px; height: 18px; line-height: 18px; }
 
     .section-label {
       font-size: .7rem; font-weight: 700; letter-spacing: .08em;
@@ -111,7 +111,7 @@ import { ChatService, ThreadSummary } from './chat.service';
     .spinner {
       width: 20px; height: 20px;
       border: 2px solid var(--border-color);
-      border-top-color: var(--brand-accent);
+      border-top-color: var(--border-strong);
       border-radius: 50%; animation: spin .7s linear infinite;
     }
     .empty {
@@ -127,8 +127,8 @@ import { ChatService, ThreadSummary } from './chat.service';
     }
     .thread-item:hover { background: var(--bg-hover); }
     .thread-item.active {
-      background: color-mix(in srgb, var(--brand-accent) 12%, transparent);
-      box-shadow: inset 3px 0 0 var(--brand-accent);
+      background: color-mix(in srgb, var(--bg-selected) 12%, transparent);
+      box-shadow: inset 3px 0 0 var(--border-strong);
     }
     .thread-content {
       flex: 1; min-width: 0;
@@ -146,7 +146,7 @@ import { ChatService, ThreadSummary } from './chat.service';
 
     .name-input {
       width: 100%; font-size: .85rem; font-weight: 500;
-      border: 1px solid var(--brand-accent); border-radius: 6px;
+      border: 1px solid var(--border-strong); border-radius: 6px;
       padding: 3px 6px; background: var(--bg-card);
       color: var(--text-primary); outline: none;
     }

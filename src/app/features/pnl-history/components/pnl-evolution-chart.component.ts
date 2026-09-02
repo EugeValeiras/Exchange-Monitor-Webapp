@@ -149,10 +149,10 @@ type PnlTimeframe = '1m' | '3m' | '6m' | '1y' | 'all';
       }
 
       ::ng-deep .mat-button-toggle-checked {
-        background: var(--brand-accent) !important;
+        background: var(--bg-selected) !important;
         color: var(--bg-primary) !important;
         border-radius: 7px;
-        box-shadow: 0 2px 8px rgba(0, 188, 212, 0.3);
+        box-shadow: 0 2px 8px rgba(217, 160, 91, 0.3);
       }
 
       ::ng-deep .mat-button-toggle-checked .mat-button-toggle-label-content {
@@ -260,7 +260,7 @@ export class PnlEvolutionChartComponent implements OnInit {
     // Determine if last value is positive or negative
     const lastValue = data.data[data.data.length - 1] || 0;
     const isPositive = lastValue >= 0;
-    const color = isPositive ? '#0ecb81' : '#f6465d';
+    const color = isPositive ? '#5cbe92' : '#e06b62';
 
     return {
       labels: this.formatLabels(data.labels),
@@ -275,7 +275,7 @@ export class PnlEvolutionChartComponent implements OnInit {
           pointRadius: 0,
           pointHoverRadius: 6,
           pointHoverBackgroundColor: color,
-          pointHoverBorderColor: '#fff',
+          pointHoverBorderColor: '#f2f3f5',
           pointHoverBorderWidth: 2,
         },
       ],
@@ -295,8 +295,8 @@ export class PnlEvolutionChartComponent implements OnInit {
       },
       tooltip: {
         backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        titleColor: '#fff',
-        bodyColor: '#fff',
+        titleColor: '#f2f3f5',
+        bodyColor: '#f2f3f5',
         padding: 12,
         displayColors: false,
         callbacks: {

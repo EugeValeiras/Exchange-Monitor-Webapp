@@ -150,7 +150,7 @@ import { PriceHistoryService } from '../price-history/price-history.service';
       align-items: flex-start;
 
       .info-icon {
-        color: var(--brand-accent);
+        color: var(--text-primary);
         flex-shrink: 0;
       }
 

@@ -146,8 +146,8 @@ export interface SymbolsSelectorDialogData {
     }
 
     .selected-chip {
-      background: var(--brand-primary) !important;
-      color: #1e2026 !important;
+      background: var(--bg-selected) !important;
+      color: var(--bg-primary) !important;
     }
 
     .quick-actions {

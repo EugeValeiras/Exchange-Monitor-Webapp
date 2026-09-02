@@ -16,8 +16,8 @@ import { CommonModule } from '@angular/common';
       >
         <defs>
           <linearGradient id="loaderAccent" x1="10" y1="54" x2="54" y2="10" gradientUnits="userSpaceOnUse">
-            <stop offset="0" stop-color="#00C2FF" stop-opacity="0.90"/>
-            <stop offset="1" stop-color="#00C2FF" stop-opacity="1"/>
+            <stop offset="0" stop-color="#f2f3f5" stop-opacity="0.90"/>
+            <stop offset="1" stop-color="#f2f3f5" stop-opacity="1"/>
           </linearGradient>
           <filter id="loaderGlow" x="-50%" y="-50%" width="200%" height="200%" color-interpolation-filters="sRGB">
             <feGaussianBlur stdDeviation="2" result="blur"/>
@@ -53,10 +53,10 @@ import { CommonModule } from '@angular/common';
           />
 
           <!-- Data points with staggered animation -->
-          <circle cx="18" cy="40" r="3.2" fill="#00C2FF" class="data-point point-1"/>
-          <circle cx="28" cy="30" r="3.2" fill="#00C2FF" class="data-point point-2"/>
-          <circle cx="36" cy="34" r="3.2" fill="#00C2FF" class="data-point point-3"/>
-          <circle cx="46" cy="22" r="3.2" fill="#00C2FF" class="data-point point-4"/>
+          <circle cx="18" cy="40" r="3.2" fill="#f2f3f5" class="data-point point-1"/>
+          <circle cx="28" cy="30" r="3.2" fill="#f2f3f5" class="data-point point-2"/>
+          <circle cx="36" cy="34" r="3.2" fill="#f2f3f5" class="data-point point-3"/>
+          <circle cx="46" cy="22" r="3.2" fill="#f2f3f5" class="data-point point-4"/>
         </g>
       </svg>
 
@@ -105,8 +105,8 @@ import { CommonModule } from '@angular/common';
     }
 
     @keyframes glowPulse {
-      0%, 100% { filter: drop-shadow(0 0 2px #00C2FF); }
-      50% { filter: drop-shadow(0 0 8px #00C2FF); }
+      0%, 100% { filter: drop-shadow(0 0 2px var(--text-primary)); }
+      50% { filter: drop-shadow(0 0 8px var(--text-primary)); }
     }
 
     /* Data points appear one by one */

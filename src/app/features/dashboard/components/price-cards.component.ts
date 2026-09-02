@@ -114,7 +114,7 @@ import { FavoriteButtonComponent } from '../../../shared/components/favorite-but
       }
 
       &:hover {
-        color: var(--brand-primary);
+        color: var(--text-primary);
       }
     }
 
@@ -156,7 +156,7 @@ import { FavoriteButtonComponent } from '../../../shared/components/favorite-but
         color: var(--text-secondary);
 
         a {
-          color: var(--brand-primary);
+          color: var(--text-primary);
           text-decoration: none;
 
           &:hover {
@@ -175,7 +175,7 @@ import { FavoriteButtonComponent } from '../../../shared/components/favorite-but
       transition: all 0.2s ease;
 
       &:hover {
-        border-color: var(--brand-primary);
+        border-color: var(--border-color);
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       }
@@ -205,8 +205,8 @@ import { FavoriteButtonComponent } from '../../../shared/components/favorite-but
       width: 36px;
       height: 36px;
       border-radius: 50%;
-      background: var(--brand-primary);
-      color: #1e2026;
+      background: var(--bg-selected);
+      color: var(--bg-primary);
       display: flex;
       align-items: center;
       justify-content: center;

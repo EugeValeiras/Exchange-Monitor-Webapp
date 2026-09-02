@@ -126,7 +126,7 @@ import { SERIES, SeriesConfig, SeriesId, seriesColor } from './lib/series';
         align-items: center;
         justify-content: center;
         width: 13px;
-        color: var(--brand-accent);
+        color: var(--text-primary);
       }
 
       .check mat-icon {

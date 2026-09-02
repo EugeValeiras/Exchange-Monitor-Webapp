@@ -390,7 +390,7 @@ export interface HeaderContext {
       }
 
       .segmented button.active {
-        background: #2f363f;
+        background: var(--bg-tertiary);
         color: var(--text-primary);
         font-weight: 600;
         box-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
@@ -431,9 +431,9 @@ export interface HeaderContext {
       }
 
       .toggle.active {
-        border-color: rgba(0, 188, 212, 0.42);
-        background: rgba(0, 188, 212, 0.13);
-        color: var(--brand-accent);
+        border-color: rgba(217, 160, 91, 0.42);
+        background: rgba(217, 160, 91, 0.13);
+        color: var(--text-primary);
       }
 
       .toggle mat-icon {
@@ -461,8 +461,8 @@ export interface HeaderContext {
       }
 
       .toggle.active .count {
-        background: var(--brand-accent);
-        color: #0b0e11;
+        background: var(--bg-selected);
+        color: var(--bg-primary);
       }
 
       @media (max-width: 900px) {

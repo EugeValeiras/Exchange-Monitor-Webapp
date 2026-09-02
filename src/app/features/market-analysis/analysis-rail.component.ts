@@ -387,7 +387,7 @@ type SideFilter = 'all' | 'buy' | 'sell';
       }
 
       .segmented button.active {
-        background: #2f363f;
+        background: var(--bg-tertiary);
         color: var(--text-primary);
         font-weight: 600;
       }
@@ -525,7 +525,7 @@ type SideFilter = 'all' | 'buy' | 'sell';
         padding: 0;
         border: none;
         background: none;
-        color: var(--brand-accent);
+        color: var(--text-primary);
         font: inherit;
         cursor: pointer;
       }
@@ -550,7 +550,7 @@ type SideFilter = 'all' | 'buy' | 'sell';
         display: inline-flex;
         align-items: center;
         gap: 2px;
-        color: var(--brand-accent);
+        color: var(--text-primary);
         text-decoration: none;
         font-size: 11.5px;
       }
@@ -664,8 +664,8 @@ type SideFilter = 'all' | 'buy' | 'sell';
 
       .order:hover,
       .order.highlighted {
-        border-color: rgba(0, 188, 212, 0.45);
-        background: rgba(0, 188, 212, 0.08);
+        border-color: rgba(217, 160, 91, 0.45);
+        background: rgba(217, 160, 91, 0.08);
       }
 
       .side {
@@ -676,7 +676,7 @@ type SideFilter = 'all' | 'buy' | 'sell';
         height: 19px;
         flex: none;
         border-radius: 50%;
-        color: #0b0e11;
+        color: var(--bg-primary);
         font-size: var(--fs-10);
         font-weight: 700;
       }

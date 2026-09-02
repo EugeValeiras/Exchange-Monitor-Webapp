@@ -149,7 +149,7 @@ export class PriceHistoryChartComponent implements OnChanges {
     const firstPrice = prices[0];
     const lastPrice = prices[prices.length - 1];
     const isPositive = lastPrice >= firstPrice;
-    const color = isPositive ? '#0ecb81' : '#f6465d';
+    const color = isPositive ? '#5cbe92' : '#e06b62';
 
     return {
       labels,
@@ -164,7 +164,7 @@ export class PriceHistoryChartComponent implements OnChanges {
           pointRadius: 0,
           pointHoverRadius: 6,
           pointHoverBackgroundColor: color,
-          pointHoverBorderColor: '#fff',
+          pointHoverBorderColor: '#f2f3f5',
           pointHoverBorderWidth: 2,
         },
       ],
@@ -184,8 +184,8 @@ export class PriceHistoryChartComponent implements OnChanges {
       },
       tooltip: {
         backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        titleColor: '#fff',
-        bodyColor: '#fff',
+        titleColor: '#f2f3f5',
+        bodyColor: '#f2f3f5',
         padding: 12,
         displayColors: false,
         callbacks: {

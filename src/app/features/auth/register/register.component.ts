@@ -134,7 +134,7 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
 
     .auth-decoration {
       flex: 1;
-      background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-primary-dark) 100%);
+      background: linear-gradient(135deg, var(--bg-selected) 0%, var(--bg-tertiary) 100%);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -175,7 +175,7 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
     .feature mat-icon {
       width: 24px;
       height: 24px;
-      color: var(--brand-accent);
+      color: var(--text-primary);
     }
 
     .auth-card {
@@ -233,8 +233,8 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
       align-items: center;
       gap: 8px;
       padding: 12px 16px;
-      background: rgba(246, 70, 93, 0.1);
-      border: 1px solid rgba(246, 70, 93, 0.3);
+      background: rgba(224, 107, 98, 0.1);
+      border: 1px solid rgba(224, 107, 98, 0.3);
       border-radius: 8px;
       color: var(--color-error);
       margin-bottom: 16px;
@@ -273,7 +273,7 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
     }
 
     .auth-footer a {
-      color: var(--brand-accent);
+      color: var(--text-primary);
       margin-left: 4px;
       font-weight: 500;
     }

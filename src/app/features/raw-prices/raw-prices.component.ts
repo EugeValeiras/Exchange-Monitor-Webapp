@@ -487,7 +487,7 @@ const DEFAULT_SYMBOL_BY_EXCHANGE: Record<RawExchange, string> = {
         color: var(--text-primary);
       }
       .title-block h1 mat-icon {
-        color: var(--brand-accent, #00bcd4);
+        color: var(--text-primary);
         font-size: 32px;
         width: 32px;
         height: 32px;
@@ -541,13 +541,13 @@ const DEFAULT_SYMBOL_BY_EXCHANGE: Record<RawExchange, string> = {
         color: var(--text-primary);
       }
       .mode-option.active.authenticated {
-        background: rgba(0, 188, 212, 0.18);
-        color: var(--brand-accent, #00bcd4);
+        background: rgba(217, 160, 91, 0.18);
+        color: var(--text-primary);
       }
 
       .controls-card {
         padding: 18px 22px;
-        background: var(--bg-secondary, #12161e);
+        background: var(--bg-secondary, var(--bg-card));
       }
       .controls-row {
         display: flex;
@@ -627,8 +627,8 @@ const DEFAULT_SYMBOL_BY_EXCHANGE: Record<RawExchange, string> = {
       .refresh-chip.selected,
       .depth-chip.selected,
       .popular-chip.selected {
-        background: var(--brand-accent, #00bcd4) !important;
-        color: #001319 !important;
+        background: var(--bg-selected) !important;
+        color: var(--bg-primary) !important;
         font-weight: 600;
       }
 
@@ -726,7 +726,7 @@ const DEFAULT_SYMBOL_BY_EXCHANGE: Record<RawExchange, string> = {
       }
 
       mat-card {
-        background: var(--bg-secondary, #12161e);
+        background: var(--bg-secondary, var(--bg-card));
         color: var(--text-primary);
         padding: 16px 20px;
         border: 1px solid rgba(255, 255, 255, 0.05);
@@ -748,7 +748,7 @@ const DEFAULT_SYMBOL_BY_EXCHANGE: Record<RawExchange, string> = {
         color: var(--text-primary);
       }
       .card-title mat-icon {
-        color: var(--brand-accent, #00bcd4);
+        color: var(--text-primary);
       }
       .card-updated {
         font-size: 12px;
@@ -765,7 +765,7 @@ const DEFAULT_SYMBOL_BY_EXCHANGE: Record<RawExchange, string> = {
         color: var(--text-secondary);
       }
       .error-state {
-        color: var(--color-error, #ff5454);
+        color: var(--color-error, var(--chart-down));
       }
 
       /* ── Ticker card ──────────────────────────────────── */
@@ -797,12 +797,12 @@ const DEFAULT_SYMBOL_BY_EXCHANGE: Record<RawExchange, string> = {
         font-size: 13px;
       }
       .change-pill.up {
-        background: rgba(30, 205, 151, 0.12);
-        color: #1ecd97;
+        background: rgba(92, 190, 146, 0.12);
+        color: var(--chart-up);
       }
       .change-pill.down {
-        background: rgba(255, 84, 84, 0.14);
-        color: #ff5454;
+        background: rgba(224, 107, 98, 0.14);
+        color: var(--chart-down);
       }
       .change-pill mat-icon {
         font-size: 16px;
@@ -840,10 +840,10 @@ const DEFAULT_SYMBOL_BY_EXCHANGE: Record<RawExchange, string> = {
         font-variant-numeric: tabular-nums;
       }
       .metric-value.bid {
-        color: #1ecd97;
+        color: var(--chart-up);
       }
       .metric-value.ask {
-        color: #ff5454;
+        color: var(--chart-down);
       }
       .metric-sub {
         font-size: 11px;
@@ -912,10 +912,10 @@ const DEFAULT_SYMBOL_BY_EXCHANGE: Record<RawExchange, string> = {
         color: var(--text-secondary);
       }
       .book-row.bid .price {
-        color: #1ecd97;
+        color: var(--chart-up);
       }
       .book-row.ask .price {
-        color: #ff5454;
+        color: var(--chart-down);
       }
       .depth-bar {
         position: absolute;
@@ -927,11 +927,11 @@ const DEFAULT_SYMBOL_BY_EXCHANGE: Record<RawExchange, string> = {
         border-radius: 3px;
       }
       .book-row.bid .depth-bar {
-        background: #1ecd97;
+        background: var(--chart-up);
         left: auto;
       }
       .book-row.ask .depth-bar {
-        background: #ff5454;
+        background: var(--chart-down);
         left: 0;
         right: auto;
       }

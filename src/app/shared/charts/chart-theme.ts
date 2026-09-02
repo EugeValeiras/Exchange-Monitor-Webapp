@@ -4,7 +4,7 @@ import { ChartOptions, ScaleOptions } from 'chart.js';
  * One source of truth for how a chart looks in this app.
  *
  * Before this, eight charts carried hand-copied option blocks: 20 literal
- * `#0ecb81`, 22 `#f6465d` and 13 different grid rgba() values. Changing the
+ * `var(--chart-up)`, 22 `var(--chart-down)` and 13 different grid rgba() values. Changing the
  * identity of the chart system meant 40 edits; now it means editing the
  * tokens this file reads.
  */
@@ -17,18 +17,20 @@ function token(name: string, fallback: string): string {
 }
 
 export const chartColors = () => ({
-  up: token('--chart-up', '#0ecb81'),
-  down: token('--chart-down', '#f6465d'),
-  mine: token('--chart-mine', '#00bcd4'),
-  agent: token('--chart-agent', '#f0b90b'),
-  grid: token('--chart-grid', 'rgba(255,255,255,0.055)'),
-  axis: token('--chart-axis', 'rgba(255,255,255,0.42)'),
-  crosshair: token('--chart-crosshair', 'rgba(255,255,255,0.28)'),
+  up: token('--chart-up', '#5cbe92'),
+  down: token('--chart-down', '#e06b62'),
+  mine: token('--chart-flow', '#d9a05b'),
+  agent: token('--chart-agent', 'rgba(242,243,245,0.451)'),
+  grid: token('--chart-grid', 'rgba(255,255,255,0.039)'),
+  axis: token('--chart-axis', 'rgba(242,243,245,0.451)'),
+  crosshair: token('--chart-crosshair', 'rgba(242,243,245,0.278)'),
   band: token('--chart-band', 'rgba(255,255,255,0.025)'),
   ma: [
-    token('--chart-ma-1', '#f0b90b'),
-    token('--chart-ma-2', '#a78bfa'),
-    token('--chart-ma-3', '#8ab4f8'),
+    // Las medias no son dinero: se distinguen por VALOR, no por hue, para
+    // que el color siga queriendo decir una sola cosa.
+    token('--chart-ma-1', 'rgba(242,243,245,0.85)'),
+    token('--chart-ma-2', 'rgba(242,243,245,0.55)'),
+    token('--chart-ma-3', 'rgba(242,243,245,0.32)'),
   ],
 });
 

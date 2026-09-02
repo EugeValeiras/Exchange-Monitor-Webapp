@@ -104,8 +104,8 @@
   border-color: var(--border-color);
 
   &:hover:not(:disabled) {
-    color: var(--brand-primary);
-    border-color: var(--brand-primary);
+    color: var(--text-primary);
+    border-color: var(--border-color);
   }
 
   &:disabled {
@@ -179,22 +179,22 @@
   box-sizing: border-box;
 
   &.interest-card {
-    background: linear-gradient(135deg, rgba(14, 203, 129, 0.1) 0%, rgba(14, 203, 129, 0.05) 100%);
-    border-color: rgba(14, 203, 129, 0.3);
+    background: linear-gradient(135deg, rgba(92, 190, 146, 0.1) 0%, rgba(92, 190, 146, 0.05) 100%);
+    border-color: rgba(92, 190, 146, 0.3);
   }
 
   &.pnl-card {
-    background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%);
-    border-color: rgba(139, 92, 246, 0.3);
+    background: linear-gradient(135deg, rgba(242, 243, 245, 0.1) 0%, rgba(242, 243, 245, 0.05) 100%);
+    border-color: rgba(242, 243, 245, 0.3);
 
     &.positive {
-      background: linear-gradient(135deg, rgba(14, 203, 129, 0.1) 0%, rgba(14, 203, 129, 0.05) 100%);
-      border-color: rgba(14, 203, 129, 0.3);
+      background: linear-gradient(135deg, rgba(92, 190, 146, 0.1) 0%, rgba(92, 190, 146, 0.05) 100%);
+      border-color: rgba(92, 190, 146, 0.3);
     }
 
     &.negative {
-      background: linear-gradient(135deg, rgba(246, 70, 93, 0.1) 0%, rgba(246, 70, 93, 0.05) 100%);
-      border-color: rgba(246, 70, 93, 0.3);
+      background: linear-gradient(135deg, rgba(224, 107, 98, 0.1) 0%, rgba(224, 107, 98, 0.05) 100%);
+      border-color: rgba(224, 107, 98, 0.3);
     }
   }
 }
@@ -214,53 +214,53 @@
   }
 
   &.total {
-    background: rgba(139, 92, 246, 0.15);
-    color: #a78bfa;
+    background: rgba(242, 243, 245, 0.15);
+    color: var(--text-secondary);
   }
 
   &.deposits {
-    background: rgba(14, 203, 129, 0.15);
+    background: rgba(92, 190, 146, 0.15);
     color: var(--color-success);
   }
 
   &.withdrawals {
-    background: rgba(246, 70, 93, 0.15);
+    background: rgba(224, 107, 98, 0.15);
     color: var(--color-error);
   }
 
   &.trades {
-    background: rgba(59, 130, 246, 0.15);
-    color: #3b82f6;
+    background: rgba(242, 243, 245, 0.15);
+    color: var(--text-secondary);
   }
 
   &.interest {
-    background: rgba(14, 203, 129, 0.15);
+    background: rgba(92, 190, 146, 0.15);
     color: var(--color-success);
   }
 
   &.pnl {
-    background: rgba(139, 92, 246, 0.15);
-    color: #a78bfa;
+    background: rgba(242, 243, 245, 0.15);
+    color: var(--text-secondary);
 
     &.positive {
-      background: rgba(14, 203, 129, 0.15);
+      background: rgba(92, 190, 146, 0.15);
       color: var(--color-success);
     }
 
     &.negative {
-      background: rgba(246, 70, 93, 0.15);
+      background: rgba(224, 107, 98, 0.15);
       color: var(--color-error);
     }
   }
 
   &.realized {
-    background: rgba(59, 130, 246, 0.15);
-    color: #3b82f6;
+    background: rgba(242, 243, 245, 0.15);
+    color: var(--text-secondary);
   }
 
   &.unrealized {
-    background: rgba(251, 146, 60, 0.15);
-    color: #fb923c;
+    background: rgba(242, 243, 245, 0.15);
+    color: var(--text-secondary);
   }
 
   &.skeleton-icon {
@@ -435,57 +435,57 @@
   }
 
   &.deposit {
-    --mdc-chip-elevated-container-color: rgba(14, 203, 129, 0.1) !important;
+    --mdc-chip-elevated-container-color: rgba(92, 190, 146, 0.1) !important;
     --mdc-chip-label-text-color: var(--color-success) !important;
-    --mdc-chip-elevated-selected-container-color: rgba(14, 203, 129, 0.15) !important;
+    --mdc-chip-elevated-selected-container-color: rgba(92, 190, 146, 0.15) !important;
 
     &.mat-mdc-chip-selected {
       border-color: var(--color-success);
-      box-shadow: 0 0 8px rgba(14, 203, 129, 0.5);
+      box-shadow: 0 0 8px rgba(92, 190, 146, 0.5);
     }
   }
 
   &.withdrawal {
-    --mdc-chip-elevated-container-color: rgba(246, 70, 93, 0.1) !important;
+    --mdc-chip-elevated-container-color: rgba(224, 107, 98, 0.1) !important;
     --mdc-chip-label-text-color: var(--color-error) !important;
-    --mdc-chip-elevated-selected-container-color: rgba(246, 70, 93, 0.15) !important;
+    --mdc-chip-elevated-selected-container-color: rgba(224, 107, 98, 0.15) !important;
 
     &.mat-mdc-chip-selected {
       border-color: var(--color-error);
-      box-shadow: 0 0 8px rgba(246, 70, 93, 0.5);
+      box-shadow: 0 0 8px rgba(224, 107, 98, 0.5);
     }
   }
 
   &.trade {
-    --mdc-chip-elevated-container-color: rgba(251, 146, 60, 0.1) !important;
-    --mdc-chip-label-text-color: #fb923c !important;
-    --mdc-chip-elevated-selected-container-color: rgba(251, 146, 60, 0.15) !important;
+    --mdc-chip-elevated-container-color: rgba(242, 243, 245, 0.1) !important;
+    --mdc-chip-label-text-color: var(--text-secondary) !important;
+    --mdc-chip-elevated-selected-container-color: rgba(242, 243, 245, 0.15) !important;
 
     &.mat-mdc-chip-selected {
-      border-color: #fb923c;
-      box-shadow: 0 0 8px rgba(251, 146, 60, 0.5);
+      border-color: var(--text-secondary);
+      box-shadow: 0 0 8px rgba(242, 243, 245, 0.5);
     }
   }
 
   &.interest {
-    --mdc-chip-elevated-container-color: rgba(59, 130, 246, 0.1) !important;
-    --mdc-chip-label-text-color: #3b82f6 !important;
-    --mdc-chip-elevated-selected-container-color: rgba(59, 130, 246, 0.15) !important;
+    --mdc-chip-elevated-container-color: rgba(242, 243, 245, 0.1) !important;
+    --mdc-chip-label-text-color: var(--text-secondary) !important;
+    --mdc-chip-elevated-selected-container-color: rgba(242, 243, 245, 0.15) !important;
 
     &.mat-mdc-chip-selected {
-      border-color: #3b82f6;
-      box-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+      border-color: var(--text-secondary);
+      box-shadow: 0 0 8px rgba(242, 243, 245, 0.5);
     }
   }
 
   &.fee {
-    --mdc-chip-elevated-container-color: rgba(168, 85, 247, 0.1) !important;
-    --mdc-chip-label-text-color: #a855f7 !important;
-    --mdc-chip-elevated-selected-container-color: rgba(168, 85, 247, 0.15) !important;
+    --mdc-chip-elevated-container-color: rgba(242, 243, 245, 0.1) !important;
+    --mdc-chip-label-text-color: var(--text-secondary) !important;
+    --mdc-chip-elevated-selected-container-color: rgba(242, 243, 245, 0.15) !important;
 
     &.mat-mdc-chip-selected {
-      border-color: #a855f7;
-      box-shadow: 0 0 8px rgba(168, 85, 247, 0.5);
+      border-color: var(--text-secondary);
+      box-shadow: 0 0 8px rgba(242, 243, 245, 0.5);
     }
   }
 
@@ -593,8 +593,8 @@
   }
 
   &.mat-mdc-chip-selected {
-    border-color: var(--brand-accent);
-    box-shadow: 0 0 8px rgba(0, 194, 255, 0.4);
+    border-color: var(--border-strong);
+    box-shadow: 0 0 8px rgba(242, 243, 245, 0.18);
   }
 
   .mdc-evolution-chip__text-label {
@@ -640,8 +640,8 @@
   }
 
   &.mat-mdc-chip-selected {
-    border-color: var(--brand-primary);
-    box-shadow: 0 0 8px rgba(18, 37, 98, 0.5);
+    border-color: var(--border-color);
+    box-shadow: 0 0 8px rgba(242, 243, 245, 0.18);
   }
 
   .mdc-evolution-chip__text-label {
@@ -788,28 +788,28 @@
   }
 
   &.deposit {
-    background: rgba(14, 203, 129, 0.15);
+    background: rgba(92, 190, 146, 0.15);
     color: var(--color-success);
   }
 
   &.withdrawal {
-    background: rgba(246, 70, 93, 0.15);
+    background: rgba(224, 107, 98, 0.15);
     color: var(--color-error);
   }
 
   &.trade {
-    background: rgba(251, 146, 60, 0.15);
-    color: #fb923c;
+    background: rgba(242, 243, 245, 0.15);
+    color: var(--text-secondary);
   }
 
   &.interest {
-    background: rgba(59, 130, 246, 0.15);
-    color: #3b82f6;
+    background: rgba(242, 243, 245, 0.15);
+    color: var(--text-secondary);
   }
 
   &.fee {
-    background: rgba(168, 85, 247, 0.15);
-    color: #a855f7;
+    background: rgba(242, 243, 245, 0.15);
+    color: var(--text-secondary);
   }
 }
 
@@ -876,8 +876,8 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: var(--brand-primary);
-  color: #1e2026;
+  background: var(--bg-selected);
+  color: var(--bg-primary);
   display: flex;
   align-items: center;
   justify-content: center;

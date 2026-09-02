@@ -114,7 +114,7 @@ import { WorkflowCardComponent } from './workflow-card.component';
     .avatar {
       position: absolute; top: 20px; left: 0;
       width: 28px; height: 28px; border-radius: 50%;
-      background: var(--brand-accent); color: var(--bg-primary);
+      background: var(--bg-selected); color: var(--bg-primary);
       display: flex; align-items: center; justify-content: center;
     }
     .avatar mat-icon { font-size: 16px; width: 16px; height: 16px; line-height: 16px; }
@@ -128,7 +128,7 @@ import { WorkflowCardComponent } from './workflow-card.component';
     .caret {
       display: inline-block; width: 8px; height: 1.05em;
       transform: translateY(2px); margin-left: 2px;
-      background: var(--brand-accent); border-radius: 1px;
+      background: var(--bg-selected); border-radius: 1px;
       animation: caret-blink 1s steps(1) infinite;
       vertical-align: baseline;
     }
@@ -201,7 +201,7 @@ import { WorkflowCardComponent } from './workflow-card.component';
       background: var(--bg-tertiary); border: 1px solid var(--border-light);
       border-radius: 5px; padding: 1px 5px; font-size: .85em;
       font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
-      color: var(--brand-accent);
+      color: var(--text-primary);
     }
     .md pre {
       background: var(--bg-tertiary); border: 1px solid var(--border-color);
@@ -213,7 +213,7 @@ import { WorkflowCardComponent } from './workflow-card.component';
       color: var(--text-primary); font-size: inherit;
     }
     .md blockquote {
-      border-left: 3px solid var(--brand-accent);
+      border-left: 3px solid var(--border-strong);
       padding: 2px 0 2px 14px; margin: .6em 0;
       color: var(--text-secondary);
     }
@@ -231,7 +231,7 @@ import { WorkflowCardComponent } from './workflow-card.component';
       padding: 7px 12px; border-bottom: 1px solid var(--border-light); font-size: .88rem;
       color: var(--text-primary);
     }
-    .md a { color: var(--brand-accent); text-decoration: none; }
+    .md a { color: var(--text-primary); text-decoration: none; }
     .md a:hover { text-decoration: underline; }
     .md hr { border: 0; border-top: 1px solid var(--border-light); margin: 1em 0; }
     .md img { max-width: 100%; border-radius: 8px; }

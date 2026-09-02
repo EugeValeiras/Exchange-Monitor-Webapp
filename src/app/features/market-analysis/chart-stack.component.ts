@@ -284,7 +284,7 @@ function describeSpan(ms: number): string {
         padding: 4px 9px;
         border: 1px solid var(--border-light);
         border-radius: var(--r-2);
-        background: rgba(11, 14, 17, 0.94);
+        background: rgba(12, 13, 15, 0.94);
         color: var(--text-secondary);
         font-family: inherit;
         font-size: 10.5px;
@@ -296,7 +296,7 @@ function describeSpan(ms: number): string {
       }
 
       .reset .action {
-        color: var(--brand-accent);
+        color: var(--text-primary);
         font-weight: 500;
       }
 
@@ -310,7 +310,7 @@ function describeSpan(ms: number): string {
         padding: 5px 10px;
         border: 1px solid var(--border-light);
         border-radius: var(--r-2);
-        background: rgba(11, 14, 17, 0.94);
+        background: rgba(12, 13, 15, 0.94);
         box-shadow: var(--shadow-md);
         white-space: nowrap;
         transform: translateX(-50%);
@@ -355,7 +355,7 @@ function describeSpan(ms: number): string {
         padding: 10px 12px;
         border: 1px solid var(--border-light);
         border-radius: var(--r-2);
-        background: rgba(11, 14, 17, 0.96);
+        background: rgba(12, 13, 15, 0.96);
         box-shadow: var(--shadow-lg);
         pointer-events: none;
         /* anchored beside the marker; flipped when it would leave the panel */
@@ -448,7 +448,7 @@ function describeSpan(ms: number): string {
         height: 14px;
         border-radius: 50%;
         background: var(--chart-up);
-        color: #0b0e11;
+        color: var(--bg-primary);
         font-size: 8.5px;
         font-weight: 700;
       }

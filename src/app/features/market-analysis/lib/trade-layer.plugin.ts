@@ -60,7 +60,7 @@ function badge(ctx: CanvasRenderingContext2D, x: number, y: number, letter: 'B' 
   ctx.stroke();
   ctx.setLineDash([]);
 
-  ctx.fillStyle = hollow ? color : '#0b0e11';
+  ctx.fillStyle = hollow ? color : '#0c0d0f';
   ctx.font = "700 9px Inter, sans-serif";
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
@@ -96,7 +96,7 @@ export const tradeLayerPlugin: Plugin = {
     if (!x || !y || !chartArea) return;
 
     const c = chartColors();
-    const surface = getComputedStyle(chart.canvas).backgroundColor || '#1e2329';
+    const surface = getComputedStyle(chart.canvas).backgroundColor || '#141518';
     ctx.save();
 
     // ── average entry price ────────────────────────────────────────────────

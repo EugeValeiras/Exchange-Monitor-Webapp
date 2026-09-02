@@ -232,7 +232,7 @@ interface Suggestion { icon: string; text: string; }
     }
     .plan-toggle:hover { color: var(--text-primary); border-color: var(--text-tertiary); }
     .plan-toggle.active {
-      background: var(--brand-accent); border-color: var(--brand-accent);
+      background: var(--bg-selected); border-color: var(--border-strong);
       color: var(--bg-primary);
     }
     .plan-toggle mat-icon { font-size: 17px; width: 17px; height: 17px; line-height: 17px; }
@@ -254,7 +254,7 @@ interface Suggestion { icon: string; text: string; }
       color: var(--text-secondary); transition: all .15s;
     }
     .model-chip:hover { color: var(--text-primary); }
-    .model-chip.active { background: var(--brand-accent); color: var(--bg-primary); }
+    .model-chip.active { background: var(--bg-selected); color: var(--bg-primary); }
 
     .ghost-icon {
       width: 36px; height: 36px; border-radius: 8px;
@@ -282,7 +282,7 @@ interface Suggestion { icon: string; text: string; }
     .spinner {
       width: 26px; height: 26px;
       border: 3px solid var(--border-color);
-      border-top-color: var(--brand-accent);
+      border-top-color: var(--border-strong);
       border-radius: 50%; animation: spin .7s linear infinite;
     }
 
@@ -295,8 +295,8 @@ interface Suggestion { icon: string; text: string; }
     }
     .hero-icon {
       width: 56px; height: 56px; border-radius: 50%;
-      background: color-mix(in srgb, var(--brand-accent) 14%, transparent);
-      color: var(--brand-accent);
+      background: color-mix(in srgb, var(--bg-selected) 14%, transparent);
+      color: var(--text-primary);
       display: flex; align-items: center; justify-content: center;
     }
     .hero-icon mat-icon { font-size: 30px; width: 30px; height: 30px; line-height: 30px; }
@@ -317,10 +317,10 @@ interface Suggestion { icon: string; text: string; }
       transition: all .15s;
     }
     .chip:hover {
-      border-color: var(--brand-accent); background: var(--bg-hover);
+      border-color: var(--border-strong); background: var(--bg-hover);
       transform: translateY(-1px);
     }
-    .chip mat-icon { font-size: 16px; width: 16px; height: 16px; line-height: 16px; color: var(--brand-accent); }
+    .chip mat-icon { font-size: 16px; width: 16px; height: 16px; line-height: 16px; color: var(--text-primary); }
 
     /* To-bottom pill */
     .to-bottom {
@@ -382,7 +382,7 @@ interface Suggestion { icon: string; text: string; }
       color: var(--text-primary);
     }
     .usage-head { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
-    .usage-head mat-icon { color: var(--brand-accent); }
+    .usage-head mat-icon { color: var(--text-primary); }
     .usage-head h3 { margin: 0; font-size: 1.05rem; font-weight: 600; }
     .usage-model { margin: 0 0 14px; color: var(--text-secondary); font-size: .85rem; text-transform: capitalize; }
     .usage-table {
@@ -398,7 +398,7 @@ interface Suggestion { icon: string; text: string; }
     .usage-table td { padding: 9px 0; text-align: right; color: var(--text-primary); }
     .usage-table td:first-child { text-align: left; color: var(--text-secondary); }
     .usage-table tbody tr:not(:last-child) td { border-bottom: 1px solid color-mix(in srgb, var(--border-color) 55%, transparent); }
-    .usage-table .usage-cost td { font-weight: 700; color: var(--brand-accent); }
+    .usage-table .usage-cost td { font-weight: 700; color: var(--text-primary); }
     .usage-table .usage-cost td:first-child { color: var(--text-primary); font-weight: 600; }
     .usage-empty {
       margin: 4px 0 0; padding: 16px; border-radius: 10px;
@@ -416,7 +416,7 @@ interface Suggestion { icon: string; text: string; }
     .usage-actions { display: flex; justify-content: flex-end; margin-top: 16px; }
     .usage-close {
       border: none; cursor: pointer; padding: 8px 18px; border-radius: 8px;
-      background: var(--brand-accent); color: var(--bg-primary);
+      background: var(--bg-selected); color: var(--bg-primary);
       font-weight: 600; font-size: .85rem; transition: filter .15s;
     }
     .usage-close:hover { filter: brightness(1.1); }

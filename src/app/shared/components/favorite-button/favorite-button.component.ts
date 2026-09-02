@@ -28,11 +28,11 @@ import { FavoritesService } from '../../../core/services/favorites.service';
     }
 
     .favorite-btn:hover {
-      color: var(--brand-primary);
+      color: var(--text-primary);
     }
 
     .favorite-btn.is-favorite {
-      color: #f59e0b;
+      color: var(--color-warning);
     }
 
     .favorite-btn.is-favorite mat-icon {

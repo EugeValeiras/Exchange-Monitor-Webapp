@@ -175,7 +175,7 @@ import { FlipNumberComponent } from '../../shared/components/flip-number/flip-nu
     .quick-stat-card {
       display: flex;
       align-items: center;
-      background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-primary-dark) 100%);
+      background: linear-gradient(135deg, var(--bg-selected) 0%, var(--bg-tertiary) 100%);
       border-radius: 16px;
       padding: 24px;
       text-decoration: none;
@@ -224,7 +224,7 @@ import { FlipNumberComponent } from '../../shared/components/flip-number/flip-nu
       font-size: 20px;
       width: 20px;
       height: 20px;
-      color: var(--brand-accent);
+      color: var(--text-primary);
     }
 
     .quick-stat-card .stat-value {
@@ -246,11 +246,11 @@ import { FlipNumberComponent } from '../../shared/components/flip-number/flip-nu
     }
 
     .stat-change.positive {
-      background: rgba(14, 203, 129, 0.2);
+      background: rgba(92, 190, 146, 0.2);
     }
 
     .stat-change.negative {
-      background: rgba(246, 70, 93, 0.2);
+      background: rgba(224, 107, 98, 0.2);
     }
 
     .stat-change .change-value {
@@ -262,12 +262,12 @@ import { FlipNumberComponent } from '../../shared/components/flip-number/flip-nu
 
     .stat-change.positive .change-value,
     .stat-change.positive .change-percent {
-      color: #0ecb81;
+      color: var(--chart-up);
     }
 
     .stat-change.negative .change-value,
     .stat-change.negative .change-percent {
-      color: #f6465d;
+      color: var(--chart-down);
     }
 
     .stat-change .change-percent {

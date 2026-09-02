@@ -137,7 +137,7 @@ export interface PaletteRow {
         align-items: flex-start;
         justify-content: center;
         padding-top: 12vh;
-        background: rgba(11, 14, 17, 0.72);
+        background: rgba(12, 13, 15, 0.72);
       }
 
       .palette {
@@ -221,9 +221,9 @@ export interface PaletteRow {
         gap: var(--sp-3);
         width: 100%;
         padding: 9px 10px;
-        border: 1px solid rgba(240, 185, 11, 0.3);
+        border: 1px solid rgba(217, 160, 91, 0.3);
         border-radius: 7px;
-        background: rgba(240, 185, 11, 0.09);
+        background: rgba(217, 160, 91, 0.09);
         color: var(--text-primary);
         font-family: inherit;
         font-size: 12.5px;
@@ -263,7 +263,7 @@ export interface PaletteRow {
       }
 
       .pill.mine {
-        color: var(--brand-accent);
+        color: var(--text-primary);
       }
 
       .row {

@@ -334,18 +334,18 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
     }
 
     .source-badge.trade {
-      background: rgba(33, 150, 243, 0.15);
-      color: #2196F3;
+      background: rgba(242, 243, 245, 0.15);
+      color: var(--text-secondary);
     }
 
     .source-badge.deposit {
-      background: rgba(76, 175, 80, 0.15);
-      color: #4CAF50;
+      background: rgba(92, 190, 146, 0.15);
+      color: var(--chart-up);
     }
 
     .source-badge.interest {
-      background: rgba(255, 193, 7, 0.15);
-      color: #FFC107;
+      background: rgba(217, 160, 91, 0.15);
+      color: var(--color-warning);
     }
 
     .remaining-cell {
