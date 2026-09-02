@@ -38,7 +38,6 @@ import { ExchangeLogoComponent } from '../../shared/components/exchange-logo/exc
   template: `
     <div class="settings-page">
       <div class="page-header">
-        <h1>Configuracion</h1>
       </div>
 
       <mat-card class="settings-card">

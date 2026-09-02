@@ -144,7 +144,7 @@ const POLL_INTERVAL_MS = 10_000;
 
             <div class="stat-card">
               <div class="stat-header">
-                <span class="stat-label">P&L Total</span>
+                <span class="stat-label">Resultado total</span>
                 <mat-icon>trending_up</mat-icon>
               </div>
               <span class="stat-value" [class.positive]="perf.totalPnl >= 0" [class.negative]="perf.totalPnl < 0">
@@ -157,7 +157,7 @@ const POLL_INTERVAL_MS = 10_000;
 
             <div class="stat-card">
               <div class="stat-header">
-                <span class="stat-label">P&L Realizado / No Realizado</span>
+                <span class="stat-label">Realizado / No realizado</span>
                 <mat-icon>call_split</mat-icon>
               </div>
               <span class="stat-value small" [class.positive]="perf.realizedPnl >= 0" [class.negative]="perf.realizedPnl < 0">
@@ -278,7 +278,7 @@ const POLL_INTERVAL_MS = 10_000;
                   </ng-container>
 
                   <ng-container matColumnDef="unrealizedPnl">
-                    <th mat-header-cell *matHeaderCellDef>P&L No Realizado</th>
+                    <th mat-header-cell *matHeaderCellDef>P&L No realizado</th>
                     <td mat-cell *matCellDef="let row">
                       <div class="pnl-cell" [class.positive]="row.unrealizedPnl >= 0" [class.negative]="row.unrealizedPnl < 0">
                         <span class="pnl-value">{{ row.unrealizedPnl >= 0 ? '+' : '' }}{{ row.unrealizedPnl | currency:'USD':'symbol':'1.2-2' }}</span>
@@ -480,7 +480,7 @@ const POLL_INTERVAL_MS = 10_000;
                   </ng-container>
 
                   <ng-container matColumnDef="realizedPnl">
-                    <th mat-header-cell *matHeaderCellDef>P&L Realizado</th>
+                    <th mat-header-cell *matHeaderCellDef>Realizado</th>
                     <td mat-cell *matCellDef="let row">
                       @if (row.realizedPnl != null) {
                         <span class="pnl-value" [class.positive]="row.realizedPnl >= 0" [class.negative]="row.realizedPnl < 0">

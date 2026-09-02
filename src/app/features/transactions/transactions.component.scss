@@ -26,12 +26,14 @@
   }
 }
 
+// El título vive en la barra de la app; acá sólo quedan las acciones, así que
+// se alinean a la derecha en vez de dejar el hueco donde estaba el encabezado.
 .page-header {
-  margin-bottom: 24px;
+  margin-bottom: var(--sp-5);
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--sp-4);
   flex-wrap: wrap;
 }
 
@@ -178,25 +180,9 @@
   min-height: 88px;
   box-sizing: border-box;
 
-  &.interest-card {
-    background: linear-gradient(135deg, rgba(92, 190, 146, 0.1) 0%, rgba(92, 190, 146, 0.05) 100%);
-    border-color: rgba(92, 190, 146, 0.3);
-  }
-
-  &.pnl-card {
-    background: linear-gradient(135deg, rgba(242, 243, 245, 0.1) 0%, rgba(242, 243, 245, 0.05) 100%);
-    border-color: rgba(242, 243, 245, 0.3);
-
-    &.positive {
-      background: linear-gradient(135deg, rgba(92, 190, 146, 0.1) 0%, rgba(92, 190, 146, 0.05) 100%);
-      border-color: rgba(92, 190, 146, 0.3);
-    }
-
-    &.negative {
-      background: linear-gradient(135deg, rgba(224, 107, 98, 0.1) 0%, rgba(224, 107, 98, 0.05) 100%);
-      border-color: rgba(224, 107, 98, 0.3);
-    }
-  }
+  // El signo del número ya lo dice: teñir además la card entera —fondo y
+  // borde— es decirlo tres veces y llenar la pantalla de superficies de
+  // color donde el sistema no tiene ninguna.
 }
 
 .stat-icon {
@@ -218,14 +204,10 @@
     color: var(--text-secondary);
   }
 
-  &.deposits {
-    background: rgba(92, 190, 146, 0.15);
-    color: var(--color-success);
-  }
-
+  &.deposits,
   &.withdrawals {
-    background: rgba(224, 107, 98, 0.15);
-    color: var(--color-error);
+    background: var(--wash-flow);
+    color: var(--chart-flow);
   }
 
   &.trades {
@@ -435,9 +417,9 @@
   }
 
   &.deposit {
-    --mdc-chip-elevated-container-color: rgba(92, 190, 146, 0.1) !important;
-    --mdc-chip-label-text-color: var(--color-success) !important;
-    --mdc-chip-elevated-selected-container-color: rgba(92, 190, 146, 0.15) !important;
+    --mdc-chip-elevated-container-color: rgba(217, 160, 91, 0.1) !important;
+    --mdc-chip-label-text-color: var(--chart-flow) !important;
+    --mdc-chip-elevated-selected-container-color: rgba(217, 160, 91, 0.15) !important;
 
     &.mat-mdc-chip-selected {
       border-color: var(--color-success);
@@ -446,9 +428,9 @@
   }
 
   &.withdrawal {
-    --mdc-chip-elevated-container-color: rgba(224, 107, 98, 0.1) !important;
-    --mdc-chip-label-text-color: var(--color-error) !important;
-    --mdc-chip-elevated-selected-container-color: rgba(224, 107, 98, 0.15) !important;
+    --mdc-chip-elevated-container-color: rgba(217, 160, 91, 0.1) !important;
+    --mdc-chip-label-text-color: var(--chart-flow) !important;
+    --mdc-chip-elevated-selected-container-color: rgba(217, 160, 91, 0.15) !important;
 
     &.mat-mdc-chip-selected {
       border-color: var(--color-error);
@@ -788,13 +770,13 @@
   }
 
   &.deposit {
-    background: rgba(92, 190, 146, 0.15);
-    color: var(--color-success);
+    background: rgba(217, 160, 91, 0.15);
+    color: var(--chart-flow);
   }
 
   &.withdrawal {
-    background: rgba(224, 107, 98, 0.15);
-    color: var(--color-error);
+    background: rgba(217, 160, 91, 0.15);
+    color: var(--chart-flow);
   }
 
   &.trade {

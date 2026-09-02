@@ -49,7 +49,7 @@ type PnlTimeframe = '1m' | '3m' | '6m' | '1y' | 'all';
   template: `
     <mat-card class="chart-card">
       <mat-card-header>
-        <mat-card-title>Evolución P&L</mat-card-title>
+        <mat-card-title>Evolución</mat-card-title>
         <div class="header-actions">
           <mat-button-toggle-group
             [value]="selectedTimeframe()"

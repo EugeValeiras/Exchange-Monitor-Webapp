@@ -44,7 +44,7 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
     } @else if (data().length === 0) {
       <div class="empty-state">
         <mat-icon>inventory_2</mat-icon>
-        <h3>Sin Lotes de Costo</h3>
+        <h3>Sin Lotes de costo</h3>
         <p>No hay lotes de compra registrados</p>
       </div>
     } @else {

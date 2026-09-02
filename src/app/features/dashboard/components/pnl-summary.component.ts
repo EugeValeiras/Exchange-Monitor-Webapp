@@ -76,7 +76,7 @@ import {
           <!-- Total P&L Card -->
           <div class="pnl-card total" [class.positive]="totalPnl() >= 0" [class.negative]="totalPnl() < 0">
             <div class="pnl-card-header">
-              <span class="pnl-label">P&L Total</span>
+              <span class="pnl-label">Resultado total</span>
               <mat-icon>{{ totalPnl() >= 0 ? 'trending_up' : 'trending_down' }}</mat-icon>
             </div>
             <span class="pnl-value">

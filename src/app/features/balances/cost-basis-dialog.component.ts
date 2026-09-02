@@ -65,7 +65,7 @@ export interface CostBasisDialogData {
           <span class="card-value">{{ data.totalCostBasis | currency:'USD':'symbol':'1.2-2' }}</span>
         </div>
         <div class="summary-card">
-          <span class="card-label">P&L No Realizado</span>
+          <span class="card-label">P&L No realizado</span>
           <span class="card-value" [class.positive]="data.unrealizedPnl >= 0" [class.negative]="data.unrealizedPnl < 0">
             {{ data.unrealizedPnl >= 0 ? '+' : '' }}{{ data.unrealizedPnl | currency:'USD':'symbol':'1.2-2' }}
             <span class="pnl-percent">({{ data.unrealizedPnlPercent >= 0 ? '+' : '' }}{{ data.unrealizedPnlPercent | number:'1.2-2' }}%)</span>

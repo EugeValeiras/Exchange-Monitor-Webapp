@@ -25,7 +25,7 @@ import { PnlSummaryResponse } from '../../../core/services/pnl.service';
         <!-- Total P&L Card -->
         <div class="summary-card total" [class.positive]="summary.totalPnl >= 0" [class.negative]="summary.totalPnl < 0">
           <div class="card-header">
-            <span class="card-label">P&L Total</span>
+            <span class="card-label">Resultado total</span>
             <mat-icon>{{ summary.totalPnl >= 0 ? 'trending_up' : 'trending_down' }}</mat-icon>
           </div>
           <span class="card-value">
@@ -48,7 +48,7 @@ import { PnlSummaryResponse } from '../../../core/services/pnl.service';
         <!-- Unrealized P&L Card -->
         <div class="summary-card" [class.positive]="summary.totalUnrealizedPnl >= 0" [class.negative]="summary.totalUnrealizedPnl < 0">
           <div class="card-header">
-            <span class="card-label">No Realizado</span>
+            <span class="card-label">No realizado</span>
             <mat-icon matTooltip="Ganancias/pérdidas de posiciones abiertas">schedule</mat-icon>
           </div>
           <span class="card-value">
@@ -79,7 +79,7 @@ import { PnlSummaryResponse } from '../../../core/services/pnl.service';
           <span class="period-value">{{ summary!.periodBreakdown.thisYear >= 0 ? '+' : '' }}{{ summary!.periodBreakdown.thisYear | currency:'USD':'symbol':'1.2-2' }}</span>
         </div>
         <div class="period-item" [class.positive]="summary!.periodBreakdown.allTime >= 0" [class.negative]="summary!.periodBreakdown.allTime < 0">
-          <span class="period-label">All Time</span>
+          <span class="period-label">Todo</span>
           <span class="period-value">{{ summary!.periodBreakdown.allTime >= 0 ? '+' : '' }}{{ summary!.periodBreakdown.allTime | currency:'USD':'symbol':'1.2-2' }}</span>
         </div>
       </div>

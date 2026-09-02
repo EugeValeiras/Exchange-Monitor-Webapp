@@ -32,8 +32,6 @@ import { ConsolidatedBalanceService } from '../../core/services/consolidated-bal
   template: `
     <div class="notifications-page">
       <div class="page-header">
-        <h1>Notificaciones</h1>
-        <p class="page-subtitle">Configura las alertas push de cambio de precio</p>
       </div>
 
       @if (loading) {

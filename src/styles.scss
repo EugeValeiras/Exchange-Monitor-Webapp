@@ -328,19 +328,38 @@ body {
 }
 
 // Buttons
-.mat-mdc-raised-button.mat-primary {
-  background-color: var(--bg-selected) !important;
+// La acción principal es la superficie MÁS clara de la pantalla, con el texto
+// del lienzo encima. Es "seleccionar es aclarar" llevado al botón: sin color de
+// marca, el peso lo da el valor. (La migración automática lo había dejado
+// oscuro sobre oscuro — invisible.)
+.mat-mdc-raised-button.mat-primary,
+.mat-mdc-raised-button.mat-accent,
+.mat-mdc-unelevated-button.mat-primary {
+  background-color: var(--text-primary) !important;
   color: var(--bg-primary) !important;
   font-weight: 500 !important;
+  border-radius: var(--r-3) !important;
 
   &:hover:not([disabled]) {
-    background-color: var(--bg-selected) !important;
+    background-color: #ffffff !important;
+  }
+
+  // Deshabilitado tiene que LEERSE deshabilitado, no desaparecer.
+  &[disabled] {
+    background-color: var(--bg-tertiary) !important;
+    color: var(--text-disabled) !important;
   }
 }
 
-.mat-mdc-raised-button.mat-accent {
-  background-color: var(--bg-selected) !important;
-  color: var(--bg-primary) !important;
+.mat-mdc-outlined-button,
+.mat-mdc-stroked-button {
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+  border-radius: var(--r-3) !important;
+
+  &:hover:not([disabled]) {
+    background-color: var(--bg-tertiary) !important;
+  }
 }
 
 .mat-mdc-button, .mat-mdc-icon-button {

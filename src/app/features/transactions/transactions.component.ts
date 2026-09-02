@@ -57,10 +57,6 @@ interface ExchangeStat {
   template: `
     <div class="transactions-container">
       <div class="page-header">
-        <div class="header-content">
-          <h1>Transacciones</h1>
-          <p>Historial de todas tus operaciones en exchanges</p>
-        </div>
         <div class="header-actions">
           <button mat-stroked-button class="export-btn" (click)="exportTransactions()" [disabled]="loading">
             <mat-icon>download</mat-icon>
@@ -94,7 +90,7 @@ interface ExchangeStat {
               <span class="skeleton-label skeleton-pulse"></span>
             } @else {
               <span class="stat-value">{{ stats?.totalTransactions | number }}</span>
-              <span class="stat-label">Total Transacciones</span>
+              <span class="stat-label">Movimientos</span>
             }
           </div>
         </div>
@@ -115,7 +111,7 @@ interface ExchangeStat {
                 <span class="skeleton-label skeleton-pulse"></span>
               } @else {
                 <span class="stat-value">{{ stats?.totalInterestUsd | currency:'USD':'symbol':'1.2-2' }}</span>
-                <span class="stat-label">Intereses Ganados</span>
+                <span class="stat-label">Intereses ganados</span>
               }
             </div>
           </div>
@@ -139,10 +135,10 @@ interface ExchangeStat {
                 <span class="stat-value" [class.positive]="pnlSummary.totalPnl >= 0" [class.negative]="pnlSummary.totalPnl < 0">
                   {{ pnlSummary.totalPnl >= 0 ? '+' : '' }}{{ pnlSummary.totalPnl | currency:'USD':'symbol':'1.2-2' }}
                 </span>
-                <span class="stat-label">P&L Total</span>
+                <span class="stat-label">Resultado total</span>
               } @else {
                 <span class="stat-value">$0.00</span>
-                <span class="stat-label">P&L Total</span>
+                <span class="stat-label">Resultado total</span>
               }
             </div>
           </div>

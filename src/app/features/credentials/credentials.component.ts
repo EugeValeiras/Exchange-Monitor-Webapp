@@ -34,10 +34,6 @@ import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-lo
   template: `
     <div class="credentials-container">
       <div class="page-header">
-        <div class="header-content">
-          <h1>Credentials</h1>
-          <p>Administra las conexiones a tus exchanges de criptomonedas</p>
-        </div>
         <button mat-raised-button color="primary" (click)="openAddDialog()">
           <mat-icon>add</mat-icon>
           Agregar Exchange

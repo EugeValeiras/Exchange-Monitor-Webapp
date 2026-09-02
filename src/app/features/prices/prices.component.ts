@@ -736,12 +736,14 @@ interface QuoteStat {
       font-size: 12px;
     }
 
+    // El piso y el techo del día no son una baja y una suba: son los extremos
+    // de un rango. El color del dinero se reserva para la variación.
     .range-low {
-      color: var(--color-error);
+      color: var(--text-secondary);
     }
 
     .range-high {
-      color: var(--color-success);
+      color: var(--text-secondary);
     }
 
     .range-separator {

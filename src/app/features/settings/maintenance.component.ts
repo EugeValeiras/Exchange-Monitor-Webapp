@@ -22,8 +22,6 @@ import { PriceHistoryService } from '../price-history/price-history.service';
   template: `
     <div class="maintenance-page">
       <div class="page-header">
-        <h1>Mantenimiento</h1>
-        <p class="page-subtitle">Herramientas de mantenimiento y reconstruccion de datos</p>
       </div>
 
       <!-- Rebuild History Card -->

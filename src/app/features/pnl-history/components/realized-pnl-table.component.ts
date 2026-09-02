@@ -34,7 +34,7 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
     } @else if (data().length === 0) {
       <div class="empty-state">
         <mat-icon>trending_up</mat-icon>
-        <h3>Sin P&L Realizado</h3>
+        <h3>Sin Realizado</h3>
         <p>No hay operaciones de venta registradas</p>
       </div>
     } @else {

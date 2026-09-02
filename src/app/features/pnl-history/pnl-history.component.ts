@@ -45,10 +45,6 @@ import { PnlEvolutionChartComponent } from './components/pnl-evolution-chart.com
   template: `
     <div class="pnl-history-container">
       <div class="page-header">
-        <div class="header-content">
-          <h1>Historial P&L</h1>
-          <p>Analiza tu rendimiento y cost basis de operaciones</p>
-        </div>
         <div class="header-actions">
           <button
             mat-stroked-button
@@ -56,15 +52,15 @@ import { PnlEvolutionChartComponent } from './components/pnl-evolution-chart.com
             [disabled]="exporting()"
             matTooltip="Exportar datos de P&L a Excel">
             <mat-icon>{{ exporting() ? 'sync' : 'download' }}</mat-icon>
-            {{ exporting() ? 'Exportando...' : 'Exportar Excel' }}
+            {{ exporting() ? 'Exportando...' : 'Exportar' }}
           </button>
           <button
             mat-stroked-button
             (click)="recalculatePnl()"
             [disabled]="recalculating()"
-            matTooltip="Recalcular P&L desde el historial de transacciones (FIFO)">
+            matTooltip="Recalcular desde el historial de transacciones (FIFO)">
             <mat-icon [class.spinning]="recalculating()">{{ recalculating() ? 'sync' : 'refresh' }}</mat-icon>
-            {{ recalculating() ? 'Recalculando...' : 'Recalcular P&L' }}
+            {{ recalculating() ? 'Recalculando...' : 'Recalcular' }}
           </button>
         </div>
       </div>
@@ -125,7 +121,7 @@ import { PnlEvolutionChartComponent } from './components/pnl-evolution-chart.com
         <mat-tab>
           <ng-template mat-tab-label>
             <mat-icon>trending_up</mat-icon>
-            P&L Realizado
+            Realizado
           </ng-template>
           <app-realized-pnl-table
             [startDate]="formatDateForApi(startDate)"
@@ -137,7 +133,7 @@ import { PnlEvolutionChartComponent } from './components/pnl-evolution-chart.com
         <mat-tab>
           <ng-template mat-tab-label>
             <mat-icon>inventory_2</mat-icon>
-            Lotes de Costo
+            Lotes de costo
           </ng-template>
           <app-cost-basis-table
             [assets]="Array.from(selectedAssets())"

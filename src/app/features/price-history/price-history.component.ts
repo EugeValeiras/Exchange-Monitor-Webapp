@@ -44,10 +44,6 @@ interface TimeframeOption {
   template: `
     <div class="price-history-container">
       <div class="page-header">
-        <div class="header-content">
-          <h1>Historico de Precios</h1>
-          <p>Analiza la evolucion de precios en el tiempo</p>
-        </div>
       </div>
 
       <!-- Filters Section -->
