@@ -155,7 +155,7 @@ export interface CredentialDialogData {
     .selected-exchange {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
 
     .exchange-option {

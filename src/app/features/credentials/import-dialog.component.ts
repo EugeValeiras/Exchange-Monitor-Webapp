@@ -301,7 +301,7 @@ type ImportType = 'deposits' | 'withdrawals' | 'transactions';
     .record-count {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       font-size: 13px;
       font-weight: 500;
       color: var(--color-success);

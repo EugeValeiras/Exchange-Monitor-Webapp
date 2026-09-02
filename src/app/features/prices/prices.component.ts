@@ -199,7 +199,7 @@ interface QuoteStat {
         } @else if (pricesCount() === 0) {
           <div class="empty-state">
             <mat-icon>show_chart</mat-icon>
-            <p>No hay pares de precios configurados</p>
+            <p>Todavía no configuraste ningún par</p>
             <a mat-raised-button color="primary" routerLink="/settings/symbols">
               Configurar Pares
             </a>
@@ -350,7 +350,7 @@ interface QuoteStat {
     .status-item {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       font-size: 12px;
       color: var(--text-tertiary);
       opacity: 0.5;
@@ -455,7 +455,7 @@ interface QuoteStat {
       .mdc-evolution-chip__text-label {
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
       }
 
       app-exchange-logo {
@@ -492,7 +492,7 @@ interface QuoteStat {
       justify-content: space-between;
       gap: 12px;
       min-width: 200px;
-      padding: 10px 14px;
+      padding: 8px 12px;
       background: var(--bg-tertiary);
       border: 2px solid transparent;
       border-radius: 8px;
@@ -508,7 +508,7 @@ interface QuoteStat {
     .symbol-btn-content {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
 
     .symbol-btn-logo {

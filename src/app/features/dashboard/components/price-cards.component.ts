@@ -45,7 +45,7 @@ import { FavoriteButtonComponent } from '../../../shared/components/favorite-but
         } @else if (favoriteAssets().length === 0) {
           <div class="empty-favorites">
             <mat-icon>star_border</mat-icon>
-            <p>No tenés mercados favoritos</p>
+            <p>Todavía no marcaste ningún favorito</p>
             <span>Marcá activos como favoritos en la página de <a routerLink="/balances">Balances</a></span>
           </div>
         } @else {

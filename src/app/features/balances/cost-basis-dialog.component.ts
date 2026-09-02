@@ -81,7 +81,7 @@ export interface CostBasisDialogData {
       } @else if (lots().length === 0) {
         <div class="empty-state">
           <mat-icon>inventory_2</mat-icon>
-          <p>No hay lotes de costo registrados</p>
+          <p>Todavía no hay lotes de costo</p>
         </div>
       } @else {
         <div class="table-container">
@@ -308,7 +308,7 @@ export interface CostBasisDialogData {
     .exchange-cell {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       font-size: 13px;
     }
 

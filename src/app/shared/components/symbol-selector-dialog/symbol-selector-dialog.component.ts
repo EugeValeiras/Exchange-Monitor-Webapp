@@ -165,7 +165,7 @@ interface SymbolOption {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 14px 16px;
+      padding: 12px 16px;
       border-radius: 12px;
       cursor: pointer;
       transition: all 0.15s ease;
@@ -183,7 +183,7 @@ interface SymbolOption {
     .symbol-info {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 12px;
     }
 
     .pair-logos {

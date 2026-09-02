@@ -270,7 +270,7 @@ interface ExchangeStat {
           <div class="empty-icon">
             <mat-icon>receipt_long</mat-icon>
           </div>
-          <h2>No hay transacciones</h2>
+          <h2>Todavía no tenés movimientos</h2>
           <p>Las transacciones aparecerán aquí cuando sincronices tus exchanges</p>
         </div>
       } @else {
@@ -444,9 +444,9 @@ interface ExchangeStat {
       .pair-filter {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 8px;
         margin-bottom: 12px;
-        padding: 10px 14px;
+        padding: 8px 12px;
         border: 1px solid rgba(217, 160, 91, 0.28);
         border-radius: 8px;
         background: rgba(217, 160, 91, 0.08);
@@ -469,7 +469,7 @@ interface ExchangeStat {
       .pair-filter button {
         margin-left: auto;
         height: 26px;
-        padding: 0 10px;
+        padding: 0 8px;
         border: 1px solid var(--border-light);
         border-radius: 6px;
         background: transparent;

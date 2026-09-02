@@ -200,7 +200,7 @@ interface Suggestion { icon: string; text: string; }
 
     /* Topbar */
     .chat-topbar {
-      display: flex; align-items: center; gap: 10px;
+      display: flex; align-items: center; gap: 8px;
       height: 52px; flex-shrink: 0;
       padding: 0 16px;
       border-bottom: 1px solid var(--border-color);
@@ -223,8 +223,8 @@ interface Suggestion { icon: string; text: string; }
     .topbar-actions { display: flex; align-items: center; gap: 12px; }
 
     .plan-toggle {
-      display: inline-flex; align-items: center; gap: 5px;
-      padding: 5px 10px; border-radius: 10px;
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 4px 8px; border-radius: 10px;
       border: 1px solid var(--border-color); background: var(--bg-tertiary);
       color: var(--text-secondary); cursor: pointer;
       font-size: .75rem; font-weight: 600;
@@ -249,7 +249,7 @@ interface Suggestion { icon: string; text: string; }
     }
     .model-chip {
       border: none; background: transparent; cursor: pointer;
-      padding: 4px 10px; border-radius: 8px;
+      padding: 4px 8px; border-radius: 8px;
       font-size: .75rem; font-weight: 600; text-transform: capitalize;
       color: var(--text-secondary); transition: all .15s;
     }
@@ -290,7 +290,7 @@ interface Suggestion { icon: string; text: string; }
     .empty-state {
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      min-height: 100%; text-align: center; gap: 14px;
+      min-height: 100%; text-align: center; gap: 12px;
       padding-bottom: 40px;
     }
     .hero-icon {
@@ -307,11 +307,11 @@ interface Suggestion { icon: string; text: string; }
     }
     .chips {
       display: flex; flex-wrap: wrap; justify-content: center;
-      gap: 8px; max-width: 560px; margin-top: 6px;
+      gap: 8px; max-width: 560px; margin-top: 8px;
     }
     .chip {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 9px 14px; border: 1px solid var(--border-color);
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 12px; border: 1px solid var(--border-color);
       border-radius: 18px; background: var(--bg-card);
       color: var(--text-primary); font-size: .82rem; cursor: pointer;
       transition: all .15s;
@@ -338,7 +338,7 @@ interface Suggestion { icon: string; text: string; }
     .composer-dock {
       position: relative; flex-shrink: 0;
       background: var(--bg-primary);
-      padding: 10px 0 16px;
+      padding: 8px 0 16px;
     }
     .composer-dock::before {
       content: ''; position: absolute; left: 0; right: 0; top: -24px;
@@ -377,14 +377,14 @@ interface Suggestion { icon: string; text: string; }
 
     /* ===== Usage dialog ===== */
     .usage-dialog {
-      padding: 20px 22px;
+      padding: 20px 24px;
       min-width: 320px; max-width: 420px;
       color: var(--text-primary);
     }
     .usage-head { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
     .usage-head mat-icon { color: var(--text-primary); }
     .usage-head h3 { margin: 0; font-size: 1.05rem; font-weight: 600; }
-    .usage-model { margin: 0 0 14px; color: var(--text-secondary); font-size: .85rem; text-transform: capitalize; }
+    .usage-model { margin: 0 0 12px; color: var(--text-secondary); font-size: .85rem; text-transform: capitalize; }
     .usage-table {
       width: 100%; border-collapse: collapse; font-size: .85rem;
       font-variant-numeric: tabular-nums;
@@ -395,7 +395,7 @@ interface Suggestion { icon: string; text: string; }
       padding: 0 0 8px; border-bottom: 1px solid var(--border-color);
     }
     .usage-table th:first-child { text-align: left; }
-    .usage-table td { padding: 9px 0; text-align: right; color: var(--text-primary); }
+    .usage-table td { padding: 8px 0; text-align: right; color: var(--text-primary); }
     .usage-table td:first-child { text-align: left; color: var(--text-secondary); }
     .usage-table tbody tr:not(:last-child) td { border-bottom: 1px solid color-mix(in srgb, var(--border-color) 55%, transparent); }
     .usage-table .usage-cost td { font-weight: 700; color: var(--text-primary); }
@@ -412,10 +412,10 @@ interface Suggestion { icon: string; text: string; }
       font-variant-numeric: tabular-nums;
     }
     .usage-historic strong { color: var(--text-primary); font-size: .95rem; }
-    .usage-note { margin: 14px 0 0; font-size: .72rem; color: var(--text-tertiary); line-height: 1.4; }
+    .usage-note { margin: 12px 0 0; font-size: .72rem; color: var(--text-tertiary); line-height: 1.4; }
     .usage-actions { display: flex; justify-content: flex-end; margin-top: 16px; }
     .usage-close {
-      border: none; cursor: pointer; padding: 8px 18px; border-radius: 8px;
+      border: none; cursor: pointer; padding: 8px 16px; border-radius: 8px;
       background: var(--bg-selected); color: var(--text-primary);
       font-weight: 600; font-size: .85rem; transition: filter .15s;
     }

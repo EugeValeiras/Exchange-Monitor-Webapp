@@ -90,7 +90,7 @@ import { ChatService, ThreadSummary } from './chat.service';
     .new-wrap { padding: 12px; }
     .new-btn {
       display: flex; align-items: center; gap: 8px;
-      width: 100%; padding: 10px 12px;
+      width: 100%; padding: 8px 12px;
       border: 1px solid var(--border-color); border-radius: 10px;
       background: var(--bg-card); color: var(--text-primary);
       font-size: .85rem; font-weight: 600; cursor: pointer;
@@ -102,7 +102,7 @@ import { ChatService, ThreadSummary } from './chat.service';
     .section-label {
       font-size: .7rem; font-weight: 700; letter-spacing: .08em;
       text-transform: uppercase; color: var(--text-tertiary);
-      margin: 14px 14px 8px;
+      margin: 12px 12px 8px;
     }
 
     .list { flex: 1; overflow-y: auto; padding: 0 8px 8px; }
@@ -122,7 +122,7 @@ import { ChatService, ThreadSummary } from './chat.service';
     .thread-item {
       position: relative;
       display: flex; align-items: center; gap: 8px;
-      padding: 9px 10px; border-radius: 8px; cursor: pointer;
+      padding: 8px 8px; border-radius: 8px; cursor: pointer;
       transition: background .15s;
     }
     .thread-item:hover { background: var(--bg-hover); }
@@ -147,7 +147,7 @@ import { ChatService, ThreadSummary } from './chat.service';
     .name-input {
       width: 100%; font-size: .85rem; font-weight: 500;
       border: 1px solid var(--border-strong); border-radius: 6px;
-      padding: 3px 6px; background: var(--bg-card);
+      padding: 4px 8px; background: var(--bg-card);
       color: var(--text-primary); outline: none;
     }
 
@@ -171,7 +171,7 @@ import { ChatService, ThreadSummary } from './chat.service';
     }
     .menu-item {
       display: flex; align-items: center; gap: 8px;
-      width: 100%; padding: 7px 10px;
+      width: 100%; padding: 8px 8px;
       border: none; background: transparent; cursor: pointer;
       color: var(--text-primary); font-size: .82rem;
       border-radius: 6px; text-align: left;

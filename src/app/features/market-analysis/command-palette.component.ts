@@ -184,7 +184,7 @@ export interface PaletteRow {
       }
 
       .kbd {
-        padding: 2px 5px;
+        padding: 2px 4px;
         border: 1px solid var(--border-light);
         border-radius: var(--r-1);
         font-size: var(--fs-10);
@@ -203,7 +203,7 @@ export interface PaletteRow {
       }
 
       .section-title {
-        padding: var(--sp-2) var(--sp-3) 6px;
+        padding: var(--sp-2) var(--sp-3) 8px;
         font-size: 9.5px;
         font-weight: 700;
         letter-spacing: 0.08em;
@@ -220,7 +220,7 @@ export interface PaletteRow {
         align-items: center;
         gap: var(--sp-3);
         width: 100%;
-        padding: 9px 10px;
+        padding: 8px 8px;
         border: 1px solid rgba(217, 160, 91, 0.3);
         border-radius: 7px;
         background: rgba(217, 160, 91, 0.09);
@@ -245,9 +245,9 @@ export interface PaletteRow {
       .context {
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
         flex-wrap: wrap;
-        padding: var(--sp-3) 10px var(--sp-2);
+        padding: var(--sp-3) 8px var(--sp-2);
         font-size: 10.5px;
         color: var(--text-tertiary);
       }
@@ -256,7 +256,7 @@ export interface PaletteRow {
         display: inline-flex;
         align-items: center;
         gap: 4px;
-        padding: 2px 7px;
+        padding: 2px 8px;
         border-radius: var(--r-1);
         background: var(--bg-tertiary);
         color: var(--text-secondary);
@@ -331,7 +331,7 @@ export interface PaletteRow {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 9px var(--sp-5);
+        padding: 8px var(--sp-5);
         border-top: 1px solid var(--border-color);
         font-size: 10.5px;
         color: var(--text-tertiary);

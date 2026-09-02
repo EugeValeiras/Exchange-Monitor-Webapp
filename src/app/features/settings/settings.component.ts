@@ -319,7 +319,7 @@ import { ExchangeLogoComponent } from '../../shared/components/exchange-logo/exc
     .chip-content {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
     }
 
     .exchange-tab-content {

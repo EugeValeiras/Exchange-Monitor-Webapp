@@ -259,7 +259,7 @@ interface TimeframeOption {
       color: var(--text-secondary);
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
     }
 
     .symbol-btn-change {
@@ -294,7 +294,7 @@ interface TimeframeOption {
       background: var(--bg-elevated);
       border-radius: 10px;
       border: 1px solid var(--border-color);
-      padding: 3px;
+      padding: 4px;
 
       ::ng-deep .mat-button-toggle {
         font-size: 13px;
@@ -342,7 +342,7 @@ interface TimeframeOption {
       }
 
       ::ng-deep .mat-button-toggle-button {
-        padding: 0 14px;
+        padding: 0 12px;
         height: 32px;
       }
 
@@ -388,7 +388,7 @@ interface TimeframeOption {
       .mdc-evolution-chip__text-label {
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
       }
 
       .mdc-evolution-chip__action--primary {
@@ -408,7 +408,7 @@ interface TimeframeOption {
     .chart-title {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       font-size: 17px;
       font-weight: 600;
       color: var(--text-primary);
@@ -417,7 +417,7 @@ interface TimeframeOption {
     .timeframe-badge, .exchange-badge {
       font-size: 12px;
       font-weight: 500;
-      padding: 4px 10px;
+      padding: 4px 8px;
       border-radius: 6px;
       text-transform: uppercase;
     }

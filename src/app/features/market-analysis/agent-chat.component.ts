@@ -301,7 +301,7 @@ export interface ChartAction {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 10px 14px;
+        padding: 8px 12px;
         border-bottom: 1px solid var(--border-color);
         background: var(--bg-elevated);
       }
@@ -338,7 +338,7 @@ export interface ChartAction {
       .chat-messages {
         flex: 1;
         overflow-y: auto;
-        padding: 14px;
+        padding: 12px;
         display: flex;
         flex-direction: column;
         gap: 12px;
@@ -364,7 +364,7 @@ export interface ChartAction {
         margin: 12px 0 0;
         display: flex;
         flex-direction: column;
-        gap: 6px;
+        gap: 8px;
       }
 
       .suggestions li {
@@ -403,7 +403,7 @@ export interface ChartAction {
       }
 
       .bubble {
-        padding: 10px 12px;
+        padding: 8px 12px;
         border-radius: 10px;
         font-size: 14px;
         line-height: 1.45;
@@ -412,7 +412,7 @@ export interface ChartAction {
       .tools {
         display: flex;
         flex-direction: column;
-        gap: 6px;
+        gap: 8px;
         margin-bottom: 8px;
       }
 
@@ -422,7 +422,7 @@ export interface ChartAction {
         background: var(--bg-tertiary);
         border: 1px solid var(--border-color);
         border-radius: 6px;
-        padding: 6px 8px;
+        padding: 8px 8px;
         font-size: 12px;
       }
 
@@ -464,7 +464,7 @@ export interface ChartAction {
         background: var(--bg-card);
         border: 1px solid var(--border-color);
         border-radius: 4px;
-        padding: 6px;
+        padding: 8px;
         font-size: 11px;
         max-height: 240px;
         overflow: auto;
@@ -481,11 +481,11 @@ export interface ChartAction {
       .text :last-child { margin-bottom: 0; }
 
       .text p {
-        margin: 6px 0;
+        margin: 8px 0;
       }
 
       .text h1, .text h2, .text h3, .text h4, .text h5, .text h6 {
-        margin: 14px 0 6px;
+        margin: 12px 0 8px;
         font-weight: 600;
         color: var(--text-primary);
         line-height: 1.25;
@@ -512,8 +512,8 @@ export interface ChartAction {
       }
 
       .text ul, .text ol {
-        margin: 6px 0;
-        padding-left: 22px;
+        margin: 8px 0;
+        padding-left: 24px;
       }
 
       .text li {
@@ -522,7 +522,7 @@ export interface ChartAction {
 
       .text code {
         background: var(--bg-tertiary);
-        padding: 1px 5px;
+        padding: 1px 4px;
         border-radius: 3px;
         font-size: 12px;
       }
@@ -531,7 +531,7 @@ export interface ChartAction {
         background: var(--bg-card);
         border: 1px solid var(--border-color);
         border-radius: 6px;
-        padding: 8px 10px;
+        padding: 8px 8px;
         overflow-x: auto;
         margin: 8px 0;
         font-size: 12px;
@@ -544,7 +544,7 @@ export interface ChartAction {
 
       .text table {
         border-collapse: collapse;
-        margin: 10px 0;
+        margin: 8px 0;
         width: 100%;
         font-variant-numeric: tabular-nums;
       }
@@ -555,7 +555,7 @@ export interface ChartAction {
       }
       .text th, .text td {
         border: 1px solid var(--border-color);
-        padding: 6px 10px;
+        padding: 8px 8px;
         font-size: 12px;
       }
       .text tbody tr:hover {
@@ -577,10 +577,10 @@ export interface ChartAction {
         /* flex-start, no center: el mensaje puede ocupar varias líneas y el
            icono tiene que quedar alineado con la primera. */
         align-items: flex-start;
-        gap: 6px;
+        gap: 8px;
         color: var(--chart-down);
         font-size: 13px;
-        margin-top: 6px;
+        margin-top: 8px;
       }
 
       .error mat-icon {
@@ -609,8 +609,8 @@ export interface ChartAction {
       .chat-input {
         display: flex;
         gap: 8px;
-        padding: 10px;
-        padding-bottom: max(10px, env(safe-area-inset-bottom));
+        padding: 8px;
+        padding-bottom: max(8px, env(safe-area-inset-bottom));
         border-top: 1px solid var(--border-color);
         background: var(--bg-elevated);
         flex-shrink: 0;
@@ -623,7 +623,7 @@ export interface ChartAction {
         color: var(--text-primary);
         border: 1px solid var(--border-color);
         border-radius: 6px;
-        padding: 8px 10px;
+        padding: 8px 8px;
         font-family: inherit;
         font-size: 15px; /* >=16px evita que iOS Safari haga zoom al focusear */
         resize: vertical;
@@ -644,7 +644,7 @@ export interface ChartAction {
         flex: 1;
         min-height: 0;
         overflow-y: auto;
-        padding: 10px 12px;
+        padding: 8px 12px;
         background: var(--bg-card);
       }
 
@@ -686,12 +686,12 @@ export interface ChartAction {
         background: transparent;
         border: none;
         color: var(--text-primary);
-        padding: 10px 12px;
+        padding: 8px 12px;
         text-align: left;
         cursor: pointer;
         display: flex;
         flex-direction: column;
-        gap: 3px;
+        gap: 4px;
       }
 
       .thread-btn:hover {
@@ -710,7 +710,7 @@ export interface ChartAction {
         font-size: 11px;
         color: var(--text-tertiary);
         display: flex;
-        gap: 6px;
+        gap: 8px;
       }
 
       .thread-delete {

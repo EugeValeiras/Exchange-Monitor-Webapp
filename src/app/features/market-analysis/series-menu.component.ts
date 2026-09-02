@@ -87,7 +87,7 @@ import { SERIES, SeriesConfig, SeriesId, seriesColor } from './lib/series';
 
       .group-label {
         display: block;
-        padding: 0 6px 5px;
+        padding: 0 8px 4px;
         font-size: var(--fs-10);
         font-weight: 700;
         letter-spacing: 0.09em;
@@ -98,10 +98,10 @@ import { SERIES, SeriesConfig, SeriesId, seriesColor } from './lib/series';
       .menu button {
         display: flex;
         align-items: center;
-        gap: 7px;
+        gap: 8px;
         width: 100%;
         height: 26px;
-        padding: 0 6px;
+        padding: 0 8px;
         border: none;
         border-radius: var(--r-2);
         background: transparent;

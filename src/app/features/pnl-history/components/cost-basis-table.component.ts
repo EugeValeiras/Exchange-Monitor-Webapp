@@ -45,7 +45,7 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
       <div class="empty-state">
         <mat-icon>inventory_2</mat-icon>
         <h3>Sin Lotes de costo</h3>
-        <p>No hay lotes de compra registrados</p>
+        <p>Todavía no hay lotes de compra</p>
       </div>
     } @else {
       <div class="table-container">
@@ -259,7 +259,7 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
     .pair-cell {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
 
     .pair-logos {
@@ -351,7 +351,7 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
     .remaining-cell {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
     }
 
     .remaining-cell mat-icon {

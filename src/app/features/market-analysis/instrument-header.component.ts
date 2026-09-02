@@ -196,7 +196,7 @@ export interface HeaderContext {
         display: flex;
         align-items: flex-start;
         gap: var(--sp-6);
-        padding: var(--sp-5) 22px;
+        padding: var(--sp-5) 24px;
         background: var(--bg-elevated);
         border-bottom: 1px solid var(--border-color);
         flex: none;
@@ -213,16 +213,16 @@ export interface HeaderContext {
       .line-1 {
         display: flex;
         align-items: baseline;
-        gap: 14px;
+        gap: 12px;
         flex-wrap: wrap;
       }
 
       .pair {
         display: inline-flex;
         align-items: center;
-        gap: 7px;
+        gap: 8px;
         align-self: center;
-        padding: 3px 8px 3px 6px;
+        padding: 4px 8px 4px 8px;
         border: 1px solid var(--border-light);
         border-radius: 7px;
         background: transparent;
@@ -291,7 +291,7 @@ export interface HeaderContext {
       .mine {
         display: flex;
         align-items: baseline;
-        gap: 7px;
+        gap: 8px;
       }
 
       .mine .tag {
@@ -333,7 +333,7 @@ export interface HeaderContext {
       .freshness {
         display: inline-flex;
         align-items: center;
-        gap: 5px;
+        gap: 4px;
       }
 
       .freshness .dot {
@@ -363,7 +363,7 @@ export interface HeaderContext {
         display: flex;
         flex-direction: column;
         align-items: flex-end;
-        gap: 9px;
+        gap: 8px;
         flex: none;
       }
 
@@ -378,7 +378,7 @@ export interface HeaderContext {
 
       .segmented button {
         height: 22px;
-        padding: 0 9px;
+        padding: 0 8px;
         border: none;
         border-radius: 5px;
         background: transparent;
@@ -400,7 +400,7 @@ export interface HeaderContext {
         display: flex;
         align-items: center;
         flex-wrap: wrap;
-        gap: 7px;
+        gap: 8px;
       }
 
       .toggle {
@@ -408,7 +408,7 @@ export interface HeaderContext {
         align-items: center;
         gap: var(--sp-2);
         height: 26px;
-        padding: 0 9px;
+        padding: 0 8px;
         border: 1px solid var(--border-light);
         border-radius: var(--r-2);
         background: transparent;
@@ -452,7 +452,7 @@ export interface HeaderContext {
         justify-content: center;
         min-width: 17px;
         height: 17px;
-        padding: 0 5px;
+        padding: 0 4px;
         border-radius: 9px;
         background: var(--bg-tertiary);
         color: var(--text-secondary);

@@ -221,7 +221,7 @@ const POLL_INTERVAL_MS = 10_000;
                 } @else {
                   <div class="chart-empty">
                     <mat-icon>show_chart</mat-icon>
-                    <p>Todavía no hay datos de equity</p>
+                    <p>Todavía no hay evolución para mostrar</p>
                     <p class="hint">La curva se genera a medida que se ejecutan órdenes</p>
                   </div>
                 }
@@ -238,7 +238,7 @@ const POLL_INTERVAL_MS = 10_000;
               @if (positions().length === 0) {
                 <div class="table-empty">
                   <mat-icon>inbox</mat-icon>
-                  <p>No hay posiciones abiertas</p>
+                  <p>No tenés posiciones abiertas</p>
                 </div>
               } @else {
                 <table mat-table [dataSource]="positions()">
@@ -303,7 +303,7 @@ const POLL_INTERVAL_MS = 10_000;
               @if (openOrders().length === 0) {
                 <div class="table-empty">
                   <mat-icon>pending_actions</mat-icon>
-                  <p>No hay órdenes abiertas</p>
+                  <p>No tenés órdenes abiertas</p>
                 </div>
               } @else {
                 <table mat-table [dataSource]="openOrders()">
@@ -417,7 +417,7 @@ const POLL_INTERVAL_MS = 10_000;
               @if (trades().length === 0) {
                 <div class="table-empty">
                   <mat-icon>history</mat-icon>
-                  <p>Todavía no hay trades ejecutados</p>
+                  <p>Todavía no hay operaciones</p>
                 </div>
               } @else {
                 <table mat-table [dataSource]="trades()">
@@ -590,7 +590,7 @@ const POLL_INTERVAL_MS = 10_000;
     .account-name {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       font-size: 17px;
       font-weight: 600;
       color: var(--text-primary);
@@ -840,7 +840,7 @@ const POLL_INTERVAL_MS = 10_000;
 
     .side-badge {
       display: inline-block;
-      padding: 4px 10px;
+      padding: 4px 8px;
       border-radius: 6px;
       font-size: 12px;
       font-weight: 600;

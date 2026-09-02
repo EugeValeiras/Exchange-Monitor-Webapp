@@ -190,7 +190,7 @@ const COMMANDS: SlashCommand[] = [
       border: 1px solid var(--border-color);
       border-radius: 24px;
       box-shadow: var(--shadow-md);
-      padding: 6px 6px 6px 14px;
+      padding: 8px 8px 8px 12px;
       transition: border-color .15s, box-shadow .15s;
     }
     .composer:focus-within {
@@ -209,7 +209,7 @@ const COMMANDS: SlashCommand[] = [
       overflow: hidden auto;
       max-height: 300px;
       z-index: 30;
-      padding: 6px;
+      padding: 8px;
     }
     .cmd-row {
       display: flex; align-items: baseline; gap: 12px;
@@ -233,13 +233,13 @@ const COMMANDS: SlashCommand[] = [
     }
     .cmd-foot {
       display: flex; gap: 16px; justify-content: flex-end;
-      padding: 6px 12px 2px; margin-top: 2px;
+      padding: 8px 12px 2px; margin-top: 2px;
       border-top: 1px solid var(--border-color);
       font-size: .68rem; color: var(--text-tertiary);
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     }
 
-    .thumb-row { display: flex; flex-wrap: wrap; gap: 8px; padding: 6px 0 8px; }
+    .thumb-row { display: flex; flex-wrap: wrap; gap: 8px; padding: 8px 0 8px; }
     .thumb-chip { position: relative; width: 56px; height: 56px; }
     .thumb-chip img {
       width: 56px; height: 56px; border-radius: 10px; object-fit: cover; display: block;
@@ -298,7 +298,7 @@ const COMMANDS: SlashCommand[] = [
 
     .hint {
       font-size: .7rem; color: var(--text-tertiary);
-      text-align: center; margin: 6px 0 0;
+      text-align: center; margin: 8px 0 0;
     }
     .hint.error { color: var(--color-error); }
 

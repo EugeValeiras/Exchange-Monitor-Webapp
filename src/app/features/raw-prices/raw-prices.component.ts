@@ -502,7 +502,7 @@ const DEFAULT_SYMBOL_BY_EXCHANGE: Record<RawExchange, string> = {
       .mode-switch {
         display: inline-flex;
         align-items: center;
-        padding: 3px;
+        padding: 4px;
         border-radius: 999px;
         background: rgba(255, 255, 255, 0.04);
         border: 1px solid rgba(255, 255, 255, 0.08);
@@ -510,8 +510,8 @@ const DEFAULT_SYMBOL_BY_EXCHANGE: Record<RawExchange, string> = {
       .mode-option {
         display: inline-flex;
         align-items: center;
-        gap: 6px;
-        padding: 7px 14px;
+        gap: 8px;
+        padding: 8px 12px;
         border-radius: 999px;
         background: transparent;
         border: none;
@@ -546,13 +546,13 @@ const DEFAULT_SYMBOL_BY_EXCHANGE: Record<RawExchange, string> = {
       }
 
       .controls-card {
-        padding: 18px 22px;
+        padding: 16px 24px;
         background: var(--bg-secondary, var(--bg-card));
       }
       .controls-row {
         display: flex;
         flex-wrap: wrap;
-        gap: 14px 22px;
+        gap: 12px 24px;
       }
       .controls-row.primary-row {
         align-items: center;
@@ -564,7 +564,7 @@ const DEFAULT_SYMBOL_BY_EXCHANGE: Record<RawExchange, string> = {
       .control-group {
         display: flex;
         flex-direction: column;
-        gap: 6px;
+        gap: 8px;
         min-height: 48px;
         justify-content: flex-end;
       }
@@ -581,11 +581,11 @@ const DEFAULT_SYMBOL_BY_EXCHANGE: Record<RawExchange, string> = {
         display: inline-flex;
       }
       .control-group ::ng-deep .mdc-evolution-chip-set__chips {
-        gap: 6px;
+        gap: 8px;
       }
       .control-group ::ng-deep .mat-mdc-chip {
         height: 32px;
-        padding: 0 10px;
+        padding: 0 8px;
       }
 
       .exchange-chip,
@@ -654,9 +654,9 @@ const DEFAULT_SYMBOL_BY_EXCHANGE: Record<RawExchange, string> = {
       .popular-row {
         display: flex;
         align-items: center;
-        gap: 10px;
-        margin-top: 14px;
-        padding-top: 14px;
+        gap: 8px;
+        margin-top: 12px;
+        padding-top: 12px;
         border-top: 1px solid rgba(255, 255, 255, 0.06);
         flex-wrap: wrap;
       }
@@ -790,8 +790,8 @@ const DEFAULT_SYMBOL_BY_EXCHANGE: Record<RawExchange, string> = {
         display: inline-flex;
         align-items: center;
         gap: 4px;
-        margin-top: 10px;
-        padding: 6px 12px;
+        margin-top: 8px;
+        padding: 8px 12px;
         border-radius: 999px;
         font-weight: 600;
         font-size: 13px;
@@ -818,8 +818,8 @@ const DEFAULT_SYMBOL_BY_EXCHANGE: Record<RawExchange, string> = {
       .metrics-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
-        gap: 10px 20px;
-        padding-top: 14px;
+        gap: 8px 20px;
+        padding-top: 12px;
         border-top: 1px solid rgba(255, 255, 255, 0.05);
       }
       .metric {
@@ -884,7 +884,7 @@ const DEFAULT_SYMBOL_BY_EXCHANGE: Record<RawExchange, string> = {
         text-transform: uppercase;
         letter-spacing: 0.06em;
         color: var(--text-secondary);
-        padding: 0 8px 6px;
+        padding: 0 8px 8px;
       }
       .bids-col .book-col-header span:last-child,
       .asks-col .book-col-header span:last-child {
@@ -945,7 +945,7 @@ const DEFAULT_SYMBOL_BY_EXCHANGE: Record<RawExchange, string> = {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 14px 20px;
+        padding: 12px 20px;
         cursor: pointer;
         user-select: none;
       }

@@ -281,7 +281,7 @@ function describeSpan(ms: number): string {
         display: flex;
         align-items: center;
         gap: var(--sp-3);
-        padding: 4px 9px;
+        padding: 4px 8px;
         border: 1px solid var(--border-light);
         border-radius: var(--r-2);
         background: rgba(12, 13, 15, 0.94);
@@ -307,7 +307,7 @@ function describeSpan(ms: number): string {
         display: flex;
         align-items: center;
         gap: var(--sp-4);
-        padding: 5px 10px;
+        padding: 4px 8px;
         border: 1px solid var(--border-light);
         border-radius: var(--r-2);
         background: rgba(12, 13, 15, 0.94);
@@ -341,7 +341,7 @@ function describeSpan(ms: number): string {
       .readout .trade {
         display: inline-flex;
         align-items: center;
-        gap: 5px;
+        gap: 4px;
         font-size: var(--fs-11);
       }
 
@@ -352,7 +352,7 @@ function describeSpan(ms: number): string {
         flex-direction: column;
         gap: var(--sp-3);
         width: 216px;
-        padding: 10px 12px;
+        padding: 8px 12px;
         border: 1px solid var(--border-light);
         border-radius: var(--r-2);
         background: rgba(12, 13, 15, 0.96);
@@ -407,7 +407,7 @@ function describeSpan(ms: number): string {
       .tip-rows {
         display: flex;
         flex-direction: column;
-        gap: 5px;
+        gap: 4px;
       }
 
       .tip-rows > div,

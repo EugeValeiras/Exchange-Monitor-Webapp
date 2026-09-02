@@ -266,7 +266,7 @@ const COMMON_ASSETS = [
 
     @media (max-width: 900px) {
       .swap-form-card {
-        padding: 14px;
+        padding: 12px;
         border-radius: 12px;
       }
     }
@@ -284,7 +284,7 @@ const COMMON_ASSETS = [
       text-transform: uppercase;
       letter-spacing: 0.5px;
       color: var(--text-tertiary);
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
 
     .pair-group {
@@ -392,7 +392,7 @@ const COMMON_ASSETS = [
       color: var(--text-primary);
       font-size: 15px;
       font-weight: 600;
-      padding: 9px 0;
+      padding: 8px 0;
       width: 100%;
     }
 
@@ -490,7 +490,7 @@ const COMMON_ASSETS = [
       color: var(--text-primary);
       font-size: 11px;
       font-weight: 700;
-      padding: 3px 10px;
+      padding: 4px 8px;
       border-radius: 6px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
@@ -576,7 +576,7 @@ const COMMON_ASSETS = [
     .result-details {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
     }
 
     .detail-row {

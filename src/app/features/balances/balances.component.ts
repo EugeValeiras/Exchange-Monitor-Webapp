@@ -73,7 +73,7 @@ type AssetBalance = EnrichedAssetBalance;
           <div class="empty-icon">
             <mat-icon>account_balance_wallet</mat-icon>
           </div>
-          <h2>No hay exchanges conectados</h2>
+          <h2>Todavía no conectaste ningún exchange</h2>
           <p>Conectá tu primer exchange para comenzar a ver tus balances</p>
           <a mat-raised-button color="primary" routerLink="/exchanges">
             <mat-icon>add</mat-icon>
@@ -727,7 +727,7 @@ type AssetBalance = EnrichedAssetBalance;
     .stat-change {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       margin-bottom: 8px;
       padding: 0;
       background: rgba(255, 255, 255, 0.1);
@@ -916,7 +916,7 @@ type AssetBalance = EnrichedAssetBalance;
     .exchanges-cell {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
     }
 
     .exchange-mini-logo {
@@ -1104,7 +1104,7 @@ type AssetBalance = EnrichedAssetBalance;
     .exchange-bottom {
       display: flex;
       align-items: baseline;
-      gap: 10px;
+      gap: 8px;
     }
 
     .exchange-value {

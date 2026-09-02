@@ -118,7 +118,7 @@ type PnlTimeframe = '1m' | '3m' | '6m' | '1y' | 'all';
       background: var(--bg-elevated);
       border-radius: 10px;
       border: 1px solid var(--border-color);
-      padding: 3px;
+      padding: 4px;
 
       ::ng-deep .mat-button-toggle-group {
         border: none;
@@ -170,7 +170,7 @@ type PnlTimeframe = '1m' | '3m' | '6m' | '1y' | 'all';
       }
 
       ::ng-deep .mat-button-toggle-button {
-        padding: 0 14px;
+        padding: 0 12px;
         height: 32px;
       }
 

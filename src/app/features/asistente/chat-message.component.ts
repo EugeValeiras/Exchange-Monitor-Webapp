@@ -92,7 +92,7 @@ import { WorkflowCardComponent } from './workflow-card.component';
       background: var(--bg-tertiary);
       border: 1px solid var(--border-color);
       border-radius: 16px 16px 4px 16px;
-      padding: 10px 14px;
+      padding: 8px 12px;
       color: var(--text-primary);
       font-size: .95rem; line-height: 1.55;
       box-shadow: var(--shadow-sm);
@@ -133,7 +133,7 @@ import { WorkflowCardComponent } from './workflow-card.component';
       vertical-align: baseline;
     }
 
-    .thinking { display: flex; align-items: center; gap: 10px; padding: 4px 0; }
+    .thinking { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
     .dots { display: inline-flex; gap: 4px; }
     .dot {
       width: 6px; height: 6px; border-radius: 50%;
@@ -146,11 +146,11 @@ import { WorkflowCardComponent } from './workflow-card.component';
 
     .error-callout {
       display: flex; align-items: center; gap: 8px;
-      margin-top: 10px;
+      margin-top: 8px;
       background: color-mix(in srgb, var(--color-error) 14%, transparent);
       border: 1px solid var(--color-error);
       border-radius: 8px;
-      padding: 10px 12px;
+      padding: 8px 12px;
       color: var(--color-error); font-size: .85rem;
     }
     .error-callout mat-icon { font-size: 17px; width: 18px; height: 18px; line-height: 18px; flex-shrink: 0; }
@@ -199,13 +199,13 @@ import { WorkflowCardComponent } from './workflow-card.component';
     .md li::marker { color: var(--text-secondary); }
     .md code {
       background: var(--bg-tertiary); border: 1px solid var(--border-light);
-      border-radius: 5px; padding: 1px 5px; font-size: .85em;
+      border-radius: 5px; padding: 1px 4px; font-size: .85em;
       font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
       color: var(--text-primary);
     }
     .md pre {
       background: var(--bg-tertiary); border: 1px solid var(--border-color);
-      border-radius: 10px; padding: 14px 16px; overflow-x: auto;
+      border-radius: 10px; padding: 12px 16px; overflow-x: auto;
       font-size: .82rem; line-height: 1.55; margin: .7em 0;
     }
     .md pre code {
@@ -214,7 +214,7 @@ import { WorkflowCardComponent } from './workflow-card.component';
     }
     .md blockquote {
       border-left: 3px solid var(--border-strong);
-      padding: 2px 0 2px 14px; margin: .6em 0;
+      padding: 2px 0 2px 12px; margin: .6em 0;
       color: var(--text-secondary);
     }
     .md table {
@@ -225,10 +225,10 @@ import { WorkflowCardComponent } from './workflow-card.component';
     }
     .md th {
       background: var(--bg-tertiary); font-weight: 600; text-align: left;
-      padding: 7px 12px; border-bottom: 1px solid var(--border-light); font-size: .88rem;
+      padding: 8px 12px; border-bottom: 1px solid var(--border-light); font-size: .88rem;
     }
     .md td {
-      padding: 7px 12px; border-bottom: 1px solid var(--border-light); font-size: .88rem;
+      padding: 8px 12px; border-bottom: 1px solid var(--border-light); font-size: .88rem;
       color: var(--text-primary);
     }
     .md a { color: var(--text-primary); text-decoration: none; }

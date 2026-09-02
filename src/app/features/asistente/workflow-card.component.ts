@@ -131,7 +131,7 @@ interface PhaseGroup {
       border: 1px solid var(--border-color);
       border-left: 3px solid var(--border-strong);
       border-radius: 10px;
-      margin: 6px 0;
+      margin: 8px 0;
       overflow: hidden;
     }
     .wf-card[data-status='running'] { border-left-color: var(--color-warning); }
@@ -140,7 +140,7 @@ interface PhaseGroup {
 
     .wf-header {
       display: flex; align-items: center; gap: 8px;
-      padding: 9px 12px; cursor: pointer;
+      padding: 8px 12px; cursor: pointer;
       background: transparent; border: none; width: 100%;
       text-align: left; font-size: .82rem; color: var(--text-primary);
       transition: background .15s;
@@ -170,7 +170,7 @@ interface PhaseGroup {
     .status-pill {
       flex-shrink: 0;
       font-size: .62rem; font-weight: 700; letter-spacing: .04em;
-      padding: 2px 7px; border-radius: 10px; text-transform: uppercase;
+      padding: 2px 8px; border-radius: 10px; text-transform: uppercase;
     }
     .status-pill[data-status='running'] {
       background: color-mix(in srgb, var(--color-warning) 18%, transparent);
@@ -193,8 +193,8 @@ interface PhaseGroup {
 
     .wf-body {
       border-top: 1px solid var(--border-light);
-      padding: 10px 12px;
-      display: flex; flex-direction: column; gap: 10px;
+      padding: 8px 12px;
+      display: flex; flex-direction: column; gap: 8px;
     }
     .wf-desc { font-size: .76rem; color: var(--text-secondary); line-height: 1.4; }
     .wf-activity {
@@ -214,9 +214,9 @@ interface PhaseGroup {
 
     .phase {
       border-left: 2px solid var(--border-color);
-      padding-left: 10px;
+      padding-left: 8px;
     }
-    .phase-head { display: flex; align-items: center; gap: 7px; margin-bottom: 6px; }
+    .phase-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
     .phase-idx {
       width: 17px; height: 17px; border-radius: 50%; flex-shrink: 0;
       background: var(--bg-secondary); color: var(--text-secondary);
@@ -228,7 +228,7 @@ interface PhaseGroup {
     .agents { display: flex; flex-direction: column; gap: 4px; }
     .agent-wrap { display: flex; flex-direction: column; }
     .agent {
-      display: flex; align-items: center; gap: 7px;
+      display: flex; align-items: center; gap: 8px;
       padding: 4px 8px; border-radius: 7px;
       background: var(--bg-secondary);
       font-size: .76rem; color: var(--text-secondary);
@@ -248,14 +248,14 @@ interface PhaseGroup {
 
     .agent-detail {
       margin: 2px 0 4px 8px;
-      padding: 8px 10px;
+      padding: 8px 8px;
       border-left: 2px solid var(--border-color);
       display: flex; flex-direction: column; gap: 8px;
     }
-    .agent-meta { display: flex; flex-wrap: wrap; gap: 5px; }
+    .agent-meta { display: flex; flex-wrap: wrap; gap: 4px; }
     .meta-chip {
       font-size: .64rem; font-weight: 600;
-      padding: 2px 7px; border-radius: 9px;
+      padding: 2px 8px; border-radius: 9px;
       background: var(--bg-tertiary); color: var(--text-secondary);
       font-variant-numeric: tabular-nums;
     }
@@ -265,10 +265,10 @@ interface PhaseGroup {
     }
     .detail-label {
       font-size: .58rem; font-weight: 700; letter-spacing: .5px;
-      text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 3px;
+      text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 4px;
     }
     .detail-pre {
-      margin: 0; padding: 7px 9px;
+      margin: 0; padding: 8px 8px;
       background: var(--bg-secondary);
       border: 1px solid var(--border-light); border-radius: 6px;
       font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
@@ -277,7 +277,7 @@ interface PhaseGroup {
       max-height: 200px; overflow: auto;
     }
     .detail-running {
-      display: flex; align-items: center; gap: 7px;
+      display: flex; align-items: center; gap: 8px;
       font-size: .72rem; color: var(--text-tertiary);
     }
     .agent-status {

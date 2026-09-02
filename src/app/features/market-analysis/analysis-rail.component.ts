@@ -373,9 +373,9 @@ type SideFilter = 'all' | 'buy' | 'sell';
       .segmented button {
         display: inline-flex;
         align-items: center;
-        gap: 5px;
+        gap: 4px;
         height: 22px;
-        padding: 0 10px;
+        padding: 0 8px;
         border: none;
         border-radius: 5px;
         background: transparent;
@@ -420,7 +420,7 @@ type SideFilter = 'all' | 'buy' | 'sell';
       .headline {
         display: flex;
         flex-direction: column;
-        gap: 3px;
+        gap: 4px;
       }
 
       .tag {
@@ -635,8 +635,8 @@ type SideFilter = 'all' | 'buy' | 'sell';
         z-index: 1;
         display: flex;
         align-items: baseline;
-        gap: 7px;
-        padding: var(--sp-3) var(--sp-4) 5px;
+        gap: 8px;
+        padding: var(--sp-3) var(--sp-4) 4px;
         background: var(--bg-elevated);
       }
 
@@ -657,7 +657,7 @@ type SideFilter = 'all' | 'buy' | 'sell';
         align-items: center;
         gap: var(--sp-3);
         margin: 0 var(--sp-3);
-        padding: 7px 10px;
+        padding: 8px 8px;
         border: 1px solid transparent;
         border-radius: var(--r-2);
       }
@@ -759,9 +759,9 @@ type SideFilter = 'all' | 'buy' | 'sell';
       .dust {
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
         margin: 2px var(--sp-3) 0;
-        padding: 6px 10px;
+        padding: 8px 8px;
         border: none;
         border-radius: var(--r-2);
         background: rgba(255, 255, 255, 0.022);

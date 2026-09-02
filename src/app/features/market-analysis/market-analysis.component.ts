@@ -180,8 +180,8 @@ const CANDLE_LIMIT = 500;
       .canvas {
         display: grid;
         grid-template-columns: minmax(0, 1fr) clamp(288px, 26%, 360px);
-        gap: 18px;
-        padding: 18px 20px;
+        gap: 16px;
+        padding: 16px 20px;
         flex: 1;
         min-height: 0;
       }
@@ -216,7 +216,7 @@ const CANDLE_LIMIT = 500;
 
       .loading button {
         height: 30px;
-        padding: 0 14px;
+        padding: 0 12px;
         border: 1px solid var(--border-light);
         border-radius: var(--r-2);
         background: transparent;

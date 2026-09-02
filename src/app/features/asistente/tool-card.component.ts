@@ -58,7 +58,7 @@ type ToolState = 'pending' | 'success' | 'error';
       border: 1px solid var(--border-color);
       border-left: 3px solid var(--border-color);
       border-radius: 10px;
-      margin: 6px 0;
+      margin: 8px 0;
       overflow: hidden;
     }
     .tool-card[data-state='pending'] { border-left-color: var(--color-warning); }
@@ -103,7 +103,7 @@ type ToolState = 'pending' | 'success' | 'error';
     .status-pill {
       flex-shrink: 0;
       font-size: .62rem; font-weight: 700; letter-spacing: .04em;
-      padding: 2px 7px; border-radius: 10px;
+      padding: 2px 8px; border-radius: 10px;
       text-transform: uppercase;
     }
     .status-pill[data-state='pending'] {
@@ -129,7 +129,7 @@ type ToolState = 'pending' | 'success' | 'error';
 
     .tool-body {
       border-top: 1px solid var(--border-light);
-      padding: 10px 12px;
+      padding: 8px 12px;
       display: flex; flex-direction: column; gap: 8px;
     }
     .section-label {
@@ -143,7 +143,7 @@ type ToolState = 'pending' | 'success' | 'error';
       background: var(--bg-secondary);
       border: 1px solid var(--border-light);
       border-radius: 6px;
-      padding: 8px 10px; margin: 0;
+      padding: 8px 8px; margin: 0;
       font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
       font-size: .72rem; line-height: 1.45; color: var(--text-secondary);
       white-space: pre-wrap; word-break: break-word;

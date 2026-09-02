@@ -177,7 +177,7 @@ import {
       } @else {
         <div class="empty-container">
           <mat-icon>analytics</mat-icon>
-          <p>No hay datos de P&L disponibles</p>
+          <p>Todavía no hay resultado para mostrar</p>
           <p class="hint">Sincroniza tus transacciones para ver el análisis de ganancias</p>
         </div>
       }

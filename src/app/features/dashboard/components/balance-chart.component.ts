@@ -121,6 +121,13 @@ const ASSET_COLORS = [
       } @else if (supportsMultiAsset()) {
         <div class="asset-filter-section">
           <span class="filter-label">Evolución</span>
+          @if (deltaSerie(); as d) {
+            <span class="serie-delta" [class.em-up]="d.abs >= 0" [class.em-down]="d.abs < 0">
+              {{ d.abs >= 0 ? '+' : '' }}{{ d.abs | currency:'USD':'symbol':'1.2-2' }}
+              <span class="serie-delta-pct">{{ d.pct >= 0 ? '+' : '' }}{{ d.pct | number:'1.2-2' }}%</span>
+              <span class="serie-delta-note">en el período</span>
+            </span>
+          }
           <div class="asset-chips-wrapper">
             <mat-chip-listbox multiple (change)="onAssetFilterChange($event)" class="asset-chips">
               @for (asset of visibleAssets(); track asset) {
@@ -208,7 +215,7 @@ const ASSET_COLORS = [
       background: var(--bg-elevated);
       border-radius: 10px;
       border: 1px solid var(--border-color);
-      padding: 3px;
+      padding: 4px;
     }
 
     .skeleton-toggle {
@@ -219,7 +226,7 @@ const ASSET_COLORS = [
 
     .asset-chips-skeleton {
       display: flex;
-      gap: 6px;
+      gap: 8px;
     }
 
     .skeleton-chip {
@@ -232,7 +239,7 @@ const ASSET_COLORS = [
       background: var(--bg-elevated);
       border-radius: 10px;
       border: 1px solid var(--border-color);
-      padding: 3px;
+      padding: 4px;
 
       ::ng-deep .mat-button-toggle-group {
         border: none;
@@ -295,7 +302,7 @@ const ASSET_COLORS = [
       }
 
       ::ng-deep .mat-button-toggle-button {
-        padding: 0 14px;
+        padding: 0 12px;
         height: 32px;
       }
 
@@ -309,6 +316,25 @@ const ASSET_COLORS = [
       align-items: center;
       gap: 16px;
       padding: 0 16px 12px 16px;
+    }
+
+    .serie-delta {
+      font-size: var(--fs-13);
+      font-weight: 600;
+      letter-spacing: var(--tr-data);
+      margin-left: var(--sp-4);
+      white-space: nowrap;
+    }
+
+    .serie-delta-pct {
+      margin-left: var(--sp-2);
+    }
+
+    .serie-delta-note {
+      margin-left: var(--sp-3);
+      font-size: var(--fs-11);
+      font-weight: 400;
+      color: var(--text-tertiary);
     }
 
     .filter-label {
@@ -360,7 +386,7 @@ const ASSET_COLORS = [
     .asset-chips {
       display: flex;
       flex-wrap: nowrap;
-      gap: 6px;
+      gap: 8px;
       align-items: center;
 
       ::ng-deep .mdc-evolution-chip-set__chips {
@@ -377,13 +403,13 @@ const ASSET_COLORS = [
       ::ng-deep .mdc-evolution-chip__action--primary {
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
       }
 
       ::ng-deep .mat-mdc-chip-action-label {
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
       }
     }
 
@@ -594,6 +620,25 @@ export class BalanceChartComponent implements OnInit {
   selectedTimeframe = signal<ChartTimeframe>('24h');
   private internalLoading = signal(true);
   changeUsd = signal(0);
+
+  /**
+   * Variación de la serie que se está dibujando, punta a punta.
+   *
+   * El encabezado de la pantalla mide otra cosa —pondera el cambio 24 h de
+   * cada activo contra su precio de hace exactamente 24 h— y el gráfico se
+   * arma con los snapshots guardados, que empiezan donde empieza el primero.
+   * Las dos son correctas y pueden no coincidir; lo que no puede pasar es que
+   * el total diga "+0,21 %" y justo debajo la curva baje sin que nada lo
+   * explique. Rotulada, la diferencia se entiende.
+   */
+  readonly deltaSerie = computed(() => {
+    const d = this.rawData();
+    if (!d?.data?.length) return null;
+    const serie = d.data.filter((v): v is number => v !== null && v !== undefined);
+    if (serie.length < 2) return null;
+    const abs = serie[serie.length - 1] - serie[0];
+    return { abs, pct: serie[0] ? (abs / serie[0]) * 100 : 0 };
+  });
   changePercent = signal(0);
 
   // Combined loading state for chart area
@@ -878,8 +923,13 @@ export class BalanceChartComponent implements OnInit {
       return { labels: [], datasets: [] };
     }
 
-    const isPositive = data.changeUsd >= 0;
-    const color = isPositive ? '#5cbe92' : '#e06b62';
+    // El color sale de la SERIE que se está dibujando, no de un changeUsd
+    // calculado aparte: el encabezado pondera la variación por activo y el
+    // endpoint del gráfico compara puntas, así que podían discrepar y quedaba
+    // el total en verde con la curva en rojo justo debajo. Lo que se ve manda.
+    const serie = data.data.filter((v) => v !== null && v !== undefined) as number[];
+    const delta = serie.length >= 2 ? serie[serie.length - 1] - serie[0] : data.changeUsd;
+    const color = delta >= 0 ? '#5cbe92' : '#e06b62';
 
     return {
       labels: this.formatLabels(data.labels),

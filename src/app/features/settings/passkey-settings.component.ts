@@ -67,7 +67,7 @@ import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.s
         } @else if (passkeyService.passkeys().length === 0) {
           <div class="empty-state">
             <mat-icon>key_off</mat-icon>
-            <p>No tenés passkeys registrados</p>
+            <p>Todavía no registraste ningún passkey</p>
             <span>Agregá uno para iniciar sesión sin contraseña</span>
           </div>
         } @else {
@@ -233,7 +233,7 @@ import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.s
     .badge {
       background: var(--bg-elevated);
       color: var(--text-secondary);
-      padding: 2px 10px;
+      padding: 2px 8px;
       border-radius: 12px;
       font-size: 13px;
       font-weight: 500;

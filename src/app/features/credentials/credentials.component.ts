@@ -49,7 +49,7 @@ import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-lo
           <div class="empty-icon">
             <mat-icon>vpn_key</mat-icon>
           </div>
-          <h2>No hay exchanges conectados</h2>
+          <h2>Todavía no conectaste ningún exchange</h2>
           <p>Agregá tu primer exchange para comenzar a sincronizar tus balances</p>
           <button mat-raised-button color="primary" (click)="openAddDialog()">
             <mat-icon>add</mat-icon>
@@ -408,7 +408,7 @@ import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-lo
     .error-header {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       color: var(--color-error);
       font-weight: 600;
       font-size: 12px;
@@ -426,7 +426,7 @@ import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-lo
       color: var(--text-secondary);
       background: rgba(0, 0, 0, 0.25);
       border-radius: 6px;
-      padding: 8px 10px;
+      padding: 8px 8px;
       word-break: break-word;
       white-space: pre-wrap;
       max-height: 80px;

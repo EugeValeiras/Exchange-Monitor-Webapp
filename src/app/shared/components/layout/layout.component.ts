@@ -195,7 +195,7 @@ const PAPER_TRADING_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="2
       background: transparent;
       border: none;
       color: var(--text-secondary);
-      padding: 6px;
+      padding: 8px;
       cursor: pointer;
       border-radius: 6px;
       flex-shrink: 0;
@@ -216,7 +216,7 @@ const PAPER_TRADING_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="2
     .logo {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
 
     .logo-icon {
@@ -317,7 +317,7 @@ const PAPER_TRADING_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="2
 
     .nav-child {
       display: block;
-      padding: 10px 16px 10px 48px;
+      padding: 8px 16px 8px 48px;
       color: var(--text-secondary);
       font-size: 14px;
       text-decoration: none;
@@ -424,8 +424,8 @@ const PAPER_TRADING_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="2
 
       .layout.collapsed .sidebar-header {
         flex-direction: column;
-        gap: 10px;
-        padding: 18px 8px 24px;
+        gap: 8px;
+        padding: 16px 8px 24px;
       }
 
       .layout.collapsed .logo-text {
@@ -433,7 +433,7 @@ const PAPER_TRADING_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="2
       }
 
       .layout.collapsed .sidebar-nav {
-        padding: 0 10px;
+        padding: 0 8px;
       }
 
       .layout.collapsed .nav-item {

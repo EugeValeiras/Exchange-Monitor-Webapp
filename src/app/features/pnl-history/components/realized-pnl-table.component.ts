@@ -35,7 +35,7 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
       <div class="empty-state">
         <mat-icon>trending_up</mat-icon>
         <h3>Sin realizado</h3>
-        <p>No hay operaciones de venta registradas</p>
+        <p>Todavía no cerraste ninguna venta</p>
       </div>
     } @else {
       <div class="table-container">
