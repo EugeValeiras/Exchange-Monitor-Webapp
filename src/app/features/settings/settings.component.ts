@@ -43,8 +43,7 @@ import { ExchangeLogoComponent } from '../../shared/components/exchange-logo/exc
       <mat-card class="settings-card">
         <mat-card-header>
           <mat-icon mat-card-avatar class="card-icon">show_chart</mat-icon>
-          <mat-card-title>Pares de Precios</mat-card-title>
-          <mat-card-subtitle>Configura que pares de trading quieres monitorear por exchange</mat-card-subtitle>
+                    <mat-card-subtitle>Qué pares seguir en cada exchange</mat-card-subtitle>
         </mat-card-header>
 
         <mat-card-content>
@@ -310,11 +309,11 @@ import { ExchangeLogoComponent } from '../../shared/components/exchange-logo/exc
     }
 
     .binance-chip {
-      border-color: var(--brand-binance) !important;
+      border-color: var(--border-color) !important;
     }
 
     .kraken-chip {
-      border-color: var(--brand-kraken) !important;
+      border-color: var(--border-color) !important;
     }
 
     .chip-content {
@@ -577,7 +576,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
         this.checkChanges();
         this.saving = false;
         const total = binanceResponse.symbols.length + krakenResponse.symbols.length;
-        this.showSuccess(`Configuracion guardada (${total} pares)`);
+        this.showSuccess(`Configuración guardada (${total} pares)`);
       },
       error: (err) => {
         console.error('Error saving symbols:', err);

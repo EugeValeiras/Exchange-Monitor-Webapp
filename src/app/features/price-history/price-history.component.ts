@@ -50,7 +50,7 @@ interface TimeframeOption {
       <div class="filters-section">
         <!-- Symbol Selector Button -->
         <div class="filter-group">
-          <span class="filter-label">Simbolo</span>
+          <span class="filter-label">Símbolo</span>
           <button
             class="symbol-selector-btn"
             matRipple
@@ -84,7 +84,7 @@ interface TimeframeOption {
 
         <!-- Timeframe Selector -->
         <div class="filter-group">
-          <span class="filter-label">Periodo</span>
+          <span class="filter-label">Período</span>
           <mat-button-toggle-group
             [value]="selectedTimeframe()"
             (change)="onTimeframeChange($event.value)"

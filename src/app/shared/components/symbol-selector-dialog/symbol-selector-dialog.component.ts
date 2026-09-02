@@ -47,7 +47,7 @@ interface SymbolOption {
           <input
             matInput
             [(ngModel)]="searchQuery"
-            placeholder="Buscar simbolo..."
+            placeholder="Buscar símbolo..."
             (input)="onSearch()"
             autocomplete="off"
             #searchInput>
@@ -63,7 +63,7 @@ interface SymbolOption {
         @if (filteredSymbols().length === 0) {
           <div class="empty-state">
             <mat-icon>search_off</mat-icon>
-            <p>No se encontraron simbolos</p>
+            <p>No se encontraron símbolos</p>
           </div>
         } @else {
           @for (option of filteredSymbols(); track option.symbol) {

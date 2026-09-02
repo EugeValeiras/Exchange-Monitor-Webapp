@@ -107,7 +107,7 @@ interface QuoteStat {
         <div class="filters-container">
           <!-- Symbol Selector -->
           <div class="filter-section">
-            <span class="filter-label">Simbolo</span>
+            <span class="filter-label">Símbolo</span>
             <button
               class="symbol-selector-btn"
               matRipple
@@ -124,7 +124,7 @@ interface QuoteStat {
               } @else {
                 <div class="symbol-btn-content">
                   <mat-icon>search</mat-icon>
-                  <span class="symbol-btn-placeholder">Buscar simbolo...</span>
+                  <span class="symbol-btn-placeholder">Buscar símbolo...</span>
                 </div>
               }
               <mat-icon class="symbol-btn-arrow">{{ selectedSymbol ? 'close' : 'expand_more' }}</mat-icon>

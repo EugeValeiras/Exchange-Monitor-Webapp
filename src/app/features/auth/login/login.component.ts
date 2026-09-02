@@ -74,7 +74,7 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
             @if (loading) {
               <mat-spinner diameter="20" class="button-spinner"></mat-spinner>
             } @else {
-              Iniciar sesion
+              Iniciar sesión
             }
           </button>
 
@@ -368,7 +368,7 @@ export class LoginComponent {
       },
       error: (err) => {
         this.loading = false;
-        this.error = err.error?.message || 'Error al iniciar sesion';
+        this.error = err.error?.message || 'Error al iniciar sesión';
       }
     });
   }

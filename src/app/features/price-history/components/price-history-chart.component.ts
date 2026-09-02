@@ -58,8 +58,8 @@ Chart.register(
     } @else {
       <div class="empty-container">
         <mat-icon>show_chart</mat-icon>
-        <p>No hay datos historicos para este periodo</p>
-        <p class="hint">Selecciona otro simbolo o periodo de tiempo</p>
+        <p>No hay datos historicos para este período</p>
+        <p class="hint">Selecciona otro símbolo o período de tiempo</p>
       </div>
     }
   `,

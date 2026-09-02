@@ -25,11 +25,11 @@ import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.s
           <mat-icon class="info-icon">fingerprint</mat-icon>
         </div>
         <div class="info-content">
-          <h3>Que son los Passkeys?</h3>
+          <h3>¿Qué son los passkeys?</h3>
           <p>
-            Los passkeys te permiten iniciar sesion usando huella dactilar,
-            Face ID o Windows Hello, sin necesidad de recordar tu contrasena.
-            Son mas seguros y faciles de usar.
+            Los passkeys te permiten iniciar sesión con tu huella o Face ID,
+            Face ID o Windows Hello, sin escribir la contraseña.
+            Son más seguros y más rápidos que una contraseña.
           </p>
         </div>
       </div>
@@ -68,7 +68,7 @@ import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.s
           <div class="empty-state">
             <mat-icon>key_off</mat-icon>
             <p>No tienes passkeys registrados</p>
-            <span>Agrega uno para iniciar sesion sin contrasena</span>
+            <span>Agrega uno para iniciar sesión sin contraseña</span>
           </div>
         } @else {
           <div class="passkeys-list">
@@ -81,7 +81,7 @@ import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.s
                   <span class="passkey-name">{{ passkey.deviceName }}</span>
                   <span class="passkey-date">Creado: {{ passkey.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
                   @if (passkey.lastUsedAt) {
-                    <span class="passkey-date">Ultimo uso: {{ passkey.lastUsedAt | date:'dd/MM/yyyy HH:mm' }}</span>
+                    <span class="passkey-date">Último uso: {{ passkey.lastUsedAt | date:'dd/MM/yyyy HH:mm' }}</span>
                   }
                 </div>
                 <button class="delete-btn" (click)="deletePasskey(passkey)" [disabled]="passkeyService.loading()">
@@ -423,7 +423,7 @@ export class PasskeySettingsComponent implements OnInit {
   }
 
   deletePasskey(passkey: PasskeyCredential): void {
-    const confirmed = confirm(`Deseas eliminar el passkey "${passkey.deviceName}"?\n\nNo podras usar este dispositivo para iniciar sesion sin contrasena.`);
+    const confirmed = confirm(`¿Querés eliminar el passkey "${passkey.deviceName}"?\n\nNo podras usar este dispositivo para iniciar sesion sin contrasena.`);
     if (!confirmed) return;
 
     this.passkeyService.deletePasskey(passkey.id).subscribe({

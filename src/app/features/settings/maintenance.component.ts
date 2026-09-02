@@ -35,7 +35,7 @@ import { PriceHistoryService } from '../price-history/price-history.service';
         <mat-card-content>
           <div class="info-box">
             <mat-icon class="info-icon">info</mat-icon>
-            <p>Esta accion reconstruira el historial de balances usando las transacciones importadas.
+            <p>Esta acción reconstruira el historial de balances usando las transacciones importadas.
                Util si importaste transacciones historicas y quieres ver el grafico de balance completo.</p>
           </div>
         </mat-card-content>
@@ -56,7 +56,7 @@ import { PriceHistoryService } from '../price-history/price-history.service';
         <mat-card-header>
           <mat-icon mat-card-avatar class="card-icon">show_chart</mat-icon>
           <mat-card-title>Historial de Precios</mat-card-title>
-          <mat-card-subtitle>Descarga el historial de precios de los simbolos configurados</mat-card-subtitle>
+          <mat-card-subtitle>Descarga el historial de precios de los símbolos configurados</mat-card-subtitle>
         </mat-card-header>
 
         <mat-card-content>
