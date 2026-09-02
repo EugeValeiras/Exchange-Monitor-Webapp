@@ -545,6 +545,7 @@ select:-webkit-autofill:active {
 .mat-mdc-cell:has(.change-cell),
 .mat-mdc-cell:has(.changes-cell),
 .mat-mdc-cell:has(.avg-cost-cell),
+.mat-mdc-cell:has(.range-low),
 .mat-mdc-cell:has(.total-cell),
 .mat-mdc-cell:has(.received-cell) {
   text-align: right !important;
@@ -900,4 +901,11 @@ a {
 .exchange-badge {
   color: var(--text-secondary) !important;
   background: var(--bg-tertiary) !important;
+}
+
+// El guion que separa "Desde – Hasta" viene a 16 px de fábrica: fuera de la
+// escala y más grande que las fechas que separa.
+.mat-date-range-input-separator {
+  font-size: var(--fs-13) !important;
+  color: var(--text-tertiary) !important;
 }

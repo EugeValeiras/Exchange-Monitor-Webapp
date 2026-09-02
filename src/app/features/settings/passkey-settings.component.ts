@@ -143,7 +143,7 @@ import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.s
     }
 
     .info-icon {
-      font-size: 28px;
+      font-size: 24px;
       width: 28px;
       height: 28px;
       color: var(--text-primary);
