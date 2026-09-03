@@ -448,6 +448,7 @@ export class PasskeySettingsComponent implements OnInit {
   private static readonly CON_LOGO = new Set([
     'apple',
     'google',
+    'google-password-manager',
     'microsoft',
     '1password',
     'bitwarden',
