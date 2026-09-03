@@ -500,6 +500,9 @@ export class MarketAnalysisComponent implements OnInit {
 
     this.loadSummary();
     this.loadUnrealized();
+    // La faceta puede venir guardada de la sesión anterior: si ya estás en
+    // Lotes, nadie va a pasar por setFacet y la lista quedaría vacía.
+    if (this.facet() === 'lots') this.loadLots();
     if (this.selectedSymbol()) this.loadDetail();
     else this.paletteOpen.set(true);
 
@@ -786,6 +789,7 @@ export class MarketAnalysisComponent implements OnInit {
         this.now.set(Date.now());
         this.detailLoading.set(false);
         this.loadTrades();
+        this.refreshLotsForSymbol();
       },
       error: (err) => {
         console.error('Failed to load indicators', err);
@@ -794,6 +798,14 @@ export class MarketAnalysisComponent implements OnInit {
         if (!this.indicators()) this.pairTrades.set(null);
       },
     });
+  }
+
+  /** Cambió el par: los lotes que teníamos son de otro activo. */
+  private refreshLotsForSymbol(): void {
+    if (this.baseAssetOf() === this.lotsAsset) return;
+    this.lots.set(null);
+    this.lotsAsset = null;
+    if (this.facet() === 'lots') this.loadLots();
   }
 
   private loadTrades(): void {
