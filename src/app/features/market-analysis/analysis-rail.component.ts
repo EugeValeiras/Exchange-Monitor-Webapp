@@ -369,7 +369,13 @@ type SideFilter = 'all' | 'buy' | 'sell';
                     </div>
                     <div class="side-info">
                       @if (lotPnl(lot); as pnl) {
-                        <span class="total num" [class.em-up]="pnl.value > 0" [class.em-down]="pnl.value < 0">
+                        <span
+                          class="total num"
+                          [class.em-up]="pnl.value > 0"
+                          [class.em-down]="pnl.value < 0"
+                          title="Lo que acumuló ESTE lote contra el precio de hoy. No es lo que
+                                 realizarías vendiendo esa cantidad: FIFO consume desde el
+                                 primero de la lista, no el que elijas.">
                           {{ pnl.value > 0 ? '+' : '' }}{{ pnl.value | emMoney }}
                         </span>
                       }
