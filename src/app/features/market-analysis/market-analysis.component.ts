@@ -87,7 +87,8 @@ const CANDLE_LIMIT = 500;
         [log]="log()"
         [tradesLayer]="tradesLayer()"
         [lotsLayer]="lotsLayer()"
-        [lotCount]="lotRungs().length"
+        [lotCount]="openLotCount()"
+        [lotsKnown]="lots() !== null"
         [baseAsset]="baseAssetOf()"
         [hasTrades]="hasTrades()"
         [tradeCount]="pairTrades()?.position?.tradeCount ?? 0"
@@ -295,6 +296,15 @@ export class MarketAnalysisComponent implements OnInit {
   /** Para qué activo son los lotes que tenemos cargados. */
   private lotsAsset: string | null = null;
   private readonly reconciliation = signal<ReconciliacionDeActivo[]>([]);
+
+  /**
+   * Cuántos lotes abiertos hay, mire o no la capa. El chip se habilita con
+   * esto: contando los escalones —que valen cero con la capa apagada— quedaba
+   * deshabilitado para siempre y no había forma de prenderla.
+   */
+  readonly openLotCount = computed(
+    () => (this.lots() ?? []).filter((l) => l.remainingAmount > 0).length,
+  );
 
   /** Los escalones que van al gráfico. Vacío apaga la capa sin más. */
   readonly lotRungs = computed(() => {

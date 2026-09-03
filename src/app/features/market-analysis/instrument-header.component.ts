@@ -515,8 +515,16 @@ export class InstrumentHeaderComponent {
   @Input() lotCount = 0;
   @Input() baseAsset = '';
 
+  /** Los lotes ya se pidieron: hasta entonces no se sabe si hay o no. */
+  @Input() lotsKnown = false;
+
+  /**
+   * Se deshabilita sólo cuando SABEMOS que no hay lotes. Si todavía no se
+   * pidieron, el chip queda habilitado: pedirlos es justo lo que hace al
+   * prenderlo, y deshabilitarlo antes lo dejaba muerto para siempre.
+   */
   get hasLots(): boolean {
-    return this.lotCount > 0;
+    return this.lotCount > 0 || !this.lotsKnown;
   }
   @Input() hasTrades = false;
   @Input() tradeCount = 0;
