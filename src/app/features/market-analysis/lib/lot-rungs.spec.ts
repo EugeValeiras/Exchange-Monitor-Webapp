@@ -47,6 +47,15 @@ describe('rungsFromLots · los lotes abiertos como escalones', () => {
     expect(r).toEqual([]);
   });
 
+  it('marca el que entró por otro par: no tiene compra en este gráfico', () => {
+    const r = rungsFromLots(
+      [lote({ id: 'propio' }), lote({ id: 'otro', source: 'trade-counter' })],
+      HOY,
+    );
+    expect(r.find((x) => x.id === 'propio')!.via).toBe(false);
+    expect(r.find((x) => x.id === 'otro')!.via).toBe(true);
+  });
+
   it('sin lotes abiertos no hay escalones', () => {
     expect(rungsFromLots([], HOY)).toEqual([]);
     expect(rungsFromLots([lote({ remainingAmount: 0 })], HOY)).toEqual([]);

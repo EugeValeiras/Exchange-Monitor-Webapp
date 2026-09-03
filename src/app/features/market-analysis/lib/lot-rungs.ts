@@ -23,6 +23,12 @@ export interface LotRung {
   weight: number;
   /** Consumido en parte por una venta anterior. */
   partial: boolean;
+  /**
+   * Entró por otro par: vendiste NEXO y te dieron BTC. La capa de trades no
+   * tiene marcador para esto —muestra trades de ESTE par— así que el escalón
+   * aparecería sin compra a la vista si no se distinguiera.
+   */
+  via: boolean;
 }
 
 /**
@@ -44,6 +50,7 @@ export function rungsFromLots(lots: CostBasisLot[], lastCandleTime: number): Lot
       price: l.costPerUnit,
       weight: l.remainingAmount / total,
       partial: l.remainingAmount < l.originalAmount,
+      via: l.source === 'trade-counter',
     }))
     .filter((r) => Number.isFinite(r.t) && r.t <= lastCandleTime)
     .sort((a, b) => a.weight - b.weight); // los gruesos arriba, se ven mejor

@@ -125,13 +125,24 @@ export const tradeLayerPlugin: Plugin = {
       ctx.stroke();
       ctx.setLineDash([]);
 
-      // Un punto donde arranca: el día que lo compraste.
+      // Un punto donde arranca: el día que lo compraste. Hueco si entró por
+      // otro par —vendiste NEXO y te dieron BTC—, que es la misma marca que
+      // usan los trades cruzados: no vas a encontrar una compra acá.
       if (desde > chartArea.left) {
+        const r = 1.5 + fuerza * 1.5;
         ctx.beginPath();
-        ctx.arc(desde, py, 1.5 + fuerza * 1.5, 0, Math.PI * 2);
-        ctx.fillStyle = c.mine;
+        ctx.arc(desde, py, r + (rung.via ? 0.8 : 0), 0, Math.PI * 2);
         ctx.globalAlpha = 0.5 + fuerza * 0.5;
-        ctx.fill();
+        if (rung.via) {
+          ctx.fillStyle = surface;
+          ctx.fill();
+          ctx.strokeStyle = c.mine;
+          ctx.lineWidth = 1.2;
+          ctx.stroke();
+        } else {
+          ctx.fillStyle = c.mine;
+          ctx.fill();
+        }
       }
       ctx.globalAlpha = 1;
     }
