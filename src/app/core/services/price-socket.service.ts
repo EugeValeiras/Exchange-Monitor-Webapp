@@ -39,6 +39,18 @@ export interface MultiExchangePriceResult {
 }
 
 
+/** Un libro de órdenes tal como llega por el socket. Misma forma que el de REST. */
+export interface LiveOrderbook {
+  exchange: string;
+  symbol: string;
+  timestamp: string;
+  datetime: string | null;
+  nonce: number | null;
+  bids: number[][];
+  asks: number[][];
+  source: 'stream';
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -59,10 +71,20 @@ export class PriceSocketService implements OnDestroy {
   // Track subscribed symbols for re-subscription on reconnect
   private subscribedSymbols = new Set<string>();
 
+  // Libros de órdenes que alguien está mirando, como `binance:BTC/USDT`.
+  private orderbookKeys = new Set<string>();
+  private _orderbooks = signal<Map<string, LiveOrderbook>>(new Map());
+  private _orderbookUnsupported = signal<Set<string>>(new Set());
+
   // Public readonly signals
   readonly prices = this._prices.asReadonly();
   readonly connectionStatus = this._connectionStatus.asReadonly();
   readonly isConnected = computed(() => this._connectionStatus().connected);
+
+  /** Último libro recibido por par, sólo mientras alguien lo mira. */
+  readonly orderbooks = this._orderbooks.asReadonly();
+  /** Pares cuyo exchange no emite profundidad por WebSocket. */
+  readonly orderbookUnsupported = this._orderbookUnsupported.asReadonly();
 
   constructor(private authService: AuthService) {}
 
@@ -152,6 +174,10 @@ export class PriceSocketService implements OnDestroy {
         console.log('[PriceSocket] Re-subscribing to', symbols.length, 'symbols');
         this.socket?.emit('subscribe', symbols);
       }
+      for (const key of this.orderbookKeys) {
+        const [exchange, symbol] = key.split(':');
+        this.socket?.emit('orderbook:subscribe', { exchange, symbol });
+      }
     });
 
     this.socket.on('disconnect', () => {
@@ -222,6 +248,19 @@ export class PriceSocketService implements OnDestroy {
     );
 
     // Pong response
+    this.socket.on('orderbook:update', (book: LiveOrderbook) => {
+      const key = `${book.exchange}:${book.symbol}`;
+      this._orderbooks.update((m) => {
+        const next = new Map(m);
+        next.set(key, book);
+        return next;
+      });
+    });
+
+    this.socket.on('orderbook:unsupported', (info: { exchange: string; symbol: string }) => {
+      this._orderbookUnsupported.update((s) => new Set(s).add(`${info.exchange}:${info.symbol}`));
+    });
+
     this.socket.on('pong', () => {
       // Heartbeat received
     });
@@ -250,6 +289,32 @@ export class PriceSocketService implements OnDestroy {
     if (this.socket?.connected) {
       this.socket.emit('unsubscribe', symbols);
     }
+  }
+
+  subscribeOrderbook(exchange: string, symbol: string): void {
+    const key = `${exchange}:${symbol}`;
+    if (this.orderbookKeys.has(key)) return;
+    this.orderbookKeys.add(key);
+    if (this.socket?.connected) {
+      this.socket.emit('orderbook:subscribe', { exchange, symbol });
+    } else {
+      // Nadie conectó el socket todavía (la pantalla de Orderbook no mira
+      // precios); al conectar se piden todas las claves pendientes.
+      this.connect();
+    }
+  }
+
+  unsubscribeOrderbook(exchange: string, symbol: string): void {
+    const key = `${exchange}:${symbol}`;
+    if (!this.orderbookKeys.delete(key)) return;
+    if (this.socket?.connected) {
+      this.socket.emit('orderbook:unsubscribe', { exchange, symbol });
+    }
+    this._orderbooks.update((m) => {
+      const next = new Map(m);
+      next.delete(key);
+      return next;
+    });
   }
 
   getPrice(symbol: string): PriceUpdate | undefined {

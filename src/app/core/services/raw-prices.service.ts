@@ -3,7 +3,8 @@ import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
 
 export type RawExchange = 'binance' | 'kraken' | 'coinbase';
-export type RawSource = 'public' | 'authenticated';
+/** 'stream' es el libro que llega por WebSocket, no por REST. */
+export type RawSource = 'public' | 'authenticated' | 'stream';
 
 export interface RawTicker {
   exchange: RawExchange;

@@ -6,6 +6,8 @@ import {
   computed,
   inject,
   signal,
+  effect,
+  untracked,
 } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
@@ -32,6 +34,7 @@ import {
   RawTicker,
 } from '../../core/services/raw-prices.service';
 import { SettingsService } from '../../core/services/settings.service';
+import { PriceSocketService } from '../../core/services/price-socket.service';
 import { ExchangeLogoComponent } from '../../shared/components/exchange-logo/exchange-logo.component';
 
 const SUPPORTED: RawExchange[] = ['binance', 'kraken', 'coinbase'];
@@ -351,6 +354,13 @@ const DEFAULT_SYMBOL_BY_EXCHANGE: Record<RawExchange, string> = {
             <div class="card-title">
               <mat-icon>book_online</mat-icon>
               Order Book
+              @if (liveOrderbook()) {
+                <span class="live-badge" [class.stale]="liveStale()"
+                      [matTooltip]="liveStale() ? 'Sin datos hace unos segundos' : 'Profundidad por WebSocket, hasta 4 veces por segundo'">
+                  <span class="live-dot"></span>
+                  {{ liveStale() ? 'sin señal' : 'en vivo' }}
+                </span>
+              }
             </div>
             <div class="depth-chips">
               <mat-chip-set>
@@ -917,6 +927,32 @@ const DEFAULT_SYMBOL_BY_EXCHANGE: Record<RawExchange, string> = {
       .book-row.ask .price {
         color: var(--chart-down);
       }
+      // Estado de UI, no dinero: el punto es tinta, no verde.
+      .live-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-left: 10px;
+        font-size: var(--fs-11);
+        font-weight: 500;
+        letter-spacing: 0.02em;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+      }
+      .live-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--text-primary);
+        animation: live-pulse 2s ease-in-out infinite;
+      }
+      .live-badge.stale { color: var(--text-tertiary); }
+      .live-badge.stale .live-dot { background: var(--text-tertiary); animation: none; }
+      @keyframes live-pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.35; }
+      }
+
       .depth-bar {
         position: absolute;
         top: 0;
@@ -980,7 +1016,7 @@ export class RawPricesComponent implements OnInit, OnDestroy {
   symbol = signal('BTC/USDT');
   asMe = signal(false);
   depth = signal(20);
-  refreshMs = signal(0);
+  refreshMs = signal(5_000);
 
   ticker = signal<RawTicker | null>(null);
   orderbook = signal<RawOrderbook | null>(null);
@@ -1010,6 +1046,76 @@ export class RawPricesComponent implements OnInit, OnDestroy {
   });
 
   private nowTick = signal(Date.now());
+  private readonly priceSocket = inject(PriceSocketService);
+
+  /**
+   * El libro llega por WebSocket cuando el exchange lo emite (hoy, Binance) y
+   * la profundidad entra en lo que Binance manda (20 niveles). Para 50 y 100,
+   * y para los demás exchanges, se sigue pidiendo por REST con el auto-refresh.
+   */
+  readonly liveOrderbook = computed(() => {
+    const ex = this.selectedExchange();
+    const sym = this.symbol();
+    if (ex !== 'binance' || !sym || this.depth() > 20) return false;
+    return !this.priceSocket.orderbookUnsupported().has(`${ex}:${sym}`);
+  });
+
+  /**
+   * Hace más de tres segundos que no llega un libro —o nunca llegó desde que
+   * lo pedimos—: la señal se cortó, y REST sostiene la pantalla mientras tanto.
+   */
+  readonly liveStale = computed(() => {
+    if (!this.liveOrderbook()) return false;
+    const b = this.orderbook();
+    // Conectar el socket y suscribir a Binance tarda unos segundos la primera
+    // vez: hasta que llegue el primer libro se da más margen, para no mostrar
+    // "sin señal" antes de que haya podido haber señal.
+    const yaLlego = b?.source === 'stream' && !!b.timestamp;
+    const ultimo = yaLlego ? new Date(b!.timestamp).getTime() : this.liveSince();
+    return this.nowTick() - ultimo > (yaLlego ? 3_000 : 8_000);
+  });
+
+  private liveKey: string | null = null;
+  private readonly liveSince = signal(0);
+
+  private readonly liveSubscription = effect(() => {
+    const wanted = this.liveOrderbook()
+      ? `${this.selectedExchange()}:${this.symbol()}`
+      : null;
+    if (wanted === this.liveKey) return;
+    untracked(() => {
+      if (this.liveKey) {
+        const [ex, sym] = this.liveKey.split(':');
+        this.priceSocket.unsubscribeOrderbook(ex, sym);
+      }
+      this.liveKey = wanted;
+      if (wanted) {
+        const [ex, sym] = wanted.split(':');
+        this.liveSince.set(Date.now());
+        this.priceSocket.subscribeOrderbook(ex, sym);
+        this.fetchOrderbook(); // primera pintura por REST; el socket lo reemplaza
+      } else {
+        this.fetchOrderbook(); // volvemos a REST: que no quede el libro viejo
+      }
+    });
+  });
+
+  private readonly liveFeed = effect(() => {
+    if (!this.liveOrderbook()) return;
+    const key = `${this.selectedExchange()}:${this.symbol()}`;
+    const book = this.priceSocket.orderbooks().get(key);
+    if (!book) return;
+    const depth = this.depth();
+    untracked(() =>
+      this.orderbook.set({
+        ...book,
+        exchange: this.selectedExchange(),
+        bids: book.bids.slice(0, depth),
+        asks: book.asks.slice(0, depth),
+      }),
+    );
+  });
+
   private refreshTimer: ReturnType<typeof setInterval> | null = null;
   private agingTimer: ReturnType<typeof setInterval> | null = null;
 
@@ -1112,12 +1218,18 @@ export class RawPricesComponent implements OnInit, OnDestroy {
       .pipe(debounceTime(120), distinctUntilChanged())
       .subscribe((value) => this.filterSymbols(value));
     this.refresh();
+    this.setRefresh(this.refreshMs());
     this.agingTimer = setInterval(() => this.nowTick.set(Date.now()), 1000);
   }
 
   ngOnDestroy(): void {
     if (this.refreshTimer) clearInterval(this.refreshTimer);
     if (this.agingTimer) clearInterval(this.agingTimer);
+    if (this.liveKey) {
+      const [ex, sym] = this.liveKey.split(':');
+      this.priceSocket.unsubscribeOrderbook(ex, sym);
+      this.liveKey = null;
+    }
   }
 
   selectExchange(ex: RawExchange): void {
@@ -1254,6 +1366,9 @@ export class RawPricesComponent implements OnInit, OnDestroy {
     const ex = this.selectedExchange();
     const sym = this.symbol();
     if (!sym) return;
+    // Llega solo por el socket; REST sólo pinta la primera vez y sostiene la
+    // pantalla si la señal se corta.
+    if (this.liveOrderbook() && this.orderbook()?.source === 'stream' && !this.liveStale()) return;
     this.orderbookError.set(null);
     this.rawPrices.getOrderbook(ex, sym, this.depth(), this.asMe()).subscribe({
       next: (b) => this.orderbook.set(b),
