@@ -225,13 +225,13 @@
     color: var(--text-secondary);
 
     &.positive {
-      background: rgba(92, 190, 146, 0.15);
-      color: var(--color-success);
+      background: var(--wash-up);
+      color: var(--chart-up);
     }
 
     &.negative {
-      background: rgba(224, 107, 98, 0.15);
-      color: var(--color-error);
+      background: var(--wash-down);
+      color: var(--chart-down);
     }
   }
 
@@ -264,8 +264,8 @@
   color: var(--text-primary);
   line-height: 1.2;
 
-  &.positive { color: var(--color-success); }
-  &.negative { color: var(--color-error); }
+  &.positive { color: var(--chart-up); }
+  &.negative { color: var(--chart-down); }
 }
 
 .stat-label {
@@ -871,8 +871,8 @@
     flex-shrink: 0;
   }
 
-  &.buy .amount { color: var(--color-success); }
-  &.sell .amount { color: var(--color-error); }
+  &.buy .amount { color: var(--chart-up); }
+  &.sell .amount { color: var(--chart-down); }
 }
 
 .no-received {

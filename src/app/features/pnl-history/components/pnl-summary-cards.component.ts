@@ -23,36 +23,36 @@ import { PnlSummaryResponse } from '../../../core/services/pnl.service';
         }
       } @else {
         <!-- Total P&L Card -->
-        <div class="summary-card total" [class.positive]="summary.totalPnl >= 0" [class.negative]="summary.totalPnl < 0">
+        <div class="summary-card total" [class.positive]="summary.totalPnl > 0" [class.negative]="summary.totalPnl < 0">
           <div class="card-header">
             <span class="card-label">Resultado total</span>
             <mat-icon>{{ summary.totalPnl >= 0 ? 'trending_up' : 'trending_down' }}</mat-icon>
           </div>
           <span class="card-value">
-            {{ summary.totalPnl >= 0 ? '+' : '' }}{{ summary.totalPnl | currency:'USD':'symbol':'1.2-2' }}
+            {{ summary.totalPnl > 0 ? '+' : '' }}{{ summary.totalPnl | currency:'USD':'symbol':'1.2-2' }}
           </span>
         </div>
 
         <!-- Realized P&L Card -->
-        <div class="summary-card" [class.positive]="summary.totalRealizedPnl >= 0" [class.negative]="summary.totalRealizedPnl < 0">
+        <div class="summary-card" [class.positive]="summary.totalRealizedPnl > 0" [class.negative]="summary.totalRealizedPnl < 0">
           <div class="card-header">
             <span class="card-label">Realizado</span>
             <mat-icon matTooltip="Ganancias/pérdidas de ventas completadas">check_circle</mat-icon>
           </div>
           <span class="card-value">
-            {{ summary.totalRealizedPnl >= 0 ? '+' : '' }}{{ summary.totalRealizedPnl | currency:'USD':'symbol':'1.2-2' }}
+            {{ summary.totalRealizedPnl > 0 ? '+' : '' }}{{ summary.totalRealizedPnl | currency:'USD':'symbol':'1.2-2' }}
           </span>
           <span class="card-hint">Ventas completadas</span>
         </div>
 
         <!-- Unrealized P&L Card -->
-        <div class="summary-card" [class.positive]="summary.totalUnrealizedPnl >= 0" [class.negative]="summary.totalUnrealizedPnl < 0">
+        <div class="summary-card" [class.positive]="summary.totalUnrealizedPnl > 0" [class.negative]="summary.totalUnrealizedPnl < 0">
           <div class="card-header">
             <span class="card-label">No realizado</span>
             <mat-icon matTooltip="Ganancias/pérdidas de posiciones abiertas">schedule</mat-icon>
           </div>
           <span class="card-value">
-            {{ summary.totalUnrealizedPnl >= 0 ? '+' : '' }}{{ summary.totalUnrealizedPnl | currency:'USD':'symbol':'1.2-2' }}
+            {{ summary.totalUnrealizedPnl > 0 ? '+' : '' }}{{ summary.totalUnrealizedPnl | currency:'USD':'symbol':'1.2-2' }}
           </span>
           <span class="card-hint">Posiciones abiertas</span>
         </div>
@@ -62,25 +62,25 @@ import { PnlSummaryResponse } from '../../../core/services/pnl.service';
     <!-- Period Breakdown -->
     @if (summary?.periodBreakdown) {
       <div class="period-breakdown">
-        <div class="period-item" [class.positive]="summary!.periodBreakdown.today >= 0" [class.negative]="summary!.periodBreakdown.today < 0">
+        <div class="period-item" [class.positive]="summary!.periodBreakdown.today > 0" [class.negative]="summary!.periodBreakdown.today < 0">
           <span class="period-label">Hoy</span>
-          <span class="period-value">{{ summary!.periodBreakdown.today >= 0 ? '+' : '' }}{{ summary!.periodBreakdown.today | currency:'USD':'symbol':'1.2-2' }}</span>
+          <span class="period-value">{{ summary!.periodBreakdown.today > 0 ? '+' : '' }}{{ summary!.periodBreakdown.today | currency:'USD':'symbol':'1.2-2' }}</span>
         </div>
-        <div class="period-item" [class.positive]="summary!.periodBreakdown.thisWeek >= 0" [class.negative]="summary!.periodBreakdown.thisWeek < 0">
+        <div class="period-item" [class.positive]="summary!.periodBreakdown.thisWeek > 0" [class.negative]="summary!.periodBreakdown.thisWeek < 0">
           <span class="period-label">Esta semana</span>
-          <span class="period-value">{{ summary!.periodBreakdown.thisWeek >= 0 ? '+' : '' }}{{ summary!.periodBreakdown.thisWeek | currency:'USD':'symbol':'1.2-2' }}</span>
+          <span class="period-value">{{ summary!.periodBreakdown.thisWeek > 0 ? '+' : '' }}{{ summary!.periodBreakdown.thisWeek | currency:'USD':'symbol':'1.2-2' }}</span>
         </div>
-        <div class="period-item" [class.positive]="summary!.periodBreakdown.thisMonth >= 0" [class.negative]="summary!.periodBreakdown.thisMonth < 0">
+        <div class="period-item" [class.positive]="summary!.periodBreakdown.thisMonth > 0" [class.negative]="summary!.periodBreakdown.thisMonth < 0">
           <span class="period-label">Este mes</span>
-          <span class="period-value">{{ summary!.periodBreakdown.thisMonth >= 0 ? '+' : '' }}{{ summary!.periodBreakdown.thisMonth | currency:'USD':'symbol':'1.2-2' }}</span>
+          <span class="period-value">{{ summary!.periodBreakdown.thisMonth > 0 ? '+' : '' }}{{ summary!.periodBreakdown.thisMonth | currency:'USD':'symbol':'1.2-2' }}</span>
         </div>
-        <div class="period-item" [class.positive]="summary!.periodBreakdown.thisYear >= 0" [class.negative]="summary!.periodBreakdown.thisYear < 0">
+        <div class="period-item" [class.positive]="summary!.periodBreakdown.thisYear > 0" [class.negative]="summary!.periodBreakdown.thisYear < 0">
           <span class="period-label">Este año</span>
-          <span class="period-value">{{ summary!.periodBreakdown.thisYear >= 0 ? '+' : '' }}{{ summary!.periodBreakdown.thisYear | currency:'USD':'symbol':'1.2-2' }}</span>
+          <span class="period-value">{{ summary!.periodBreakdown.thisYear > 0 ? '+' : '' }}{{ summary!.periodBreakdown.thisYear | currency:'USD':'symbol':'1.2-2' }}</span>
         </div>
-        <div class="period-item" [class.positive]="summary!.periodBreakdown.allTime >= 0" [class.negative]="summary!.periodBreakdown.allTime < 0">
+        <div class="period-item" [class.positive]="summary!.periodBreakdown.allTime > 0" [class.negative]="summary!.periodBreakdown.allTime < 0">
           <span class="period-label">Todo</span>
-          <span class="period-value">{{ summary!.periodBreakdown.allTime >= 0 ? '+' : '' }}{{ summary!.periodBreakdown.allTime | currency:'USD':'symbol':'1.2-2' }}</span>
+          <span class="period-value">{{ summary!.periodBreakdown.allTime > 0 ? '+' : '' }}{{ summary!.periodBreakdown.allTime | currency:'USD':'symbol':'1.2-2' }}</span>
         </div>
       </div>
     }
@@ -130,11 +130,11 @@ import { PnlSummaryResponse } from '../../../core/services/pnl.service';
     }
 
     .summary-card.positive .card-header mat-icon {
-      color: var(--color-success);
+      color: var(--chart-up);
     }
 
     .summary-card.negative .card-header mat-icon {
-      color: var(--color-error);
+      color: var(--chart-down);
     }
 
     .card-value {
@@ -148,11 +148,11 @@ import { PnlSummaryResponse } from '../../../core/services/pnl.service';
     }
 
     .summary-card.positive .card-value {
-      color: var(--color-success);
+      color: var(--chart-up);
     }
 
     .summary-card.negative .card-value {
-      color: var(--color-error);
+      color: var(--chart-down);
     }
 
     .card-hint {
@@ -216,11 +216,11 @@ import { PnlSummaryResponse } from '../../../core/services/pnl.service';
     }
 
     .period-item.positive .period-value {
-      color: var(--color-success);
+      color: var(--chart-up);
     }
 
     .period-item.negative .period-value {
-      color: var(--color-error);
+      color: var(--chart-down);
     }
   `],
 })

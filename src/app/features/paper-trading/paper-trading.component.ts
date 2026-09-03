@@ -147,11 +147,11 @@ const POLL_INTERVAL_MS = 10_000;
                 <span class="stat-label">Resultado total</span>
                 <mat-icon>trending_up</mat-icon>
               </div>
-              <span class="stat-value" [class.positive]="perf.totalPnl >= 0" [class.negative]="perf.totalPnl < 0">
-                {{ perf.totalPnl >= 0 ? '+' : '' }}{{ perf.totalPnl | currency:'USD':'symbol':'1.2-2' }}
+              <span class="stat-value" [class.positive]="perf.totalPnl > 0" [class.negative]="perf.totalPnl < 0">
+                {{ perf.totalPnl > 0 ? '+' : '' }}{{ perf.totalPnl | currency:'USD':'symbol':'1.2-2' }}
               </span>
-              <span class="stat-sub" [class.positive]="perf.totalPnlPct >= 0" [class.negative]="perf.totalPnlPct < 0">
-                {{ perf.totalPnlPct >= 0 ? '+' : '' }}{{ perf.totalPnlPct | number:'1.2-2' }}%
+              <span class="stat-sub" [class.positive]="perf.totalPnlPct > 0" [class.negative]="perf.totalPnlPct < 0">
+                {{ perf.totalPnlPct > 0 ? '+' : '' }}{{ perf.totalPnlPct | number:'1.2-2' }}%
               </span>
             </div>
 
@@ -160,11 +160,11 @@ const POLL_INTERVAL_MS = 10_000;
                 <span class="stat-label">Realizado / No realizado</span>
                 <mat-icon>call_split</mat-icon>
               </div>
-              <span class="stat-value small" [class.positive]="perf.realizedPnl >= 0" [class.negative]="perf.realizedPnl < 0">
-                {{ perf.realizedPnl >= 0 ? '+' : '' }}{{ perf.realizedPnl | currency:'USD':'symbol':'1.2-2' }}
+              <span class="stat-value small" [class.positive]="perf.realizedPnl > 0" [class.negative]="perf.realizedPnl < 0">
+                {{ perf.realizedPnl > 0 ? '+' : '' }}{{ perf.realizedPnl | currency:'USD':'symbol':'1.2-2' }}
               </span>
-              <span class="stat-sub" [class.positive]="perf.unrealizedPnl >= 0" [class.negative]="perf.unrealizedPnl < 0">
-                {{ perf.unrealizedPnl >= 0 ? '+' : '' }}{{ perf.unrealizedPnl | currency:'USD':'symbol':'1.2-2' }} no realizado
+              <span class="stat-sub" [class.positive]="perf.unrealizedPnl > 0" [class.negative]="perf.unrealizedPnl < 0">
+                {{ perf.unrealizedPnl > 0 ? '+' : '' }}{{ perf.unrealizedPnl | currency:'USD':'symbol':'1.2-2' }} no realizado
               </span>
             </div>
 
@@ -280,9 +280,9 @@ const POLL_INTERVAL_MS = 10_000;
                   <ng-container matColumnDef="unrealizedPnl">
                     <th mat-header-cell *matHeaderCellDef>P&L No realizado</th>
                     <td mat-cell *matCellDef="let row">
-                      <div class="pnl-cell" [class.positive]="row.unrealizedPnl >= 0" [class.negative]="row.unrealizedPnl < 0">
-                        <span class="pnl-value">{{ row.unrealizedPnl >= 0 ? '+' : '' }}{{ row.unrealizedPnl | currency:'USD':'symbol':'1.2-2' }}</span>
-                        <span class="pnl-percent">{{ row.unrealizedPnlPct >= 0 ? '+' : '' }}{{ row.unrealizedPnlPct | number:'1.2-2' }}%</span>
+                      <div class="pnl-cell" [class.positive]="row.unrealizedPnl > 0" [class.negative]="row.unrealizedPnl < 0">
+                        <span class="pnl-value">{{ row.unrealizedPnl > 0 ? '+' : '' }}{{ row.unrealizedPnl | currency:'USD':'symbol':'1.2-2' }}</span>
+                        <span class="pnl-percent">{{ row.unrealizedPnlPct > 0 ? '+' : '' }}{{ row.unrealizedPnlPct | number:'1.2-2' }}%</span>
                       </div>
                     </td>
                   </ng-container>
@@ -483,8 +483,8 @@ const POLL_INTERVAL_MS = 10_000;
                     <th mat-header-cell *matHeaderCellDef>Realizado</th>
                     <td mat-cell *matCellDef="let row">
                       @if (row.realizedPnl != null) {
-                        <span class="pnl-value" [class.positive]="row.realizedPnl >= 0" [class.negative]="row.realizedPnl < 0">
-                          {{ row.realizedPnl >= 0 ? '+' : '' }}{{ row.realizedPnl | currency:'USD':'symbol':'1.2-2' }}
+                        <span class="pnl-value" [class.positive]="row.realizedPnl > 0" [class.negative]="row.realizedPnl < 0">
+                          {{ row.realizedPnl > 0 ? '+' : '' }}{{ row.realizedPnl | currency:'USD':'symbol':'1.2-2' }}
                         </span>
                       } @else {
                         --
@@ -693,7 +693,7 @@ const POLL_INTERVAL_MS = 10_000;
     }
 
     .positive {
-      color: var(--color-success) !important;
+      color: var(--chart-up) !important;
     }
 
     .negative {
@@ -847,12 +847,12 @@ const POLL_INTERVAL_MS = 10_000;
     }
 
     .side-badge.buy {
-      background: rgba(92, 190, 146, 0.12);
-      color: var(--color-success);
+      background: var(--wash-up);
+      color: var(--chart-up);
     }
 
     .side-badge.sell {
-      background: rgba(224, 107, 98, 0.12);
+      background: var(--wash-down);
       color: var(--color-error);
     }
 
@@ -864,7 +864,7 @@ const POLL_INTERVAL_MS = 10_000;
 
     .pnl-cell.positive .pnl-value,
     .pnl-cell.positive .pnl-percent {
-      color: var(--color-success);
+      color: var(--chart-up);
     }
 
     .pnl-cell.negative .pnl-value,

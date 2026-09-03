@@ -138,12 +138,12 @@ type AssetBalance = EnrichedAssetBalance;
                   <app-flip-number [value]="getTotalValueUsd()" format="currency" [decimals]="2" size="large"></app-flip-number>
                 </span>
                 @if (getChange24h() !== null) {
-                  <div class="stat-change" [class.positive]="getChange24h()! >= 0" [class.negative]="getChange24h()! < 0">
+                  <div class="stat-change" [class.positive]="getChange24h()! > 0" [class.negative]="getChange24h()! < 0">
                     <span class="change-value">
-                      {{ getChangeUsd24h()! >= 0 ? '+' : '' }}{{ getChangeUsd24h() | currency:'USD':'symbol':'1.2-2' }}
+                      {{ getChangeUsd24h()! > 0 ? '+' : '' }}{{ getChangeUsd24h() | currency:'USD':'symbol':'1.2-2' }}
                     </span>
                     <span class="change-percent">
-                      ({{ getChange24h()! >= 0 ? '+' : '' }}{{ getChange24h() | number:'1.2-2' }}%)
+                      ({{ getChange24h()! > 0 ? '+' : '' }}{{ getChange24h() | number:'1.2-2' }}%)
                     </span>
                     <span class="change-label">24h</span>
                     <mat-icon
@@ -440,9 +440,9 @@ type AssetBalance = EnrichedAssetBalance;
                   <th mat-header-cell *matHeaderCellDef mat-sort-header="unrealizedPnl">P&L</th>
                   <td mat-cell *matCellDef="let row">
                     @if (row.hasCostBasis) {
-                      <div class="pnl-cell" [class.positive]="row.unrealizedPnl >= 0" [class.negative]="row.unrealizedPnl < 0">
-                        <span class="pnl-value">{{ row.unrealizedPnl >= 0 ? '+' : '' }}{{ row.unrealizedPnl | currency:'USD':'symbol':'1.2-2' }}</span>
-                        <span class="pnl-percent">{{ row.unrealizedPnlPercent >= 0 ? '+' : '' }}{{ row.unrealizedPnlPercent | number:'1.2-2' }}%</span>
+                      <div class="pnl-cell" [class.positive]="row.unrealizedPnl > 0" [class.negative]="row.unrealizedPnl < 0">
+                        <span class="pnl-value">{{ row.unrealizedPnl > 0 ? '+' : '' }}{{ row.unrealizedPnl | currency:'USD':'symbol':'1.2-2' }}</span>
+                        <span class="pnl-percent">{{ row.unrealizedPnlPercent > 0 ? '+' : '' }}{{ row.unrealizedPnlPercent | number:'1.2-2' }}%</span>
                       </div>
                     } @else {
                       <span class="pnl-cell neutral" matTooltip="Sin datos de costo base" matTooltipPosition="above">--</span>
@@ -511,8 +511,8 @@ type AssetBalance = EnrichedAssetBalance;
     }
 
     .realtime-indicator.connected {
-      background: rgba(92, 190, 146, 0.1);
-      color: var(--color-success);
+      background: var(--bg-tertiary);
+      color: var(--text-secondary);
     }
 
     .realtime-indicator.disconnected {
@@ -962,7 +962,7 @@ type AssetBalance = EnrichedAssetBalance;
     }
 
     .change-cell.positive {
-      color: var(--color-success);
+      color: var(--chart-up);
     }
 
     .change-cell.negative {
@@ -1021,7 +1021,7 @@ type AssetBalance = EnrichedAssetBalance;
     }
 
     .pnl-cell.positive .pnl-value {
-      color: var(--color-success);
+      color: var(--chart-up);
       font-weight: 600;
       font-size: 13px;
     }
@@ -1033,7 +1033,7 @@ type AssetBalance = EnrichedAssetBalance;
     }
 
     .pnl-cell.positive .pnl-percent {
-      color: var(--color-success);
+      color: var(--chart-up);
       font-size: 11px;
       opacity: 0.8;
     }
@@ -1120,7 +1120,7 @@ type AssetBalance = EnrichedAssetBalance;
     }
 
     .exchange-change.positive {
-      color: var(--color-success);
+      color: var(--chart-up);
     }
 
     .exchange-change.negative {
@@ -1200,7 +1200,7 @@ type AssetBalance = EnrichedAssetBalance;
     }
 
     .top-asset-change.positive {
-      color: var(--color-success);
+      color: var(--chart-up);
     }
 
     .top-asset-change.negative {

@@ -313,8 +313,8 @@ interface QuoteStat {
     }
 
     .realtime-indicator.connected {
-      background: rgba(92, 190, 146, 0.1);
-      color: var(--color-success);
+      background: var(--bg-tertiary);
+      color: var(--text-secondary);
     }
 
     .realtime-indicator.disconnected {
@@ -716,11 +716,11 @@ interface QuoteStat {
     }
 
     .change-cell.positive {
-      color: var(--color-success);
+      color: var(--chart-up);
     }
 
     .change-cell.negative {
-      color: var(--color-error);
+      color: var(--chart-down);
     }
 
     .change-cell mat-icon {

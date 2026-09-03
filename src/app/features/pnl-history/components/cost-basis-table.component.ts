@@ -339,13 +339,13 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
     }
 
     .source-badge.deposit {
-      background: rgba(92, 190, 146, 0.15);
-      color: var(--chart-up);
+      background: var(--wash-flow);
+      color: var(--chart-flow);
     }
 
     .source-badge.interest {
-      background: rgba(217, 160, 91, 0.15);
-      color: var(--color-warning);
+      background: var(--wash-up);
+      color: var(--chart-up);
     }
 
     .remaining-cell {

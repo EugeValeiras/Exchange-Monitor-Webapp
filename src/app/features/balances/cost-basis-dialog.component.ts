@@ -66,9 +66,9 @@ export interface CostBasisDialogData {
         </div>
         <div class="summary-card">
           <span class="card-label">P&L No realizado</span>
-          <span class="card-value" [class.positive]="data.unrealizedPnl >= 0" [class.negative]="data.unrealizedPnl < 0">
-            {{ data.unrealizedPnl >= 0 ? '+' : '' }}{{ data.unrealizedPnl | currency:'USD':'symbol':'1.2-2' }}
-            <span class="pnl-percent">({{ data.unrealizedPnlPercent >= 0 ? '+' : '' }}{{ data.unrealizedPnlPercent | number:'1.2-2' }}%)</span>
+          <span class="card-value" [class.positive]="data.unrealizedPnl > 0" [class.negative]="data.unrealizedPnl < 0">
+            {{ data.unrealizedPnl > 0 ? '+' : '' }}{{ data.unrealizedPnl | currency:'USD':'symbol':'1.2-2' }}
+            <span class="pnl-percent">({{ data.unrealizedPnlPercent > 0 ? '+' : '' }}{{ data.unrealizedPnlPercent | number:'1.2-2' }}%)</span>
           </span>
         </div>
       </div>
@@ -244,7 +244,7 @@ export interface CostBasisDialogData {
     }
 
     .card-value.positive {
-      color: var(--color-success);
+      color: var(--chart-up);
     }
 
     .card-value.negative {
@@ -327,13 +327,13 @@ export interface CostBasisDialogData {
     }
 
     .source-badge.deposit {
-      background: rgba(92, 190, 146, 0.15);
-      color: var(--chart-up);
+      background: var(--wash-flow);
+      color: var(--chart-flow);
     }
 
     .source-badge.interest {
-      background: rgba(217, 160, 91, 0.15);
-      color: var(--color-warning);
+      background: var(--wash-up);
+      color: var(--chart-up);
     }
 
     .remaining-cell {

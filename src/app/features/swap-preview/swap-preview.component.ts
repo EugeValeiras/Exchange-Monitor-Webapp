@@ -627,8 +627,8 @@ const COMMON_ASSETS = [
     }
 
     .diff-row.negative {
-      background: rgba(224, 107, 98, 0.1);
-      color: var(--color-error);
+      background: var(--wash-down);
+      color: var(--chart-down);
     }
 
     .execute-btn {

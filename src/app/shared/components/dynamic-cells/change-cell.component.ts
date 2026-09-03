@@ -23,11 +23,11 @@ import { PriceSocketService } from '../../../core/services/price-socket.service'
     }
 
     .change-value.positive {
-      color: var(--color-success);
+      color: var(--chart-up);
     }
 
     .change-value.negative {
-      color: var(--color-error);
+      color: var(--chart-down);
     }
 
     .change-value.neutral {

@@ -797,11 +797,11 @@ const DEFAULT_SYMBOL_BY_EXCHANGE: Record<RawExchange, string> = {
         font-size: 13px;
       }
       .change-pill.up {
-        background: rgba(92, 190, 146, 0.12);
+        background: var(--wash-up);
         color: var(--chart-up);
       }
       .change-pill.down {
-        background: rgba(224, 107, 98, 0.14);
+        background: var(--wash-down);
         color: var(--chart-down);
       }
       .change-pill mat-icon {

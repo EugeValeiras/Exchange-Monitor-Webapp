@@ -62,12 +62,12 @@ import { FlipNumberComponent } from '../../shared/components/flip-number/flip-nu
                   <app-flip-number [value]="balanceService.totalValueUsd()" format="currency" [decimals]="2" size="large"></app-flip-number>
                 </span>
                 @if (balanceService.change24h() !== null) {
-                  <div class="stat-change" [class.positive]="balanceService.change24h()! >= 0" [class.negative]="balanceService.change24h()! < 0">
+                  <div class="stat-change" [class.positive]="balanceService.change24h()! > 0" [class.negative]="balanceService.change24h()! < 0">
                     <span class="change-value">
-                      {{ balanceService.changeUsd24h()! >= 0 ? '+' : '' }}{{ balanceService.changeUsd24h() | currency:'USD':'symbol':'1.2-2' }}
+                      {{ balanceService.changeUsd24h()! > 0 ? '+' : '' }}{{ balanceService.changeUsd24h() | currency:'USD':'symbol':'1.2-2' }}
                     </span>
                     <span class="change-percent">
-                      ({{ balanceService.change24h()! >= 0 ? '+' : '' }}{{ balanceService.change24h() | number:'1.2-2' }}%)
+                      ({{ balanceService.change24h()! > 0 ? '+' : '' }}{{ balanceService.change24h() | number:'1.2-2' }}%)
                     </span>
                     <span class="change-label">24h</span>
                     <mat-icon

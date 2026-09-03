@@ -100,11 +100,11 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
           <!-- P&L Column -->
           <ng-container matColumnDef="realizedPnl">
             <th mat-header-cell *matHeaderCellDef>P&L</th>
-            <td mat-cell *matCellDef="let row" [class.positive]="row.realizedPnl >= 0" [class.negative]="row.realizedPnl < 0">
+            <td mat-cell *matCellDef="let row" [class.positive]="row.realizedPnl > 0" [class.negative]="row.realizedPnl < 0">
               <div class="pnl-cell">
-                <span class="pnl-value">{{ row.realizedPnl >= 0 ? '+' : '' }}{{ row.realizedPnl | currency:'USD':'symbol':'1.2-2' }}</span>
-                <span class="pnl-percent" [class.positive]="row.pnlPercent >= 0" [class.negative]="row.pnlPercent < 0">
-                  ({{ row.pnlPercent >= 0 ? '+' : '' }}{{ row.pnlPercent | number:'1.1-1' }}%)
+                <span class="pnl-value">{{ row.realizedPnl > 0 ? '+' : '' }}{{ row.realizedPnl | currency:'USD':'symbol':'1.2-2' }}</span>
+                <span class="pnl-percent" [class.positive]="row.pnlPercent > 0" [class.negative]="row.pnlPercent < 0">
+                  ({{ row.pnlPercent > 0 ? '+' : '' }}{{ row.pnlPercent | number:'1.1-1' }}%)
                 </span>
               </div>
             </td>
@@ -231,11 +231,11 @@ import { LogoLoaderComponent } from '../../../shared/components/logo-loader/logo
     }
 
     .positive {
-      color: var(--color-success) !important;
+      color: var(--chart-up) !important;
     }
 
     .negative {
-      color: var(--color-error) !important;
+      color: var(--chart-down) !important;
     }
 
     .holding-period {

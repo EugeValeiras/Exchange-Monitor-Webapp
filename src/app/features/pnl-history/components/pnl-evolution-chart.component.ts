@@ -302,7 +302,7 @@ export class PnlEvolutionChartComponent implements OnInit {
         callbacks: {
           label: (context) => {
             const value = context.parsed.y ?? 0;
-            const sign = value >= 0 ? '+' : '';
+            const sign = value > 0 ? '+' : '';
             return `${sign}$${value.toLocaleString('en-US', {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
@@ -331,7 +331,7 @@ export class PnlEvolutionChartComponent implements OnInit {
           color: 'rgba(255, 255, 255, 0.5)',
           callback: (value) => {
             const numValue = Number(value);
-            const sign = numValue >= 0 ? '+' : '';
+            const sign = numValue > 0 ? '+' : '';
             return `${sign}$${numValue.toLocaleString()}`;
           },
         },

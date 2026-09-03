@@ -62,9 +62,9 @@ import { FavoriteButtonComponent } from '../../../shared/components/favorite-but
                 @if (getPrice(asset); as price) {
                   <span class="price-value">{{ price | currency:'USD':'symbol':'1.2-4' }}</span>
                   @if (getChange24h(asset); as change) {
-                    <span class="price-change" [class.positive]="change >= 0" [class.negative]="change < 0">
+                    <span class="price-change" [class.positive]="change > 0" [class.negative]="change < 0">
                       <mat-icon>{{ change >= 0 ? 'trending_up' : 'trending_down' }}</mat-icon>
-                      {{ change >= 0 ? '+' : '' }}{{ change | number:'1.2-2' }}%
+                      {{ change > 0 ? '+' : '' }}{{ change | number:'1.2-2' }}%
                     </span>
                   }
                 } @else {
@@ -252,11 +252,11 @@ import { FavoriteButtonComponent } from '../../../shared/components/favorite-but
       }
 
       &.positive {
-        color: var(--color-success);
+        color: var(--chart-up);
       }
 
       &.negative {
-        color: var(--color-error);
+        color: var(--chart-down);
       }
     }
 

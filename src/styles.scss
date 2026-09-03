@@ -660,7 +660,7 @@ select:-webkit-autofill:active {
   --mdc-snackbar-supporting-text-color: var(--text-primary);
 
   &.success-snackbar {
-    --mdc-snackbar-container-color: rgba(92, 190, 146, 0.9);
+    --mdc-snackbar-container-color: var(--bg-elevated);
   }
 
   &.error-snackbar {

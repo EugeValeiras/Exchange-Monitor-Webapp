@@ -123,8 +123,8 @@ const ASSET_COLORS = [
           <span class="filter-label">Evolución</span>
           @if (deltaSerie(); as d) {
             <span class="serie-delta" [class.em-up]="d.abs >= 0" [class.em-down]="d.abs < 0">
-              {{ d.abs >= 0 ? '+' : '' }}{{ d.abs | currency:'USD':'symbol':'1.2-2' }}
-              <span class="serie-delta-pct">{{ d.pct >= 0 ? '+' : '' }}{{ d.pct | number:'1.2-2' }}%</span>
+              {{ d.abs > 0 ? '+' : '' }}{{ d.abs | currency:'USD':'symbol':'1.2-2' }}
+              <span class="serie-delta-pct">{{ d.pct > 0 ? '+' : '' }}{{ d.pct | number:'1.2-2' }}%</span>
               <span class="serie-delta-note">en el período</span>
             </span>
           }
@@ -558,13 +558,13 @@ const ASSET_COLORS = [
 
       &.positive {
         .change-value, .change-percent {
-          color: var(--color-success);
+          color: var(--chart-up);
         }
       }
 
       &.negative {
         .change-value, .change-percent {
-          color: var(--color-error);
+          color: var(--chart-down);
         }
       }
     }

@@ -94,8 +94,8 @@ interface SymbolOption {
                 @if (option.price) {
                   <span class="price">{{ formatPrice(option.price) }}</span>
                   @if (option.change24h !== undefined) {
-                    <span class="change" [class.positive]="option.change24h >= 0" [class.negative]="option.change24h < 0">
-                      {{ option.change24h >= 0 ? '+' : '' }}{{ option.change24h | number:'1.2-2' }}%
+                    <span class="change" [class.positive]="option.change24h > 0" [class.negative]="option.change24h < 0">
+                      {{ option.change24h > 0 ? '+' : '' }}{{ option.change24h | number:'1.2-2' }}%
                     </span>
                   }
                 } @else {
@@ -266,7 +266,7 @@ interface SymbolOption {
       font-weight: 500;
 
       &.positive {
-        color: var(--color-success);
+        color: var(--chart-up);
       }
 
       &.negative {

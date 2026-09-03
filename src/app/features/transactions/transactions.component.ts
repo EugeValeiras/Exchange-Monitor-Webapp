@@ -119,8 +119,8 @@ interface ExchangeStat {
 
         <!-- P&L Cards (only when no filters) -->
         @if (!hasActiveFilters()) {
-          <div class="stat-card pnl-card" [class.positive]="pnlSummary && pnlSummary.totalPnl >= 0" [class.negative]="pnlSummary && pnlSummary.totalPnl < 0">
-            <div class="stat-icon pnl" [class.skeleton-icon]="loading" [class.positive]="!loading && pnlSummary && pnlSummary.totalPnl >= 0" [class.negative]="!loading && pnlSummary && pnlSummary.totalPnl < 0">
+          <div class="stat-card pnl-card" [class.positive]="pnlSummary && pnlSummary.totalPnl > 0" [class.negative]="pnlSummary && pnlSummary.totalPnl < 0">
+            <div class="stat-icon pnl" [class.skeleton-icon]="loading" [class.positive]="!loading && pnlSummary && pnlSummary.totalPnl > 0" [class.negative]="!loading && pnlSummary && pnlSummary.totalPnl < 0">
               @if (loading) {
                 <div class="skeleton-pulse icon-pulse"></div>
               } @else {
@@ -132,8 +132,8 @@ interface ExchangeStat {
                 <span class="skeleton-value skeleton-pulse"></span>
                 <span class="skeleton-label skeleton-pulse"></span>
               } @else if (pnlSummary) {
-                <span class="stat-value" [class.positive]="pnlSummary.totalPnl >= 0" [class.negative]="pnlSummary.totalPnl < 0">
-                  {{ pnlSummary.totalPnl >= 0 ? '+' : '' }}{{ pnlSummary.totalPnl | currency:'USD':'symbol':'1.2-2' }}
+                <span class="stat-value" [class.positive]="pnlSummary.totalPnl > 0" [class.negative]="pnlSummary.totalPnl < 0">
+                  {{ pnlSummary.totalPnl > 0 ? '+' : '' }}{{ pnlSummary.totalPnl | currency:'USD':'symbol':'1.2-2' }}
                 </span>
                 <span class="stat-label">Resultado total</span>
               } @else {

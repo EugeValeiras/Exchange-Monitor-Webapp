@@ -69,9 +69,9 @@ interface TimeframeOption {
                     @if (currentChange() !== undefined) {
                       <span
                         class="symbol-btn-change"
-                        [class.positive]="currentChange()! >= 0"
+                        [class.positive]="currentChange()! > 0"
                         [class.negative]="currentChange()! < 0">
-                        {{ currentChange()! >= 0 ? '+' : '' }}{{ currentChange() | number:'1.2-2' }}%
+                        {{ currentChange()! > 0 ? '+' : '' }}{{ currentChange() | number:'1.2-2' }}%
                       </span>
                     }
                   </span>
@@ -267,7 +267,7 @@ interface TimeframeOption {
       font-weight: 500;
 
       &.positive {
-        color: var(--color-success);
+        color: var(--chart-up);
       }
 
       &.negative {

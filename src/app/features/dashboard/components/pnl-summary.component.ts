@@ -74,36 +74,36 @@ import {
       } @else if (hasData()) {
         <div class="pnl-cards">
           <!-- Total P&L Card -->
-          <div class="pnl-card total" [class.positive]="totalPnl() >= 0" [class.negative]="totalPnl() < 0">
+          <div class="pnl-card total" [class.positive]="totalPnl() > 0" [class.negative]="totalPnl() < 0">
             <div class="pnl-card-header">
               <span class="pnl-label">Resultado total</span>
               <mat-icon>{{ totalPnl() >= 0 ? 'trending_up' : 'trending_down' }}</mat-icon>
             </div>
             <span class="pnl-value">
-              {{ totalPnl() >= 0 ? '+' : '' }}{{ totalPnl() | currency:'USD':'symbol':'1.2-2' }}
+              {{ totalPnl() > 0 ? '+' : '' }}{{ totalPnl() | currency:'USD':'symbol':'1.2-2' }}
             </span>
           </div>
 
           <!-- Realized P&L Card -->
-          <div class="pnl-card" [class.positive]="realizedPnl() >= 0" [class.negative]="realizedPnl() < 0">
+          <div class="pnl-card" [class.positive]="realizedPnl() > 0" [class.negative]="realizedPnl() < 0">
             <div class="pnl-card-header">
               <span class="pnl-label">Realizado</span>
               <mat-icon matTooltip="Ganancias/pérdidas de ventas completadas">check_circle</mat-icon>
             </div>
             <span class="pnl-value">
-              {{ realizedPnl() >= 0 ? '+' : '' }}{{ realizedPnl() | currency:'USD':'symbol':'1.2-2' }}
+              {{ realizedPnl() > 0 ? '+' : '' }}{{ realizedPnl() | currency:'USD':'symbol':'1.2-2' }}
             </span>
             <span class="pnl-hint">Ventas completadas</span>
           </div>
 
           <!-- Unrealized P&L Card -->
-          <div class="pnl-card" [class.positive]="unrealizedPnl() >= 0" [class.negative]="unrealizedPnl() < 0">
+          <div class="pnl-card" [class.positive]="unrealizedPnl() > 0" [class.negative]="unrealizedPnl() < 0">
             <div class="pnl-card-header">
               <span class="pnl-label">No realizado</span>
               <mat-icon matTooltip="Ganancias/pérdidas de posiciones abiertas">schedule</mat-icon>
             </div>
             <span class="pnl-value">
-              {{ unrealizedPnl() >= 0 ? '+' : '' }}{{ unrealizedPnl() | currency:'USD':'symbol':'1.2-2' }}
+              {{ unrealizedPnl() > 0 ? '+' : '' }}{{ unrealizedPnl() | currency:'USD':'symbol':'1.2-2' }}
             </span>
             <span class="pnl-hint">Posiciones abiertas</span>
           </div>
@@ -112,21 +112,21 @@ import {
         <!-- Period Breakdown -->
         @if (periodBreakdown(); as breakdown) {
           <div class="period-breakdown">
-            <div class="period-item" [class.positive]="breakdown.today >= 0" [class.negative]="breakdown.today < 0">
+            <div class="period-item" [class.positive]="breakdown.today > 0" [class.negative]="breakdown.today < 0">
               <span class="period-label">Hoy</span>
-              <span class="period-value">{{ breakdown.today >= 0 ? '+' : '' }}{{ breakdown.today | currency:'USD':'symbol':'1.2-2' }}</span>
+              <span class="period-value">{{ breakdown.today > 0 ? '+' : '' }}{{ breakdown.today | currency:'USD':'symbol':'1.2-2' }}</span>
             </div>
-            <div class="period-item" [class.positive]="breakdown.thisWeek >= 0" [class.negative]="breakdown.thisWeek < 0">
+            <div class="period-item" [class.positive]="breakdown.thisWeek > 0" [class.negative]="breakdown.thisWeek < 0">
               <span class="period-label">Esta semana</span>
-              <span class="period-value">{{ breakdown.thisWeek >= 0 ? '+' : '' }}{{ breakdown.thisWeek | currency:'USD':'symbol':'1.2-2' }}</span>
+              <span class="period-value">{{ breakdown.thisWeek > 0 ? '+' : '' }}{{ breakdown.thisWeek | currency:'USD':'symbol':'1.2-2' }}</span>
             </div>
-            <div class="period-item" [class.positive]="breakdown.thisMonth >= 0" [class.negative]="breakdown.thisMonth < 0">
+            <div class="period-item" [class.positive]="breakdown.thisMonth > 0" [class.negative]="breakdown.thisMonth < 0">
               <span class="period-label">Este mes</span>
-              <span class="period-value">{{ breakdown.thisMonth >= 0 ? '+' : '' }}{{ breakdown.thisMonth | currency:'USD':'symbol':'1.2-2' }}</span>
+              <span class="period-value">{{ breakdown.thisMonth > 0 ? '+' : '' }}{{ breakdown.thisMonth | currency:'USD':'symbol':'1.2-2' }}</span>
             </div>
-            <div class="period-item" [class.positive]="breakdown.thisYear >= 0" [class.negative]="breakdown.thisYear < 0">
+            <div class="period-item" [class.positive]="breakdown.thisYear > 0" [class.negative]="breakdown.thisYear < 0">
               <span class="period-label">Este año</span>
-              <span class="period-value">{{ breakdown.thisYear >= 0 ? '+' : '' }}{{ breakdown.thisYear | currency:'USD':'symbol':'1.2-2' }}</span>
+              <span class="period-value">{{ breakdown.thisYear > 0 ? '+' : '' }}{{ breakdown.thisYear | currency:'USD':'symbol':'1.2-2' }}</span>
             </div>
           </div>
         }
@@ -149,22 +149,22 @@ import {
 
                 <ng-container matColumnDef="realized">
                   <th mat-header-cell *matHeaderCellDef>Realizado</th>
-                  <td mat-cell *matCellDef="let row" [class.positive]="row.realizedPnl >= 0" [class.negative]="row.realizedPnl < 0">
-                    {{ row.realizedPnl >= 0 ? '+' : '' }}{{ row.realizedPnl | currency:'USD':'symbol':'1.2-2' }}
+                  <td mat-cell *matCellDef="let row" [class.positive]="row.realizedPnl > 0" [class.negative]="row.realizedPnl < 0">
+                    {{ row.realizedPnl > 0 ? '+' : '' }}{{ row.realizedPnl | currency:'USD':'symbol':'1.2-2' }}
                   </td>
                 </ng-container>
 
                 <ng-container matColumnDef="unrealized">
                   <th mat-header-cell *matHeaderCellDef>No realizado</th>
-                  <td mat-cell *matCellDef="let row" [class.positive]="row.unrealizedPnl >= 0" [class.negative]="row.unrealizedPnl < 0">
-                    {{ row.unrealizedPnl >= 0 ? '+' : '' }}{{ row.unrealizedPnl | currency:'USD':'symbol':'1.2-2' }}
+                  <td mat-cell *matCellDef="let row" [class.positive]="row.unrealizedPnl > 0" [class.negative]="row.unrealizedPnl < 0">
+                    {{ row.unrealizedPnl > 0 ? '+' : '' }}{{ row.unrealizedPnl | currency:'USD':'symbol':'1.2-2' }}
                   </td>
                 </ng-container>
 
                 <ng-container matColumnDef="total">
                   <th mat-header-cell *matHeaderCellDef>Total</th>
-                  <td mat-cell *matCellDef="let row" [class.positive]="(row.realizedPnl + row.unrealizedPnl) >= 0" [class.negative]="(row.realizedPnl + row.unrealizedPnl) < 0">
-                    <strong>{{ (row.realizedPnl + row.unrealizedPnl) >= 0 ? '+' : '' }}{{ row.realizedPnl + row.unrealizedPnl | currency:'USD':'symbol':'1.2-2' }}</strong>
+                  <td mat-cell *matCellDef="let row" [class.positive]="(row.realizedPnl + row.unrealizedPnl) > 0" [class.negative]="(row.realizedPnl + row.unrealizedPnl) < 0">
+                    <strong>{{ (row.realizedPnl + row.unrealizedPnl) > 0 ? '+' : '' }}{{ row.realizedPnl + row.unrealizedPnl | currency:'USD':'symbol':'1.2-2' }}</strong>
                   </td>
                 </ng-container>
 
@@ -267,11 +267,11 @@ import {
     }
 
     .pnl-card.positive .pnl-value {
-      color: var(--color-success);
+      color: var(--chart-up);
     }
 
     .pnl-card.negative .pnl-value {
-      color: var(--color-error);
+      color: var(--chart-down);
     }
 
     .pnl-card-header {
@@ -294,11 +294,11 @@ import {
     }
 
     .pnl-card.positive .pnl-card-header mat-icon {
-      color: var(--color-success);
+      color: var(--chart-up);
     }
 
     .pnl-card.negative .pnl-card-header mat-icon {
-      color: var(--color-error);
+      color: var(--chart-down);
     }
 
     .pnl-value {
@@ -346,11 +346,11 @@ import {
     }
 
     .period-item.positive .period-value {
-      color: var(--color-success);
+      color: var(--chart-up);
     }
 
     .period-item.negative .period-value {
-      color: var(--color-error);
+      color: var(--chart-down);
     }
 
     .asset-breakdown {
@@ -388,11 +388,11 @@ import {
     }
 
     .positive {
-      color: var(--color-success) !important;
+      color: var(--chart-up) !important;
     }
 
     .negative {
-      color: var(--color-error) !important;
+      color: var(--chart-down) !important;
     }
 
     .empty-container {
