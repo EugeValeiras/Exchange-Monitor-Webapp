@@ -329,9 +329,12 @@ import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.s
     // El logo del proveedor ocupa el lugar de la llave: dice dónde vive esta
     // credencial sin agregar un renglón. Va con tooltip y alt porque un logo
     // solo no es accesible.
+    // La mitad del cuadradito. El logo del gestor de Google es ancho y bajo:
+    // a 22 tocaba los bordes y parecía más grande que los demás midiendo lo
+    // mismo.
     .passkey-provider-icon {
-      width: 22px;
-      height: 22px;
+      width: 20px;
+      height: 20px;
     }
 
     // Sin logo propio, el nombre. Preferible a un ícono genérico que no
