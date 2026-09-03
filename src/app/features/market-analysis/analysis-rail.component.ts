@@ -235,7 +235,7 @@ type SideFilter = 'all' | 'buy' | 'sell';
                       <div class="main">
                         <span class="amount num">
                           {{ order.side === 'buy' ? '+' : '−' }}{{ order.amount | emQty }}
-                          <span class="asset">{{ baseAsset }}</span>
+                          <span class="ticker">{{ baseAsset }}</span>
                         </span>
                         <span class="meta num">
                           @if (order.via && !order.via.booked) {
@@ -498,7 +498,11 @@ type SideFilter = 'all' | 'buy' | 'sell';
         opacity: 0.85;
       }
 
-      /* The asset across every pair, the balances-screen number */
+      /* La tarjeta del activo en Posición: el número de la pantalla de saldos.
+         OJO: es un bloque con borde y padding. El ticker de una fila de trades
+         se llama .ticker justo por esto — cuando los dos se llamaban .asset,
+         cada fila mostraba "BTC" dentro de un recuadro punteado de ancho
+         completo, como un campo de formulario vacío. */
       .asset {
         display: flex;
         flex-direction: column;
@@ -732,7 +736,7 @@ type SideFilter = 'all' | 'buy' | 'sell';
         color: var(--text-primary);
       }
 
-      .amount .asset,
+      .amount .ticker,
       .meta {
         font-size: 10.5px;
         font-weight: 400;
