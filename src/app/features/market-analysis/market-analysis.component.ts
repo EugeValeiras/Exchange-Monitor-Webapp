@@ -19,7 +19,7 @@ import {
   SummaryResponse,
 } from '../../core/services/market-analysis.service';
 import { PairTrades, TransactionsService } from '../../core/services/transactions.service';
-import { PnlService, UnrealizedPnlPosition } from '../../core/services/pnl.service';
+import { CostBasisLot, PnlService, UnrealizedPnlPosition } from '../../core/services/pnl.service';
 import { PriceSocketService } from '../../core/services/price-socket.service';
 import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-loader.component';
 import { InstrumentHeaderComponent, HeaderContext } from './instrument-header.component';
@@ -138,6 +138,9 @@ const CANDLE_LIMIT = 500;
               [highlightedId]="hoveredOrderId()"
               [annotationCount]="annotations().length"
               [showCross]="showCross()"
+              [lots]="lots()"
+              [lotsLoading]="lotsLoading()"
+              [lastPrice]="lastClose()"
               (facetChange)="setFacet($event)"
               (showCrossChange)="showCross.set($event)"
               (hover)="hoveredOrderId.set($event)"
@@ -272,6 +275,11 @@ export class MarketAnalysisComponent implements OnInit {
   readonly log = signal(false);
   readonly tradesLayer = signal(true);
   readonly facet = signal<RailFacet>('position');
+  readonly lots = signal<CostBasisLot[] | null>(null);
+  readonly lotsLoading = signal(false);
+
+  /** Para qué activo son los lotes que tenemos cargados. */
+  private lotsAsset: string | null = null;
   /** The rail is the margin of the screen, not the screen: it can be put away. */
   readonly railOpen = signal(true);
   readonly series = signal<SeriesConfig>({ ...DEFAULT_SERIES });
@@ -606,6 +614,9 @@ export class MarketAnalysisComponent implements OnInit {
       case 'm':
         this.setFacet('trades');
         break;
+      case 'l':
+        this.setFacet('lots');
+        break;
       case 'a':
         this.setFacet('agent');
         break;
@@ -649,6 +660,7 @@ export class MarketAnalysisComponent implements OnInit {
   setFacet(facet: RailFacet): void {
     this.facet.set(facet);
     this.write(FACET_KEY, facet);
+    if (facet === 'lots') this.loadLots();
     // asking for a facet is asking for the rail: no silent no-op when it is away
     if (!this.railOpen()) this.setRailOpen(true);
   }
@@ -805,6 +817,30 @@ export class MarketAnalysisComponent implements OnInit {
     this.marketService.getSummary(this.selectedExchange()).subscribe({
       next: (resp) => this.summary.set(resp),
       error: (err) => console.error('Failed to load market summary', err),
+    });
+  }
+
+  /**
+   * Los lotes del activo base. Se piden recién cuando mirás la faceta: son
+   * datos de otro módulo y no hacen falta para el gráfico.
+   */
+  private loadLots(): void {
+    const base = this.baseAssetOf();
+    if (!base) return;
+    if (this.lotsAsset === base && this.lots()) return;
+
+    this.lotsAsset = base;
+    this.lotsLoading.set(true);
+    this.pnlService.getCostBasisLots({ assets: [base], limit: 200 }).subscribe({
+      next: (resp) => {
+        this.lots.set(resp.data ?? []);
+        this.lotsLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Failed to load cost basis lots', err);
+        this.lots.set([]);
+        this.lotsLoading.set(false);
+      },
     });
   }
 

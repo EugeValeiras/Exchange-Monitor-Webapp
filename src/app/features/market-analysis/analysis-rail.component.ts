@@ -13,10 +13,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
 import { AgentChatComponent, ChartAction } from './agent-chat.component';
 import { PairPosition, PairTrades } from '../../core/services/transactions.service';
+import { CostBasisLot } from '../../core/services/pnl.service';
 import { EmMoneyPipe, EmPctPipe, EmQtyPipe, EmSignedPipe, toneOf } from '../../shared/pipes/format.pipes';
 import { groupTrades, MonthGroup, TradeOrder } from './lib/trade-grouping';
 
-export type RailFacet = 'position' | 'trades' | 'agent';
+export type RailFacet = 'position' | 'trades' | 'lots' | 'agent';
 
 export interface RailPosition extends PairPosition {
   unrealizedPnl: number | null;
@@ -304,6 +305,88 @@ type SideFilter = 'all' | 'buy' | 'sell';
           </div>
         }
 
+        @case ('lots') {
+          <div class="facet lots">
+            <div class="trades-head">
+              <span class="summary">
+                @if (openLots().length) {
+                  {{ openLots().length }} {{ openLots().length === 1 ? 'lote abierto' : 'lotes abiertos' }}
+                  <span class="muted">· se consumen de arriba hacia abajo (FIFO)</span>
+                } @else {
+                  Lotes de {{ baseAsset }}
+                }
+              </span>
+              @if (lotsTotals(); as tot) {
+                <dl class="lots-metrics">
+                  <div>
+                    <dt>Queda</dt>
+                    <dd class="num">{{ tot.amount | emQty: baseAsset }}</dd>
+                  </div>
+                  <div>
+                    <dt>PPC ponderado</dt>
+                    <dd class="num em-mine">{{ tot.avgCost | emMoney }}</dd>
+                  </div>
+                  @if (tot.unrealized !== null) {
+                    <div>
+                      <dt>No realizado</dt>
+                      <dd class="num" [class.em-up]="tot.unrealized > 0" [class.em-down]="tot.unrealized < 0">
+                        {{ tot.unrealized > 0 ? '+' : '' }}{{ tot.unrealized | emMoney }}
+                      </dd>
+                    </div>
+                  }
+                </dl>
+              }
+            </div>
+
+            <div class="months">
+              @if (lotsLoading && !openLots().length) {
+                <div class="empty"><p>Cargando lotes…</p></div>
+              } @else {
+                @for (lot of openLots(); track lot.id) {
+                  <div class="order lot">
+                    <span class="side lot-source" [title]="sourceLabel(lot.source)">
+                      {{ sourceInitial(lot.source) }}
+                    </span>
+                    <div class="main">
+                      <span class="amount num">
+                        {{ lot.remainingAmount | emQty }}
+                        <span class="ticker">{{ baseAsset }}</span>
+                        @if (lot.remainingAmount < lot.originalAmount) {
+                          <span class="ticker">· de {{ lot.originalAmount | emQty }}</span>
+                        }
+                      </span>
+                      <span class="meta num">
+                        &#64; {{ lot.costPerUnit | emMoney }}
+                        <span class="via">· {{ sourceLabel(lot.source) }} en {{ lot.exchange }}</span>
+                      </span>
+                    </div>
+                    <div class="side-info">
+                      @if (lotPnl(lot); as pnl) {
+                        <span class="total num" [class.em-up]="pnl.value > 0" [class.em-down]="pnl.value < 0">
+                          {{ pnl.value > 0 ? '+' : '' }}{{ pnl.value | emMoney }}
+                        </span>
+                      }
+                      <span class="date">{{ lot.acquiredAt | date: 'dd MMM yy' }}</span>
+                    </div>
+                  </div>
+                } @empty {
+                  <div class="empty">
+                    <mat-icon>inventory_2</mat-icon>
+                    <p>Sin lotes abiertos de {{ baseAsset }}.</p>
+                  </div>
+                }
+              }
+            </div>
+
+            @if (lotsMismatch(); as falta) {
+              <div class="foot-note">
+                Los lotes suman {{ falta.enLotes | emQty: baseAsset }} y la posición
+                dice {{ falta.real | emQty: baseAsset }}: la contabilidad de este activo
+                no reconcilia, así que tomá estos números con pinzas.
+              </div>
+            }
+          </div>
+        }
         @case ('agent') {
           <div class="facet agent">
             <app-agent-chat
@@ -760,6 +843,37 @@ type SideFilter = 'all' | 'buy' | 'sell';
         color: var(--text-tertiary);
       }
 
+      /* Lotes: la misma fila que un trade, con el origen en vez del lado. */
+      .lots-metrics {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--sp-3) var(--sp-4);
+        margin: 0;
+      }
+
+      .lots-metrics div {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+      }
+
+      .lots-metrics dt {
+        font-size: var(--fs-10);
+        color: var(--text-tertiary);
+      }
+
+      .lots-metrics dd {
+        margin: 0;
+        font-size: var(--fs-12);
+        color: var(--text-primary);
+      }
+
+      .lot-source {
+        background: var(--bg-tertiary);
+        color: var(--text-secondary);
+        font-weight: 600;
+      }
+
       .dust {
         display: flex;
         align-items: center;
@@ -815,6 +929,21 @@ export class AnalysisRailComponent {
     this.showCrossSignal.set(value);
   }
 
+  /** Lotes abiertos del activo base, del más viejo al más nuevo. */
+  @Input() set lots(value: CostBasisLot[] | null) {
+    this.lotsSignal.set(value ?? null);
+  }
+  get lots(): CostBasisLot[] | null {
+    return this.lotsSignal();
+  }
+
+  /** Precio de la última vela, para valuar cada lote contra el mercado. */
+  @Input() set lastPrice(value: number | null) {
+    this.lastPriceSignal.set(value);
+  }
+
+  @Input() lotsLoading = false;
+
   @Input() set data(value: PairTrades | null) {
     this.dataSignal.set(value);
   }
@@ -824,6 +953,75 @@ export class AnalysisRailComponent {
 
   @Input() set candleSpanMs(value: number) {
     this.spanSignal.set(value);
+  }
+
+  private readonly lotsSignal = signal<CostBasisLot[] | null>(null);
+  private readonly lastPriceSignal = signal<number | null>(null);
+
+  /**
+   * Los lotes que todavía tenés, del más viejo al más nuevo: FIFO consume de
+   * arriba hacia abajo, así que ese orden dice cuál se va a ir primero.
+   */
+  readonly openLots = computed(() =>
+    (this.lotsSignal() ?? [])
+      .filter((l) => l.remainingAmount > 0)
+      .sort((a, b) => new Date(a.acquiredAt).getTime() - new Date(b.acquiredAt).getTime()),
+  );
+
+  /** Lo que queda, su costo ponderado —el PPC de la línea punteada— y su P&L. */
+  readonly lotsTotals = computed(() => {
+    const lots = this.openLots();
+    if (!lots.length) return null;
+    const amount = lots.reduce((s, l) => s + l.remainingAmount, 0);
+    const cost = lots.reduce((s, l) => s + l.remainingAmount * l.costPerUnit, 0);
+    if (!(amount > 0)) return null;
+    const price = this.lastPriceSignal();
+    return {
+      amount,
+      avgCost: cost / amount,
+      unrealized: price && price > 0 ? amount * price - cost : null,
+    };
+  });
+
+  /**
+   * Cuando lo que dicen los lotes no es lo que decís tener. Pasa cuando la
+   * historia importada está incompleta, y hay que decirlo: un número que no
+   * reconcilia y no lo avisa es peor que no mostrarlo.
+   */
+  lotsMismatch(): { enLotes: number; real: number } | null {
+    // Método y no computed: `assetPosition` es un @Input plano, y un computed
+    // sólo se entera de lo que cambia en signals. Acá el valor se recalcula en
+    // cada render, que con OnPush ocurre justo cuando cambia el input.
+    const tot = this.lotsTotals();
+    const real = this.assetPosition?.amount;
+    if (!tot || !real || real <= 0) return null;
+    const dif = Math.abs(tot.amount - real);
+    return dif > Math.max(real * 0.01, 1e-8) ? { enLotes: tot.amount, real } : null;
+  }
+
+  lotPnl(lot: CostBasisLot): { value: number } | null {
+    const price = this.lastPriceSignal();
+    if (!price || price <= 0) return null;
+    return { value: lot.remainingAmount * (price - lot.costPerUnit) };
+  }
+
+  sourceLabel(source: string): string {
+    switch (source) {
+      case 'trade': return 'compra';
+      case 'trade-counter': return 'compra vía otro par';
+      case 'interest': return 'interés';
+      case 'deposit': return 'depósito';
+      default: return source;
+    }
+  }
+
+  sourceInitial(source: string): string {
+    switch (source) {
+      case 'interest': return '%';
+      case 'deposit': return '↓';
+      case 'trade-counter': return '⇄';
+      default: return 'C';
+    }
   }
 
   @Output() facetChange = new EventEmitter<RailFacet>();
@@ -836,6 +1034,7 @@ export class AnalysisRailComponent {
   readonly facets: Array<{ id: RailFacet; label: string; hint: string }> = [
     { id: 'position', label: 'Posición', hint: 'Atajo: P' },
     { id: 'trades', label: 'Trades', hint: 'Atajo: M' },
+    { id: 'lots', label: 'Lotes', hint: 'Atajo: L' },
     { id: 'agent', label: 'Agente', hint: 'Atajo: A' },
   ];
 
