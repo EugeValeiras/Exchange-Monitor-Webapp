@@ -15,12 +15,14 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { ExchangeLogoComponent } from '../../shared/components/exchange-logo/exchange-logo.component';
 import { SeriesMenuComponent } from './series-menu.component';
 import { DEFAULT_SERIES, SeriesConfig } from './lib/series';
-import { EmCompactPipe, EmMoneyPipe, EmPctPipe, EmSignedPipe, toneOf } from '../../shared/pipes/format.pipes';
+import { EmCompactPipe, EmMoneyPipe, EmPctPipe, EmQtyPipe, EmSignedPipe, toneOf } from '../../shared/pipes/format.pipes';
 import { MarketExchange, MarketTimeframe } from '../../core/services/market-analysis.service';
 
 export interface HeaderPosition {
   unrealizedPnl: number | null;
   unrealizedPct: number | null;
+  /** Sobre cuánto se calcula: sin esto el número no dice de qué habla. */
+  amount: number | null;
 }
 
 export interface HeaderContext {
@@ -54,6 +56,7 @@ export interface HeaderContext {
     EmPctPipe,
     EmSignedPipe,
     EmCompactPipe,
+    EmQtyPipe,
   ],
   template: `
     <header class="instrument">
@@ -89,6 +92,14 @@ export interface HeaderContext {
               <span class="pct num" [class]="tone(position!.unrealizedPnl)">
                 {{ position!.unrealizedPct | emPct }}
               </span>
+              @if (position!.amount) {
+                <span
+                  class="on num"
+                  [title]="'Sobre lo que compraste en ' + symbol + '. Tu ' + baseAsset +
+                    ' de otros pares se cuenta aparte, en el panel de Lotes.'">
+                  de {{ position!.amount | emQty: baseAsset }}
+                </span>
+              }
             </div>
           }
         </div>
@@ -321,6 +332,13 @@ export interface HeaderContext {
       .mine .value {
         font-size: var(--fs-16);
         font-weight: 600;
+      }
+
+      /* De cuánto habla el número. Va apagado: es la nota al pie, no el dato. */
+      .mine .on {
+        font-size: var(--fs-11);
+        color: var(--text-tertiary);
+        cursor: help;
       }
 
       .mine .pct {

@@ -473,7 +473,9 @@ export class MarketAnalysisComponent implements OnInit {
 
   readonly headerPosition = computed(() => {
     const p = this.railPosition();
-    return p ? { unrealizedPnl: p.unrealizedPnl, unrealizedPct: p.unrealizedPct } : null;
+    return p
+      ? { unrealizedPnl: p.unrealizedPnl, unrealizedPct: p.unrealizedPct, amount: p.netAmount }
+      : null;
   });
 
   readonly headerContext = computed<HeaderContext>(() => {
