@@ -338,8 +338,11 @@ import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.s
       height: 20px;
     }
 
+    // La llave de Google es 1,82:1: dentro de un recuadro cuadrado de 20 el
+    // dibujo queda con la mitad del área de una marca cuadrada. Se le da el
+    // ancho que hace falta para que pese lo mismo, el mismo 1,43 que en la app.
     .passkey-provider-icon.ancha {
-      width: 16px;
+      width: 28px;
     }
 
     // Sin logo propio, el nombre. Preferible a un ícono genérico que no
