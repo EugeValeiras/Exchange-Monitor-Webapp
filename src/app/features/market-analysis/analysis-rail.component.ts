@@ -375,6 +375,15 @@ type SideFilter = 'all' | 'buy' | 'sell';
                     <p>Sin lotes abiertos de {{ baseAsset }}.</p>
                   </div>
                 }
+                @if (lotDust(); as polvo) {
+                  <button type="button" class="dust" (click)="showLotDust.set(true)">
+                    <mat-icon>chevron_right</mat-icon>
+                    <span>
+                      {{ polvo.count }} {{ polvo.count === 1 ? 'lote menor' : 'lotes menores' }}
+                      · <span class="num">{{ polvo.amount | emQty }}</span> {{ baseAsset }}
+                    </span>
+                  </button>
+                }
               }
             </div>
 
@@ -868,6 +877,22 @@ type SideFilter = 'all' | 'buy' | 'sell';
         color: var(--text-primary);
       }
 
+      /* Las clases globales .em-* pierden por especificidad contra los estilos
+         del componente, que llevan el atributo de encapsulación. Se repiten. */
+      .lots-metrics dd.em-mine {
+        color: var(--chart-mine);
+      }
+
+      .lots-metrics dd.em-up,
+      .total.em-up {
+        color: var(--chart-up);
+      }
+
+      .lots-metrics dd.em-down,
+      .total.em-down {
+        color: var(--chart-down);
+      }
+
       .lot-source {
         background: var(--bg-tertiary);
         color: var(--text-secondary);
@@ -962,15 +987,46 @@ export class AnalysisRailComponent {
    * Los lotes que todavía tenés, del más viejo al más nuevo: FIFO consume de
    * arriba hacia abajo, así que ese orden dice cuál se va a ir primero.
    */
-  readonly openLots = computed(() =>
+  private readonly allOpenLots = computed(() =>
     (this.lotsSignal() ?? [])
       .filter((l) => l.remainingAmount > 0)
       .sort((a, b) => new Date(a.acquiredAt).getTime() - new Date(b.acquiredAt).getTime()),
   );
 
+  readonly showLotDust = signal(false);
+
+  /**
+   * Una orden partida en 52 fills deja 52 lotes, casi todos migas. Se pliegan
+   * en una fila salvo que las pidas: el mismo 0,5 % de la tenencia que usa el
+   * listado de trades.
+   */
+  private readonly lotDustFloor = computed(() => {
+    const total = this.allOpenLots().reduce((s, l) => s + l.remainingAmount, 0);
+    return total > 0 ? total * 0.005 : Infinity;
+  });
+
+  readonly openLots = computed(() => {
+    const lots = this.allOpenLots();
+    if (this.showLotDust()) return lots;
+    const floor = this.lotDustFloor();
+    return lots.filter((l) => l.remainingAmount >= floor);
+  });
+
+  /** Lo que queda plegado: cuántos y cuánto suman. */
+  readonly lotDust = computed(() => {
+    if (this.showLotDust()) return null;
+    const floor = this.lotDustFloor();
+    const chicos = this.allOpenLots().filter((l) => l.remainingAmount < floor);
+    if (!chicos.length) return null;
+    return {
+      count: chicos.length,
+      amount: chicos.reduce((s, l) => s + l.remainingAmount, 0),
+    };
+  });
+
   /** Lo que queda, su costo ponderado —el PPC de la línea punteada— y su P&L. */
   readonly lotsTotals = computed(() => {
-    const lots = this.openLots();
+    const lots = this.allOpenLots();
     if (!lots.length) return null;
     const amount = lots.reduce((s, l) => s + l.remainingAmount, 0);
     const cost = lots.reduce((s, l) => s + l.remainingAmount * l.costPerUnit, 0);
