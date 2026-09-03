@@ -78,7 +78,12 @@ import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.s
                   <mat-icon>key</mat-icon>
                 </div>
                 <div class="passkey-info">
-                  <span class="passkey-name">{{ passkey.deviceName }}</span>
+                  <span class="passkey-name">
+                    {{ passkey.deviceName }}
+                    @if (passkey.provider) {
+                      <span class="passkey-provider">{{ passkey.provider }}</span>
+                    }
+                  </span>
                   <span class="passkey-date">Creado: {{ passkey.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
                   @if (passkey.lastUsedAt) {
                     <span class="passkey-date">Último uso: {{ passkey.lastUsedAt | date:'dd/MM/yyyy HH:mm' }}</span>
@@ -311,6 +316,20 @@ import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.s
       flex-direction: column;
       gap: 2px;
       min-width: 0;
+    }
+
+    // Dónde vive la llave. El nombre del dispositivo lo pone el usuario y no
+    // lo dice; esto sí.
+    .passkey-provider {
+      margin-left: var(--sp-3);
+      padding: 1px var(--sp-3);
+      border: 1px solid var(--border-color);
+      border-radius: var(--r-2);
+      background: var(--bg-tertiary);
+      font-size: var(--fs-11);
+      font-weight: 400;
+      color: var(--text-secondary);
+      vertical-align: middle;
     }
 
     .passkey-name {

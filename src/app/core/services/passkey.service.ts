@@ -6,6 +6,12 @@ import { ApiService } from './api.service';
 export interface PasskeyCredential {
   id: string;
   deviceName: string;
+  /**
+   * Quién guarda la llave: el llavero de iCloud, el gestor de Google,
+   * 1Password. Null cuando el autenticador no lo declaró o la credencial se
+   * registró antes de que empezáramos a guardarlo.
+   */
+  provider?: string | null;
   createdAt: string;
   lastUsedAt?: string;
 }
