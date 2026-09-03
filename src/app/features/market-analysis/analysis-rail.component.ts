@@ -311,9 +311,10 @@ type SideFilter = 'all' | 'buy' | 'sell';
               <span class="summary">
                 @if (openLots().length) {
                   {{ openLots().length }} {{ openLots().length === 1 ? 'lote abierto' : 'lotes abiertos' }}
-                  <span class="muted">· se consumen de arriba hacia abajo (FIFO)</span>
+                  de {{ baseAsset }}
+                  <span class="muted">en todos los pares · se consumen de arriba hacia abajo (FIFO)</span>
                 } @else {
-                  Lotes de {{ baseAsset }}
+                  Lotes de {{ baseAsset }} en todos los pares
                 }
               </span>
               @if (lotsTotals(); as tot) {
@@ -327,8 +328,10 @@ type SideFilter = 'all' | 'buy' | 'sell';
                     <dd class="num em-mine">{{ tot.avgCost | emMoney }}</dd>
                   </div>
                   @if (tot.unrealized !== null) {
-                    <div>
-                      <dt>No realizado</dt>
+                    <div
+                      [title]="'De todo tu ' + baseAsset + ', no sólo del par: por eso puede no ' +
+                        'coincidir con el no realizado de la cabecera, que promedia únicamente ' + symbol">
+                      <dt>No realizado <span class="muted">· todo {{ baseAsset }}</span></dt>
                       <dd class="num" [class.em-up]="tot.unrealized > 0" [class.em-down]="tot.unrealized < 0">
                         {{ tot.unrealized > 0 ? '+' : '' }}{{ tot.unrealized | emMoney }}
                       </dd>
@@ -870,6 +873,14 @@ type SideFilter = 'all' | 'buy' | 'sell';
       .lots-metrics dt {
         font-size: var(--fs-10);
         color: var(--text-tertiary);
+      }
+
+      .lots-metrics dt .muted {
+        color: var(--text-disabled);
+      }
+
+      .lots-metrics div[title] {
+        cursor: help;
       }
 
       .lots-metrics dd {
