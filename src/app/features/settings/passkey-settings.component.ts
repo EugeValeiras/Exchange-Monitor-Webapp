@@ -29,8 +29,8 @@ import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.s
         <div class="info-content">
           <h3>¿Qué son los passkeys?</h3>
           <p>
-            Los passkeys te permiten iniciar sesión con tu huella o Face ID,
-            Face ID o Windows Hello, sin escribir la contraseña.
+            Los passkeys te permiten iniciar sesión con tu huella, Face ID o
+            Windows Hello, sin escribir la contraseña.
             Son más seguros y más rápidos que una contraseña.
           </p>
         </div>
@@ -76,20 +76,19 @@ import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.s
           <div class="passkeys-list">
             @for (passkey of passkeyService.passkeys(); track passkey.id) {
               <div class="passkey-item">
-                <div class="passkey-icon">
-                  <mat-icon>key</mat-icon>
+                <div class="passkey-icon" [matTooltip]="passkey.provider || ''"
+                     matTooltipPosition="above">
+                  @if (providerIcon(passkey)) {
+                    <img [src]="providerIcon(passkey)" [alt]="passkey.provider"
+                         class="passkey-provider-icon">
+                  } @else {
+                    <mat-icon>key</mat-icon>
+                  }
                 </div>
                 <div class="passkey-info">
                   <span class="passkey-name">
                     {{ passkey.deviceName }}
-                    @if (providerIcon(passkey)) {
-                      <img
-                        [src]="providerIcon(passkey)"
-                        [alt]="passkey.provider"
-                        [matTooltip]="passkey.provider"
-                        matTooltipPosition="above"
-                        class="passkey-provider-icon">
-                    } @else if (passkey.provider) {
+                    @if (passkey.provider && !providerIcon(passkey)) {
                       <span class="passkey-provider">{{ passkey.provider }}</span>
                     }
                   </span>
@@ -149,7 +148,7 @@ import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.s
       width: 48px;
       height: 48px;
       border-radius: 12px;
-      background: rgba(217, 160, 91, 0.1);
+      background: var(--bg-tertiary);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -203,7 +202,7 @@ import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.s
     .alert-error {
       background: rgba(224, 107, 98, 0.1);
       border: 1px solid rgba(224, 107, 98, 0.3);
-      color: var(--chart-down);
+      color: var(--color-error);
     }
 
     .alert-close {
@@ -305,7 +304,7 @@ import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.s
       width: 40px;
       height: 40px;
       border-radius: 10px;
-      background: rgba(217, 160, 91, 0.1);
+      background: var(--bg-tertiary);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -327,14 +326,12 @@ import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.s
       min-width: 0;
     }
 
-    // El logo del proveedor dice de un vistazo dónde vive la llave. Va con
-    // tooltip y alt porque un logo solo no es accesible.
+    // El logo del proveedor ocupa el lugar de la llave: dice dónde vive esta
+    // credencial sin agregar un renglón. Va con tooltip y alt porque un logo
+    // solo no es accesible.
     .passkey-provider-icon {
-      width: 16px;
-      height: 16px;
-      margin-left: var(--sp-3);
-      vertical-align: -3px;
-      cursor: help;
+      width: 22px;
+      height: 22px;
     }
 
     // Sin logo propio, el nombre. Preferible a un ícono genérico que no
@@ -379,7 +376,7 @@ import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.s
 
     .delete-btn:hover:not(:disabled) {
       background: rgba(224, 107, 98, 0.1);
-      color: var(--chart-down);
+      color: var(--color-error);
     }
 
     .delete-btn:disabled {
