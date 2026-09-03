@@ -30,6 +30,7 @@ import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-lo
 import { InstrumentHeaderComponent, HeaderContext } from './instrument-header.component';
 import { ChartStackComponent } from './chart-stack.component';
 import { AnalysisRailComponent, AssetPosition, RailFacet, RailPosition } from './analysis-rail.component';
+import { rungsFromLots } from './lib/lot-rungs';
 import { CommandPaletteComponent, PaletteRow } from './command-palette.component';
 import { ChartAction } from './agent-chat.component';
 import { groupTrades } from './lib/trade-grouping';
@@ -42,6 +43,7 @@ const STATE_KEY = 'marketAnalysisChart';
 const LOG_KEY = 'marketAnalysisLog';
 const LAYER_KEY = 'marketAnalysisTradesLayer';
 const FACET_KEY = 'marketAnalysisFacet';
+const LOTS_LAYER_KEY = 'marketAnalysisLotsLayer';
 const RAIL_KEY = 'marketAnalysisRail';
 const SERIES_KEY = 'marketAnalysisSeries';
 
@@ -84,6 +86,9 @@ const CANDLE_LIMIT = 500;
         [context]="headerContext()"
         [log]="log()"
         [tradesLayer]="tradesLayer()"
+        [lotsLayer]="lotsLayer()"
+        [lotCount]="lotRungs().length"
+        [baseAsset]="baseAssetOf()"
         [hasTrades]="hasTrades()"
         [tradeCount]="pairTrades()?.position?.tradeCount ?? 0"
         [socketConnected]="socketConnected()"
@@ -94,6 +99,7 @@ const CANDLE_LIMIT = 500;
         (timeframeChange)="setTimeframe($event)"
         (logChange)="setLog($event)"
         (tradesLayerChange)="setTradesLayer($event)"
+        (lotsLayerChange)="setLotsLayer($event)"
         (openSwitcher)="paletteOpen.set(true)"></app-instrument-header>
 
       <div class="canvas" [class.solo]="!railOpen()">
@@ -117,6 +123,7 @@ const CANDLE_LIMIT = 500;
             [avgEntry]="avgEntry()"
             [dustAt]="dustAt()"
             [tradesLayer]="tradesLayer()"
+            [lotRungs]="lotRungs()"
             [hoveredOrderId]="hoveredOrderId()"
             [log]="log()"
             [timeframe]="selectedTimeframe()"
@@ -282,11 +289,20 @@ export class MarketAnalysisComponent implements OnInit {
   readonly tradesLayer = signal(true);
   readonly facet = signal<RailFacet>('position');
   readonly lots = signal<CostBasisLot[] | null>(null);
+  readonly lotsLayer = signal(false);
   readonly lotsLoading = signal(false);
 
   /** Para qué activo son los lotes que tenemos cargados. */
   private lotsAsset: string | null = null;
   private readonly reconciliation = signal<ReconciliacionDeActivo[]>([]);
+
+  /** Los escalones que van al gráfico. Vacío apaga la capa sin más. */
+  readonly lotRungs = computed(() => {
+    if (!this.lotsLayer()) return [];
+    const candles = this.indicators()?.candles ?? [];
+    if (!candles.length) return [];
+    return rungsFromLots(this.lots() ?? [], candles[candles.length - 1].timestamp);
+  });
 
   /** La reconciliación del activo que estás mirando, si la API la trajo. */
   readonly lotsReconciliation = computed(() => {
@@ -513,9 +529,10 @@ export class MarketAnalysisComponent implements OnInit {
 
     this.loadSummary();
     this.loadUnrealized();
-    // La faceta puede venir guardada de la sesión anterior: si ya estás en
-    // Lotes, nadie va a pasar por setFacet y la lista quedaría vacía.
-    if (this.facet() === 'lots') this.loadLots();
+    // La faceta o la capa pueden venir guardadas de la sesión anterior: si ya
+    // estabas en Lotes, nadie va a pasar por setFacet y quedaría vacío.
+    this.lotsLayer.set(this.readFlag(LOTS_LAYER_KEY, false));
+    if (this.facet() === 'lots' || this.lotsLayer()) this.loadLots();
     if (this.selectedSymbol()) this.loadDetail();
     else this.paletteOpen.set(true);
 
@@ -631,7 +648,9 @@ export class MarketAnalysisComponent implements OnInit {
         this.setFacet('trades');
         break;
       case 'l':
-        this.setFacet('lots');
+        // Con la faceta ya abierta, la tecla prende y apaga la capa del gráfico.
+        if (this.facet() === 'lots') this.setLotsLayer(!this.lotsLayer());
+        else this.setFacet('lots');
         break;
       case 'a':
         this.setFacet('agent');
@@ -671,6 +690,12 @@ export class MarketAnalysisComponent implements OnInit {
     this.tradesLayer.set(value);
     if (!value) this.hoveredOrderId.set(null);
     this.write(LAYER_KEY, value ? '1' : '0');
+  }
+
+  setLotsLayer(on: boolean): void {
+    this.lotsLayer.set(on);
+    this.write(LOTS_LAYER_KEY, on ? '1' : '0');
+    if (on) this.loadLots();
   }
 
   setFacet(facet: RailFacet): void {
@@ -818,7 +843,7 @@ export class MarketAnalysisComponent implements OnInit {
     if (this.baseAssetOf() === this.lotsAsset) return;
     this.lots.set(null);
     this.lotsAsset = null;
-    if (this.facet() === 'lots') this.loadLots();
+    if (this.facet() === 'lots' || this.lotsLayer()) this.loadLots();
   }
 
   private loadTrades(): void {

@@ -153,6 +153,22 @@ export interface HeaderContext {
               <span class="count">{{ tradeCount }}</span>
             }
           </button>
+          <button
+            type="button"
+            class="toggle"
+            [class.active]="lotsLayer && hasLots"
+            [disabled]="!hasLots"
+            [matTooltip]="hasLots
+              ? 'Tus lotes abiertos como escalones, al costo de cada uno · L'
+              : 'No tenés lotes abiertos de ' + baseAsset"
+            [attr.aria-pressed]="lotsLayer && hasLots"
+            (click)="lotsLayerChange.emit(!lotsLayer)">
+            <mat-icon>inventory_2</mat-icon>
+            <span>Lotes</span>
+            @if (hasLots) {
+              <span class="count">{{ lotCount }}</span>
+            }
+          </button>
           <div class="anchor" #anchor>
             <button
               type="button"
@@ -495,6 +511,13 @@ export class InstrumentHeaderComponent {
   @Input() context: HeaderContext | null = null;
   @Input() log = false;
   @Input() tradesLayer = true;
+  @Input() lotsLayer = false;
+  @Input() lotCount = 0;
+  @Input() baseAsset = '';
+
+  get hasLots(): boolean {
+    return this.lotCount > 0;
+  }
   @Input() hasTrades = false;
   @Input() tradeCount = 0;
   /** Live price feed. Off means the numbers only move on the poll. */
@@ -507,6 +530,7 @@ export class InstrumentHeaderComponent {
   @Output() timeframeChange = new EventEmitter<MarketTimeframe>();
   @Output() logChange = new EventEmitter<boolean>();
   @Output() tradesLayerChange = new EventEmitter<boolean>();
+  @Output() lotsLayerChange = new EventEmitter<boolean>();
   @Output() openSwitcher = new EventEmitter<void>();
   @Output() seriesChange = new EventEmitter<SeriesConfig>();
   @Output() railOpenChange = new EventEmitter<boolean>();

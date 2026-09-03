@@ -43,6 +43,7 @@ import {
   shouldIncludeInDomain,
 } from '../../shared/charts/chart-theme';
 import { TradeMarker } from './lib/chart-markers';
+import { LotRung } from './lib/lot-rungs';
 import { TradeOrder } from './lib/trade-grouping';
 import { tradeLayerPlugin } from './lib/trade-layer.plugin';
 import { crosshairPlugin } from './lib/crosshair.plugin';
@@ -510,6 +511,10 @@ export class ChartStackComponent {
     this.markersSignal.set(value ?? []);
     this.pushLayerOptions();
   }
+  @Input() set lotRungs(value: LotRung[]) {
+    this.lotRungsSignal.set(value ?? []);
+  }
+
   @Input() set avgEntry(value: number | null) {
     this.avgEntrySignal.set(value);
   }
@@ -543,6 +548,7 @@ export class ChartStackComponent {
   private readonly seriesSignal = signal<SeriesConfig>({ ...DEFAULT_SERIES });
   private readonly markersSignal = signal<TradeMarker[]>([]);
   private readonly avgEntrySignal = signal<number | null>(null);
+  private readonly lotRungsSignal = signal<LotRung[]>([]);
   private readonly dustSignal = signal<number[]>([]);
   private readonly layerOn = signal(true);
   private readonly hovered = signal<string | null>(null);
@@ -854,12 +860,15 @@ export class ChartStackComponent {
         ...base.plugins,
         zoom: this.zoomConfig(),
         tradeLayer: {
-          markers: this.markersSignal(),
+          markers: this.layerOn() ? this.markersSignal() : [],
+          lots: this.lotRungsSignal(),
           avgEntry: this.layerOn() ? this.avgEntrySignal() : null,
           avgEntryOutOfRange: this.avgEntryOutOfRange(),
           dustAt: this.layerOn() ? this.dustSignal() : [],
           hoveredOrderId: this.hovered(),
-          enabled: this.layerOn(),
+          // Dos capas independientes comparten el plugin: alcanza con que
+          // una esté encendida para que haya algo que dibujar.
+          enabled: this.layerOn() || this.lotRungsSignal().length > 0,
         },
         // NOT bound to the crosshair signal on purpose: the pointer moves on
         // every frame of a drag, and recomputing options mid-gesture reapplies
@@ -1369,7 +1378,9 @@ export class ChartStackComponent {
     const chart = this.charts?.first?.chart;
     const layer = chart?.options.plugins?.tradeLayer;
     if (!chart || !layer) return;
-    layer.markers = this.markersSignal();
+    layer.markers = this.layerOn() ? this.markersSignal() : [];
+    layer.lots = this.lotRungsSignal();
+    layer.enabled = this.layerOn() || this.lotRungsSignal().length > 0;
     layer.hoveredOrderId = this.hovered();
     layer.enabled = this.layerOn();
     layer.avgEntry = this.layerOn() ? this.avgEntrySignal() : null;

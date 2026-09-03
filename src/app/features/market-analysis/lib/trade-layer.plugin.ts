@@ -1,6 +1,7 @@
 import { Chart, Plugin } from 'chart.js';
 import { chartColors } from '../../../shared/charts/chart-theme';
 import { placeMarkers, TradeMarker } from './chart-markers';
+import { LotRung } from './lot-rungs';
 
 /**
  * Draws the "my trades" layer straight onto the canvas.
@@ -22,6 +23,8 @@ export interface TradeLayerOptions {
   dustAt?: number[];
   hoveredOrderId?: string | null;
   enabled: boolean;
+  /** Lotes abiertos como escalones horizontales. Vacío = capa apagada. */
+  lots?: LotRung[];
 }
 
 declare module 'chart.js' {
@@ -98,6 +101,40 @@ export const tradeLayerPlugin: Plugin = {
     const c = chartColors();
     const surface = getComputedStyle(chart.canvas).backgroundColor || '#141518';
     ctx.save();
+
+    // ── lotes abiertos ─────────────────────────────────────────────────────
+    // Van primero, debajo de todo lo demás: son el piso sobre el que se leen
+    // las velas, no una anotación que compita con ellas.
+    for (const rung of opts.lots ?? []) {
+      const py = y.getPixelForValue(rung.price);
+      if (py < chartArea.top || py > chartArea.bottom) continue;
+
+      const desde = Math.max(chartArea.left, x.getPixelForValue(rung.t));
+      if (desde > chartArea.right) continue;
+
+      // El peso de un lote va de casi nada a un tercio de la posición: la raíz
+      // evita que los chicos desaparezcan y que uno grande tape el gráfico.
+      const fuerza = Math.sqrt(Math.min(rung.weight, 1));
+      ctx.beginPath();
+      ctx.strokeStyle = c.mine;
+      ctx.globalAlpha = 0.12 + fuerza * 0.5;
+      ctx.lineWidth = 1 + fuerza * 2.5;
+      if (rung.partial) ctx.setLineDash([5, 3]);
+      ctx.moveTo(desde, py);
+      ctx.lineTo(chartArea.right, py);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Un punto donde arranca: el día que lo compraste.
+      if (desde > chartArea.left) {
+        ctx.beginPath();
+        ctx.arc(desde, py, 1.5 + fuerza * 1.5, 0, Math.PI * 2);
+        ctx.fillStyle = c.mine;
+        ctx.globalAlpha = 0.5 + fuerza * 0.5;
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
 
     // ── average entry price ────────────────────────────────────────────────
     if (opts.avgEntry !== null && opts.avgEntry !== undefined) {
