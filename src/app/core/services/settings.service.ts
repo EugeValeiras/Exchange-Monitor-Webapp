@@ -37,6 +37,14 @@ export class SettingsService {
   binanceSymbols = this.binanceSymbolsSignal.asReadonly();
   krakenSymbols = this.krakenSymbolsSignal.asReadonly();
 
+  /** Todos los pares configurados, por exchange. */
+  allSymbols(): Record<string, string[]> {
+    return {
+      binance: this.binanceSymbolsSignal(),
+      kraken: this.krakenSymbolsSignal(),
+    };
+  }
+
   constructor(private api: ApiService) {}
 
   /**

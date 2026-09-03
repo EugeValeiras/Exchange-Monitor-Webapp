@@ -11,7 +11,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { NotificationsService } from '../../core/services/notifications.service';
-import { ConsolidatedBalanceService } from '../../core/services/consolidated-balance.service';
+import { SettingsService } from '../../core/services/settings.service';
 
 @Component({
   selector: 'app-notifications-settings',
@@ -73,29 +73,29 @@ import { ConsolidatedBalanceService } from '../../core/services/consolidated-bal
           <mat-card class="settings-card">
             <mat-card-header>
               <mat-icon mat-card-avatar class="card-icon">tune</mat-icon>
-              <mat-card-title>Activos</mat-card-title>
+              <mat-card-title>Pares</mat-card-title>
               <mat-card-subtitle>De cuáles querés que te avisen</mat-card-subtitle>
             </mat-card-header>
 
             <mat-card-content>
-              @if (assetRows().length === 0) {
-                <p class="assets-empty">Cuando cargue tu cartera vas a poder elegir acá.</p>
+              @if (pairRows().length === 0) {
+                <p class="assets-empty">Cuando carguen tus pares vas a poder elegir acá.</p>
               } @else {
                 <div class="assets-grid">
-                  @for (row of assetRows(); track row.asset) {
+                  @for (row of pairRows(); track row.pair) {
                     <mat-checkbox
-                      [checked]="alertAssets.has(row.asset)"
-                      (change)="toggleAsset(row.asset, $event.checked)">
-                      <span class="asset-ticker">{{ row.asset }}</span>
+                      [checked]="alertPairs.has(row.pair)"
+                      (change)="togglePair(row.pair, $event.checked)">
+                      <span class="asset-ticker">{{ row.pair }}</span>
                       <span class="asset-value">{{ row.label }}</span>
                     </mat-checkbox>
                   }
                 </div>
                 <p class="assets-hint">
-                  @if (alertAssets.size === 0) {
-                    Sin ningún activo elegido no llega ningún aviso.
+                  @if (alertPairs.size === 0) {
+                    Sin ningún par elegido no llega ningún aviso.
                   } @else {
-                    Sólo avisamos de los activos marcados ({{ alertAssets.size }} de {{ assetRows().length }}).
+                    Sólo avisamos de los pares marcados ({{ alertPairs.size }} de {{ pairRows().length }}).
                   }
                 </p>
               }
@@ -296,14 +296,15 @@ export class NotificationsSettingsComponent implements OnInit {
   loading = true;
   saving = false;
 
-  /// Activos elegidos. Va aparte del form porque no es un control: es una
-  /// selección sobre una lista que sale de la cartera, no un campo fijo.
-  alertAssets = new Set<string>();
+  /// Pares elegidos. Va aparte del form porque no es un control: es una
+  /// selección sobre una lista que sale de los pares configurados, no un
+  /// campo fijo.
+  alertPairs = new Set<string>();
 
   constructor(
     private fb: FormBuilder,
     private notificationsService: NotificationsService,
-    private balanceService: ConsolidatedBalanceService,
+    private settingsService: SettingsService,
     private snackBar: MatSnackBar
   ) {
     this.form = this.fb.group({
@@ -315,10 +316,9 @@ export class NotificationsSettingsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // La lista de activos sale de la cartera. Si entraste directo acá sin pasar
-    // por Posición, el servicio todavía no cargó y quedaban todos como "sin
-    // saldo": es idempotente, así que llamarlo siempre es lo correcto.
-    this.balanceService.initialize();
+    // La lista de pares sale de los que la app sigue. Si entraste directo acá,
+    // el servicio todavía no los cargó.
+    this.settingsService.loadAllSymbols().subscribe({ error: () => {} });
 
     this.notificationsService.getSettings().subscribe({
       next: (settings) => {
@@ -328,9 +328,12 @@ export class NotificationsSettingsComponent implements OnInit {
           quietHoursStart: settings.quietHoursStart ?? '',
           quietHoursEnd: settings.quietHoursEnd ?? '',
         });
-        this.alertAssets = new Set(
-          (settings.alertAssets ?? []).map((a) => a.toUpperCase()),
-        );
+        // Quien todavía no eligió pares tiene su preferencia vieja por
+        // activo: se traduce a los pares en dólares de esos activos, que es
+        // exactamente lo que venía recibiendo.
+        this.alertPairs = settings.alertPairs
+          ? new Set(settings.alertPairs.map((p) => p.toUpperCase()))
+          : this.desdeActivos(settings.alertAssets ?? []);
         this.loading = false;
       },
       error: (err) => {
@@ -353,7 +356,7 @@ export class NotificationsSettingsComponent implements OnInit {
       priceChangeThreshold: Number(raw.priceChangeThreshold),
       ...(raw.quietHoursStart ? { quietHoursStart: raw.quietHoursStart } : {}),
       ...(raw.quietHoursEnd ? { quietHoursEnd: raw.quietHoursEnd } : {}),
-      alertAssets: [...this.alertAssets],
+      alertPairs: [...this.alertPairs],
     };
 
     this.notificationsService.updateSettings(payload).subscribe({
@@ -370,32 +373,62 @@ export class NotificationsSettingsComponent implements OnInit {
   }
 
   /**
-   * Qué se puede elegir: tu cartera, más lo que ya estuviera elegido aunque hoy
-   * no tengas saldo. Sin esa segunda parte, vender todo de un activo borraría
-   * en silencio una elección tuya.
+   * Qué se puede elegir: los pares que la app sigue, más los que ya estuvieran
+   * elegidos aunque hoy no estén configurados. Sin esa segunda parte, sacar un
+   * par de Ajustes borraría en silencio una elección tuya.
    */
-  assetRows(): { asset: string; label: string }[] {
-    const held = this.balanceService.balance()?.byAsset ?? [];
-    const rows = held.map((a) => ({
-      asset: a.asset.toUpperCase(),
-      label: a.valueUsd == null ? '' : this.formatUsd(a.valueUsd),
-    }));
+  pairRows(): { pair: string; label: string }[] {
+    const porExchange = this.settingsService.allSymbols();
+    const filas: { pair: string; label: string }[] = [];
+    const vistos = new Set<string>();
 
-    const tickers = new Set(rows.map((r) => r.asset));
-    const orphans = [...this.alertAssets]
-      .filter((a) => !tickers.has(a))
-      .sort()
-      .map((asset) => ({ asset, label: 'sin saldo' }));
+    for (const [exchange, pares] of Object.entries(porExchange)) {
+      for (const p of pares) {
+        const clave = p.toUpperCase();
+        if (vistos.has(clave)) continue;
+        vistos.add(clave);
+        filas.push({ pair: clave, label: exchange });
+      }
+    }
 
-    return [...rows, ...orphans];
+    for (const p of this.alertPairs) {
+      if (!vistos.has(p)) filas.push({ pair: p, label: 'sin configurar' });
+    }
+
+    return filas;
   }
 
-  toggleAsset(asset: string, checked: boolean): void {
+  togglePair(pair: string, checked: boolean): void {
     if (checked) {
-      this.alertAssets.add(asset);
+      this.alertPairs.add(pair);
     } else {
-      this.alertAssets.delete(asset);
+      this.alertPairs.delete(pair);
     }
+  }
+
+  /**
+   * Traduce la selección vieja por activo: cada activo elegido pasa a ser sus
+   * pares contra dólar, que es lo único que avisaba antes.
+   */
+  private desdeActivos(activos: string[]): Set<string> {
+    const DOLARES = ['USDT', 'USD', 'USDC', 'BUSD'];
+    const enMayus = activos.map((a) => a.toUpperCase());
+    const pares = new Set<string>();
+
+    for (const fila of this.paresConfigurados()) {
+      const [base, resto] = fila.split('/');
+      // La cotización puede traer la moneda de liquidación pegada
+      // ("MON/USDT:USDT"): lo que importa es la de antes de los dos puntos.
+      const quote = (resto ?? '').split(':')[0];
+      if (enMayus.includes(base) && DOLARES.includes(quote)) pares.add(fila);
+    }
+    return pares;
+  }
+
+  private paresConfigurados(): string[] {
+    return Object.values(this.settingsService.allSymbols())
+      .flat()
+      .map((p) => p.toUpperCase());
   }
 
   // "$" a secas, como en el resto de la app: es-AR con currency USD imprime
