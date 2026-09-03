@@ -125,6 +125,8 @@ const CANDLE_LIMIT = 500;
             [dustAt]="dustAt()"
             [tradesLayer]="tradesLayer()"
             [lotRungs]="lotRungs()"
+            [lotsLayer]="lotsLayer()"
+            [hoveredLotId]="hoveredLotId()"
             [hoveredOrderId]="hoveredOrderId()"
             [log]="log()"
             [timeframe]="selectedTimeframe()"
@@ -154,10 +156,12 @@ const CANDLE_LIMIT = 500;
               [lots]="lots()"
               [lotsLoading]="lotsLoading()"
               [lotsReconciliation]="lotsReconciliation()"
+              [hoveredLotId]="hoveredLotId()"
               [lastPrice]="lastClose()"
               (facetChange)="setFacet($event)"
               (showCrossChange)="showCross.set($event)"
               (hover)="hoveredOrderId.set($event)"
+              (lotHover)="hoveredLotId.set($event)"
               (chartAction)="onChartAction($event)"
               (openFullscreen)="openAgentFullscreen()"
               (close)="setRailOpen(false)"></app-analysis-rail>
@@ -291,6 +295,7 @@ export class MarketAnalysisComponent implements OnInit {
   readonly facet = signal<RailFacet>('position');
   readonly lots = signal<CostBasisLot[] | null>(null);
   readonly lotsLayer = signal(false);
+  readonly hoveredLotId = signal<string | null>(null);
   readonly lotsLoading = signal(false);
 
   /** Para qué activo son los lotes que tenemos cargados. */
@@ -306,9 +311,12 @@ export class MarketAnalysisComponent implements OnInit {
     () => (this.lots() ?? []).filter((l) => l.remainingAmount > 0).length,
   );
 
-  /** Los escalones que van al gráfico. Vacío apaga la capa sin más. */
+  /**
+   * Los escalones que van al gráfico. Se calculan siempre, esté la capa
+   * encendida o no: con la capa apagada el gráfico igual dibuja el que estás
+   * señalando en la lista.
+   */
   readonly lotRungs = computed(() => {
-    if (!this.lotsLayer()) return [];
     const candles = this.indicators()?.candles ?? [];
     if (!candles.length) return [];
     return rungsFromLots(this.lots() ?? [], candles[candles.length - 1].timestamp);

@@ -346,7 +346,11 @@ type SideFilter = 'all' | 'buy' | 'sell';
                 <div class="empty"><p>Cargando lotes…</p></div>
               } @else {
                 @for (lot of openLots(); track lot.id) {
-                  <div class="order lot">
+                  <div
+                    class="order lot"
+                    [class.highlighted]="lot.id === hoveredLotId"
+                    (mouseenter)="lotHover.emit(lot.id)"
+                    (mouseleave)="lotHover.emit(null)">
                     <span class="side lot-source" [title]="sourceLabel(lot.source)">
                       {{ sourceInitial(lot.source) }}
                     </span>
@@ -1094,6 +1098,10 @@ export class AnalysisRailComponent {
     }
   }
 
+  /** El lote señalado en la lista, para que el gráfico lo dibuje. */
+  @Input() hoveredLotId: string | null = null;
+
+  @Output() lotHover = new EventEmitter<string | null>();
   @Output() facetChange = new EventEmitter<RailFacet>();
   @Output() showCrossChange = new EventEmitter<boolean>();
   @Output() hover = new EventEmitter<string | null>();

@@ -23,8 +23,12 @@ export interface TradeLayerOptions {
   dustAt?: number[];
   hoveredOrderId?: string | null;
   enabled: boolean;
-  /** Lotes abiertos como escalones horizontales. Vacío = capa apagada. */
+  /** Lotes abiertos como escalones horizontales. */
   lots?: LotRung[];
+  /** La capa está encendida: se dibujan todos. Apagada, sólo el que se señala. */
+  lotsOn?: boolean;
+  /** El lote sobre el que está el mouse en la lista, resaltado. */
+  hoveredLotId?: string | null;
 }
 
 declare module 'chart.js' {
@@ -106,6 +110,11 @@ export const tradeLayerPlugin: Plugin = {
     // Van primero, debajo de todo lo demás: son el piso sobre el que se leen
     // las velas, no una anotación que compita con ellas.
     for (const rung of opts.lots ?? []) {
+      const señalado = !!opts.hoveredLotId && rung.id === opts.hoveredLotId;
+      // Con la capa apagada igual se muestra el que estás señalando en la
+      // lista: pasar el mouse por un lote es preguntar dónde está.
+      if (!opts.lotsOn && !señalado) continue;
+
       const py = y.getPixelForValue(rung.price);
       if (py < chartArea.top || py > chartArea.bottom) continue;
 
@@ -117,8 +126,9 @@ export const tradeLayerPlugin: Plugin = {
       const fuerza = Math.sqrt(Math.min(rung.weight, 1));
       ctx.beginPath();
       ctx.strokeStyle = c.mine;
-      ctx.globalAlpha = 0.12 + fuerza * 0.5;
-      ctx.lineWidth = 1 + fuerza * 2.5;
+      // El señalado se lee entero aunque sea el más chico de todos.
+      ctx.globalAlpha = señalado ? 1 : 0.12 + fuerza * 0.5;
+      ctx.lineWidth = (señalado ? 1.6 : 1) + fuerza * 2.5;
       if (rung.partial) ctx.setLineDash([5, 3]);
       ctx.moveTo(desde, py);
       ctx.lineTo(chartArea.right, py);
@@ -132,7 +142,7 @@ export const tradeLayerPlugin: Plugin = {
         const r = 1.5 + fuerza * 1.5;
         ctx.beginPath();
         ctx.arc(desde, py, r + (rung.via ? 0.8 : 0), 0, Math.PI * 2);
-        ctx.globalAlpha = 0.5 + fuerza * 0.5;
+        ctx.globalAlpha = señalado ? 1 : 0.5 + fuerza * 0.5;
         if (rung.via) {
           ctx.fillStyle = surface;
           ctx.fill();

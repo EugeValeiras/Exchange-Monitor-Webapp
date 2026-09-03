@@ -515,6 +515,14 @@ export class ChartStackComponent {
     this.lotRungsSignal.set(value ?? []);
   }
 
+  @Input() set lotsLayer(value: boolean) {
+    this.lotsOnSignal.set(value);
+  }
+
+  @Input() set hoveredLotId(value: string | null) {
+    this.hoveredLotSignal.set(value);
+  }
+
   @Input() set avgEntry(value: number | null) {
     this.avgEntrySignal.set(value);
   }
@@ -549,6 +557,8 @@ export class ChartStackComponent {
   private readonly markersSignal = signal<TradeMarker[]>([]);
   private readonly avgEntrySignal = signal<number | null>(null);
   private readonly lotRungsSignal = signal<LotRung[]>([]);
+  private readonly lotsOnSignal = signal(false);
+  private readonly hoveredLotSignal = signal<string | null>(null);
   private readonly dustSignal = signal<number[]>([]);
   private readonly layerOn = signal(true);
   private readonly hovered = signal<string | null>(null);
@@ -862,13 +872,13 @@ export class ChartStackComponent {
         tradeLayer: {
           markers: this.layerOn() ? this.markersSignal() : [],
           lots: this.lotRungsSignal(),
+          lotsOn: this.lotsOnSignal(),
+          hoveredLotId: this.hoveredLotSignal(),
           avgEntry: this.layerOn() ? this.avgEntrySignal() : null,
           avgEntryOutOfRange: this.avgEntryOutOfRange(),
           dustAt: this.layerOn() ? this.dustSignal() : [],
           hoveredOrderId: this.hovered(),
-          // Dos capas independientes comparten el plugin: alcanza con que
-          // una esté encendida para que haya algo que dibujar.
-          enabled: this.layerOn() || this.lotRungsSignal().length > 0,
+          enabled: this.anyLayerOn(),
         },
         // NOT bound to the crosshair signal on purpose: the pointer moves on
         // every frame of a drag, and recomputing options mid-gesture reapplies
@@ -1373,6 +1383,16 @@ export class ChartStackComponent {
     }
   }
 
+  /**
+   * Tres cosas pueden pedir el plugin: los trades, los lotes, o un solo lote
+   * señalado desde la lista con la capa apagada. Estaba escrito dos veces y la
+   * segunda pisaba a la primera: los escalones se apagaban solos al pasar el
+   * mouse por un trade.
+   */
+  private anyLayerOn(): boolean {
+    return this.layerOn() || this.lotsOnSignal() || this.hoveredLotSignal() !== null;
+  }
+
   /** Pushes layer changes into the live chart without a full re-render. */
   private pushLayerOptions(): void {
     const chart = this.charts?.first?.chart;
@@ -1380,9 +1400,10 @@ export class ChartStackComponent {
     if (!chart || !layer) return;
     layer.markers = this.layerOn() ? this.markersSignal() : [];
     layer.lots = this.lotRungsSignal();
-    layer.enabled = this.layerOn() || this.lotRungsSignal().length > 0;
+    layer.lotsOn = this.lotsOnSignal();
+    layer.hoveredLotId = this.hoveredLotSignal();
     layer.hoveredOrderId = this.hovered();
-    layer.enabled = this.layerOn();
+    layer.enabled = this.anyLayerOn();
     layer.avgEntry = this.layerOn() ? this.avgEntrySignal() : null;
     chart.update('none');
   }
