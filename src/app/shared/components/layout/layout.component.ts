@@ -56,7 +56,7 @@ const PAPER_TRADING_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="2
       <aside class="sidebar" [class.open]="sidebarOpen()">
         <div class="sidebar-header">
           <div class="logo">
-            <img src="assets/logo-icon.svg" alt="Exchange Monitor" class="logo-icon">
+            <img src="assets/logo-icon.svg?v=2" alt="Exchange Monitor" class="logo-icon">
             <span class="logo-text">Exchange Monitor</span>
           </div>
           <button

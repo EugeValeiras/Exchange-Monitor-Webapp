@@ -80,7 +80,8 @@ import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.s
                      matTooltipPosition="above">
                   @if (providerIcon(passkey)) {
                     <img [src]="providerIcon(passkey)" [alt]="passkey.provider"
-                         class="passkey-provider-icon">
+                         class="passkey-provider-icon"
+                         [class.ancha]="esMarcaAncha(passkey)">
                   } @else {
                     <mat-icon>key</mat-icon>
                   }
@@ -329,12 +330,16 @@ import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.s
     // El logo del proveedor ocupa el lugar de la llave: dice dónde vive esta
     // credencial sin agregar un renglón. Va con tooltip y alt porque un logo
     // solo no es accesible.
-    // La mitad del cuadradito. El logo del gestor de Google es ancho y bajo:
-    // a 22 tocaba los bordes y parecía más grande que los demás midiendo lo
-    // mismo.
+    // La mitad del cuadradito. Es la medida para una marca cuadrada; una
+    // horizontal a la misma medida llena la caja de lado a lado y se queda sin
+    // aire, así que lleva su propia corrección.
     .passkey-provider-icon {
       width: 20px;
       height: 20px;
+    }
+
+    .passkey-provider-icon.ancha {
+      width: 16px;
     }
 
     // Sin logo propio, el nombre. Preferible a un ícono genérico que no
@@ -456,6 +461,13 @@ export class PasskeySettingsComponent implements OnInit {
     '1password',
     'bitwarden',
   ]);
+
+  /** Marcas horizontales, que necesitan medir menos para pesar lo mismo. */
+  private static readonly ANCHAS = new Set(['google-password-manager']);
+
+  esMarcaAncha(passkey: PasskeyCredential): boolean {
+    return PasskeySettingsComponent.ANCHAS.has(passkey.providerId ?? '');
+  }
 
   providerIcon(passkey: PasskeyCredential): string | null {
     const id = passkey.providerId;
