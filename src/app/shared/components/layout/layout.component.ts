@@ -586,14 +586,11 @@ export class LayoutComponent {
     {
       title: 'Mercado',
       items: [
-        {
-          label: 'Precios',
-          icon: 'show_chart',
-          children: [
-            { label: 'En vivo', route: '/prices' },
-            { label: 'Orderbook', route: '/raw-prices' },
-          ],
-        },
+        // «Precios» y «Orderbook» al mismo nivel que Trading view: eran un grupo
+        // con dos hijos («En vivo» / «Orderbook») y el orderbook no es un tipo de
+        // precio, es otra pantalla. Pedido del dueño (03/09).
+        { label: 'Precios', icon: 'show_chart', route: '/prices' },
+        { label: 'Orderbook', icon: 'view_list', route: '/raw-prices' },
         { label: 'Trading view', svgIcon: 'candles', route: '/market-analysis' },
         { label: 'Precio histórico', icon: 'timeline', route: '/price-history' },
       ],
