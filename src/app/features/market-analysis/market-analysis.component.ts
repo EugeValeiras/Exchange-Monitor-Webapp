@@ -19,7 +19,12 @@ import {
   SummaryResponse,
 } from '../../core/services/market-analysis.service';
 import { PairTrades, TransactionsService } from '../../core/services/transactions.service';
-import { CostBasisLot, PnlService, UnrealizedPnlPosition } from '../../core/services/pnl.service';
+import {
+  CostBasisLot,
+  PnlService,
+  ReconciliacionDeActivo,
+  UnrealizedPnlPosition,
+} from '../../core/services/pnl.service';
 import { PriceSocketService } from '../../core/services/price-socket.service';
 import { LogoLoaderComponent } from '../../shared/components/logo-loader/logo-loader.component';
 import { InstrumentHeaderComponent, HeaderContext } from './instrument-header.component';
@@ -140,6 +145,7 @@ const CANDLE_LIMIT = 500;
               [showCross]="showCross()"
               [lots]="lots()"
               [lotsLoading]="lotsLoading()"
+              [lotsReconciliation]="lotsReconciliation()"
               [lastPrice]="lastClose()"
               (facetChange)="setFacet($event)"
               (showCrossChange)="showCross.set($event)"
@@ -280,6 +286,13 @@ export class MarketAnalysisComponent implements OnInit {
 
   /** Para qué activo son los lotes que tenemos cargados. */
   private lotsAsset: string | null = null;
+  private readonly reconciliation = signal<ReconciliacionDeActivo[]>([]);
+
+  /** La reconciliación del activo que estás mirando, si la API la trajo. */
+  readonly lotsReconciliation = computed(() => {
+    const base = this.baseAssetOf().toUpperCase();
+    return this.reconciliation().find((r) => r.asset.toUpperCase() === base) ?? null;
+  });
   /** The rail is the margin of the screen, not the screen: it can be put away. */
   readonly railOpen = signal(true);
   readonly series = signal<SeriesConfig>({ ...DEFAULT_SERIES });
@@ -843,6 +856,13 @@ export class MarketAnalysisComponent implements OnInit {
 
     this.lotsAsset = base;
     this.lotsLoading.set(true);
+
+    // Sin esto el panel no puede decir si los números son confiables.
+    this.pnlService.getReconciliation().subscribe({
+      next: (resp) => this.reconciliation.set(resp.activos ?? []),
+      error: () => this.reconciliation.set([]),
+    });
+
     this.pnlService.getCostBasisLots({ assets: [base], limit: 200 }).subscribe({
       next: (resp) => {
         this.lots.set(resp.data ?? []);

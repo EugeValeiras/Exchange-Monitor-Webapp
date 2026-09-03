@@ -79,6 +79,21 @@ export interface CostBasisLot {
   originalPrice?: number;
 }
 
+/** Lo que dicen los lotes contra el saldo real, activo por activo. */
+export interface ReconciliacionDeActivo {
+  asset: string;
+  enLotes: number;
+  real: number;
+  diferencia: number;
+  reconcilia: boolean;
+  motivo: string | null;
+}
+
+export interface Reconciliacion {
+  saldosDe: string | null;
+  activos: ReconciliacionDeActivo[];
+}
+
 export interface PaginatedCostBasisLots {
   data: CostBasisLot[];
   total: number;
@@ -159,6 +174,10 @@ export class PnlService {
     if (filter.exchanges?.length) params['exchanges'] = filter.exchanges.join(',');
     if (filter.showEmpty !== undefined) params['showEmpty'] = filter.showEmpty.toString();
     return this.api.get<PaginatedCostBasisLots>('/pnl/lots', params);
+  }
+
+  getReconciliation(): Observable<Reconciliacion> {
+    return this.api.get<Reconciliacion>('/pnl/reconciliation');
   }
 
   getPnlEvolution(timeframe: string = '1y'): Observable<PnlEvolutionData> {

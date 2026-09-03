@@ -13,7 +13,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
 import { AgentChatComponent, ChartAction } from './agent-chat.component';
 import { PairPosition, PairTrades } from '../../core/services/transactions.service';
-import { CostBasisLot } from '../../core/services/pnl.service';
+import { CostBasisLot, ReconciliacionDeActivo } from '../../core/services/pnl.service';
 import { EmMoneyPipe, EmPctPipe, EmQtyPipe, EmSignedPipe, toneOf } from '../../shared/pipes/format.pipes';
 import { groupTrades, MonthGroup, TradeOrder } from './lib/trade-grouping';
 
@@ -352,7 +352,7 @@ type SideFilter = 'all' | 'buy' | 'sell';
                         {{ lot.remainingAmount | emQty }}
                         <span class="ticker">{{ baseAsset }}</span>
                         @if (lot.remainingAmount < lot.originalAmount) {
-                          <span class="ticker">· de {{ lot.originalAmount | emQty }}</span>
+                          <span class="ticker">&nbsp;· de {{ lot.originalAmount | emQty }}</span>
                         }
                       </span>
                       <span class="meta num">
@@ -389,9 +389,10 @@ type SideFilter = 'all' | 'buy' | 'sell';
 
             @if (lotsMismatch(); as falta) {
               <div class="foot-note">
-                Los lotes suman {{ falta.enLotes | emQty: baseAsset }} y la posición
-                dice {{ falta.real | emQty: baseAsset }}: la contabilidad de este activo
-                no reconcilia, así que tomá estos números con pinzas.
+                Los lotes suman {{ falta.enLotes | emQty: baseAsset }} y en los exchanges
+                hay {{ falta.real | emQty: baseAsset }}: la contabilidad de este activo no
+                reconcilia{{ falta.motivo ? ' (' + falta.motivo + ')' : '' }}, así que tomá
+                estos números con pinzas.
               </div>
             }
           </div>
@@ -969,6 +970,9 @@ export class AnalysisRailComponent {
 
   @Input() lotsLoading = false;
 
+  /** Lo que dice la API sobre si los lotes de este activo cuadran con el saldo. */
+  @Input() lotsReconciliation: ReconciliacionDeActivo | null = null;
+
   @Input() set data(value: PairTrades | null) {
     this.dataSignal.set(value);
   }
@@ -1044,15 +1048,14 @@ export class AnalysisRailComponent {
    * historia importada está incompleta, y hay que decirlo: un número que no
    * reconcilia y no lo avisa es peor que no mostrarlo.
    */
-  lotsMismatch(): { enLotes: number; real: number } | null {
-    // Método y no computed: `assetPosition` es un @Input plano, y un computed
-    // sólo se entera de lo que cambia en signals. Acá el valor se recalcula en
-    // cada render, que con OnPush ocurre justo cuando cambia el input.
-    const tot = this.lotsTotals();
-    const real = this.assetPosition?.amount;
-    if (!tot || !real || real <= 0) return null;
-    const dif = Math.abs(tot.amount - real);
-    return dif > Math.max(real * 0.01, 1e-8) ? { enLotes: tot.amount, real } : null;
+  /**
+   * El aviso sale de la API, no de acá: la comparación honesta es contra el
+   * saldo que dan los exchanges. Antes lo deducía de `assetPosition`, que sale
+   * de los mismos lotes — comparaba un número contra sí mismo y nunca avisaba.
+   */
+  lotsMismatch(): ReconciliacionDeActivo | null {
+    const r = this.lotsReconciliation;
+    return r && !r.reconcilia ? r : null;
   }
 
   lotPnl(lot: CostBasisLot): { value: number } | null {
