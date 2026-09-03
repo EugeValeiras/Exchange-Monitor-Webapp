@@ -342,6 +342,9 @@ body {
 
   &:hover:not([disabled]) {
     background-color: #ffffff !important;
+    // Explícito: si el fondo se aclara, la tinta tiene que seguir siendo la
+    // del lienzo o el botón se queda sin texto.
+    color: var(--bg-primary) !important;
   }
 
   // Deshabilitado tiene que LEERSE deshabilitado, no desaparecer: el nivel más

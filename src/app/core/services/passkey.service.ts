@@ -12,6 +12,9 @@ export interface PasskeyCredential {
    * registró antes de que empezáramos a guardarlo.
    */
   provider?: string | null;
+
+  /** Slug del proveedor, para elegir el ícono. */
+  providerId?: string | null;
   createdAt: string;
   lastUsedAt?: string;
 }

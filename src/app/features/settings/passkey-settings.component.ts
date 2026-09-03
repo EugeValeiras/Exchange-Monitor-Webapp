@@ -4,6 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.service';
 
 @Component({
@@ -15,7 +16,8 @@ import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.s
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatTooltipModule
   ],
   template: `
     <div class="passkey-container">
@@ -80,7 +82,14 @@ import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.s
                 <div class="passkey-info">
                   <span class="passkey-name">
                     {{ passkey.deviceName }}
-                    @if (passkey.provider) {
+                    @if (providerIcon(passkey)) {
+                      <img
+                        [src]="providerIcon(passkey)"
+                        [alt]="passkey.provider"
+                        [matTooltip]="passkey.provider"
+                        matTooltipPosition="above"
+                        class="passkey-provider-icon">
+                    } @else if (passkey.provider) {
                       <span class="passkey-provider">{{ passkey.provider }}</span>
                     }
                   </span>
@@ -318,8 +327,18 @@ import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.s
       min-width: 0;
     }
 
-    // Dónde vive la llave. El nombre del dispositivo lo pone el usuario y no
-    // lo dice; esto sí.
+    // El logo del proveedor dice de un vistazo dónde vive la llave. Va con
+    // tooltip y alt porque un logo solo no es accesible.
+    .passkey-provider-icon {
+      width: 16px;
+      height: 16px;
+      margin-left: var(--sp-3);
+      vertical-align: -3px;
+      cursor: help;
+    }
+
+    // Sin logo propio, el nombre. Preferible a un ícono genérico que no
+    // identifica nada.
     .passkey-provider {
       margin-left: var(--sp-3);
       padding: 1px var(--sp-3);
@@ -393,8 +412,12 @@ import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.s
       transition: all 0.15s ease;
     }
 
+    // El hover aclaraba el fondo y dejaba el texto claro encima: el botón
+    // quedaba en blanco, sin palabra. Al invertir el fondo hay que invertir
+    // también la tinta.
     .add-passkey-btn:hover:not(:disabled) {
       background: var(--text-primary);
+      color: var(--bg-primary);
     }
 
     .add-passkey-btn:disabled {
@@ -420,6 +443,24 @@ import { PasskeyService, PasskeyCredential } from '../../core/services/passkey.s
 export class PasskeySettingsComponent implements OnInit {
   passkeyService = inject(PasskeyService);
   private snackBar = inject(MatSnackBar);
+
+  /**
+   * El logo del proveedor, si tenemos uno. Devuelve null para los que no
+   * dibujamos y para las credenciales viejas, que no guardaron la AAGUID.
+   */
+  private static readonly CON_LOGO = new Set([
+    'apple',
+    'google',
+    'microsoft',
+    '1password',
+    'bitwarden',
+  ]);
+
+  providerIcon(passkey: PasskeyCredential): string | null {
+    const id = passkey.providerId;
+    if (!id || !PasskeySettingsComponent.CON_LOGO.has(id)) return null;
+    return `assets/passkey-providers/${id}.svg`;
+  }
 
   ngOnInit(): void {
     this.passkeyService.loadPasskeys().subscribe();
